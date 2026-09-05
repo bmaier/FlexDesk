@@ -77,3 +77,32 @@ def test_seating_option_with_changeover_day_reserves_extra_slot(client, auth_hea
         headers=maria_headers,
     )
     assert resp.status_code == 200, resp.text
+
+
+def test_meeting_rooms_for_floor_and_property_with_floor_metadata(client, auth_headers):
+    headers = auth_headers(MARIA_SCHMIDT)
+    # Liegenschaften abrufen
+    props = client.get("/api/catalog/properties", headers=headers).json()
+    assert len(props) > 0
+    # Liegenschaft mit Meetingräumen suchen
+    target_prop = None
+    rooms = []
+    for p in props:
+        res = client.get(f"/api/catalog/properties/{p['id']}/meeting-rooms", headers=headers).json()
+        if len(res) > 0:
+            target_prop = p
+            rooms = res
+            break
+
+    assert target_prop is not None, "Mindestens eine Liegenschaft sollte Meetingräume haben"
+    assert len(rooms) > 0
+    first = rooms[0]
+    assert "floor_id" in first
+    assert first["floor_id"] is not None
+
+    # Meetingräume spezifisch für die Etage abrufen
+    floor_rooms = client.get(f"/api/catalog/floors/{first['floor_id']}/meeting-rooms", headers=headers).json()
+    assert len(floor_rooms) > 0
+    assert any(r["id"] == first["id"] for r in floor_rooms)
+
+

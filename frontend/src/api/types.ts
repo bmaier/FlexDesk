@@ -71,6 +71,26 @@ export interface PropertyTree {
   buildings: BuildingNode[];
 }
 
+export interface MeetingRoomOut {
+  id: number;
+  floor_id?: number;
+  floor_name?: string | null;
+  building_id?: number | null;
+  building_name?: string | null;
+  room_number: string;
+  name: string;
+  capacity: number | null;
+  approval_required: boolean;
+  restricted_role_code: string | null;
+  labels: string[];
+  is_occupied_now: boolean;
+  pos_x?: number | null;
+  pos_y?: number | null;
+  width?: number | null;
+  height?: number | null;
+}
+
+
 export interface LabelOut {
   id: number;
   name: string;

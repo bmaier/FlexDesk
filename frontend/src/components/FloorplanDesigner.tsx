@@ -9,6 +9,7 @@ const TOOLS: { type: FloorplanObjectType; label: string; size: [number, number] 
   { type: "window", label: "Fenster", size: [60, 10] },
   { type: "table", label: "Tisch", size: [110, 60] },
   { type: "desk", label: "Desk", size: [55, 35] },
+  { type: "meeting_room", label: "Meetingraum", size: [160, 100] },
   { type: "cabinet", label: "Schrank", size: [65, 28] },
   { type: "planter", label: "Pflanztrog", size: [70, 22] },
   { type: "whiteboard", label: "Whiteboard", size: [85, 12] },
@@ -27,6 +28,7 @@ export function FloorplanDesigner() {
   const [layout, setLayout] = useState<FloorplanLayout>(blankLayout());
   const [tool, setTool] = useState<FloorplanObjectType>("table");
   const [deskId, setDeskId] = useState<number | null>(null);
+  const [meetingRoomId, setMeetingRoomId] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const canvasRef = useRef<SVGSVGElement>(null);
@@ -50,6 +52,7 @@ export function FloorplanDesigner() {
   const floors = tree?.buildings.flatMap((building) => building.floors.map((floor) => ({ ...floor, buildingName: building.name }))) ?? [];
   const floor = floors.find((item) => item.id === floorId) as (FloorNode & { buildingName: string }) | undefined;
   const desks = floor?.rooms.flatMap((room) => room.desks.map((desk) => ({ ...desk, roomName: room.name }))) ?? [];
+  const meetingRooms = floor?.rooms.filter((room) => room.room_type === "meeting") ?? [];
 
   useEffect(() => {
     if (!floor) return;
@@ -73,10 +76,30 @@ export function FloorplanDesigner() {
       setMessage("Dieser Desk ist bereits im Grundriss platziert.");
       return;
     }
+    if (tool === "meeting_room" && !meetingRoomId) {
+      setMessage("Wählen Sie zuerst einen vorhandenen Meetingraum aus.");
+      return;
+    }
+    if (tool === "meeting_room" && layout.objects.some((item) => item.roomId === meetingRoomId)) {
+      setMessage("Dieser Meetingraum ist bereits im Grundriss platziert.");
+      return;
+    }
+
+    const meetingRoom = meetingRooms.find((r) => r.id === meetingRoomId);
     const object: FloorplanObject = {
-      id: crypto.randomUUID(), type: tool, x: x - config.size[0] / 2, y: y - config.size[1] / 2,
-      width: config.size[0], height: config.size[1], deskId: tool === "desk" ? deskId ?? undefined : undefined,
-      label: tool === "desk" ? desks.find((desk) => desk.id === deskId)?.desk_number : config.label,
+      id: crypto.randomUUID(),
+      type: tool,
+      x: x - config.size[0] / 2,
+      y: y - config.size[1] / 2,
+      width: config.size[0],
+      height: config.size[1],
+      deskId: tool === "desk" ? deskId ?? undefined : undefined,
+      roomId: tool === "meeting_room" ? meetingRoomId ?? undefined : undefined,
+      label: tool === "desk"
+        ? desks.find((desk) => desk.id === deskId)?.desk_number
+        : tool === "meeting_room"
+        ? (meetingRoom ? `${meetingRoom.name} (${meetingRoom.room_number})` : config.label)
+        : config.label,
     };
     setLayout((current) => ({ objects: [...current.objects, object] }));
     setSelectedId(object.id);
@@ -116,7 +139,7 @@ export function FloorplanDesigner() {
             {floors.map((item) => <option key={item.id} value={item.id}>{item.buildingName} / {item.name}</option>)}
           </select>
         </label>
-        <div className="text-xs text-on-surface-variant">Wählen Sie ein Element links und klicken Sie in den rechteckigen Grundriss. Für einen Desk wählen Sie zusätzlich den realen Desk aus der Stammdatenstruktur.</div>
+        <div className="text-xs text-on-surface-variant">Wählen Sie ein Element links und klicken Sie in den rechteckigen Grundriss. Für einen Desk oder Meetingraum wählen Sie zusätzlich das reale Objekt aus der Stammdatenstruktur.</div>
         <div className="grid grid-cols-2 gap-1">
           {TOOLS.map((item) => <button key={item.type} onClick={() => setTool(item.type)} className={`p-2 rounded text-xs text-left ${tool === item.type ? "bg-primary text-on-primary" : "bg-surface-container-high hover:bg-surface-container-highest"}`}>{item.label}</button>)}
         </div>
@@ -124,6 +147,12 @@ export function FloorplanDesigner() {
           <select value={deskId ?? ""} onChange={(e) => setDeskId(Number(e.target.value))} className="w-full mt-1 bg-surface rounded px-2 py-1.5 text-sm">
             <option value="">Desk wählen…</option>
             {desks.map((desk) => <option key={desk.id} value={desk.id}>{desk.desk_number} · {desk.roomName}</option>)}
+          </select>
+        </label>}
+        {tool === "meeting_room" && <label className="block text-xs">Meetingraum verbinden
+          <select value={meetingRoomId ?? ""} onChange={(e) => setMeetingRoomId(Number(e.target.value))} className="w-full mt-1 bg-surface rounded px-2 py-1.5 text-sm">
+            <option value="">Meetingraum wählen…</option>
+            {meetingRooms.map((r) => <option key={r.id} value={r.id}>{r.name} · Raum {r.room_number} (max. {r.capacity ?? "—"} P.)</option>)}
           </select>
         </label>}
       </section>
@@ -137,12 +166,45 @@ export function FloorplanDesigner() {
           <rect x={10} y={10} width={880} height={480} fill="#fbfaf6" stroke="#4f514c" strokeWidth={4} />
           {layout.objects.map((object) => (
             <g key={object.id} onClick={(event) => { event.stopPropagation(); setSelectedId(object.id); }} className="cursor-pointer">
-              <rect x={object.x} y={object.y} width={object.width} height={object.height} rx={3} fill={object.type === "blocked" ? "#d5d2cb" : object.type === "window" ? "#9fd6ea" : object.type === "door" ? "#d8b878" : object.type === "planter" ? "#699c59" : object.type === "desk" ? "#dff2d9" : "#cbb99d"} stroke={selectedId === object.id ? "#176b47" : "#4f514c"} strokeWidth={selectedId === object.id ? 4 : 2} />
-              <text x={object.x + object.width / 2} y={object.y + object.height / 2 + 4} fontSize={11} textAnchor="middle">{object.label}</text>
+              <rect
+                x={object.x}
+                y={object.y}
+                width={object.width}
+                height={object.height}
+                rx={object.type === "meeting_room" ? 6 : 3}
+                fill={
+                  object.type === "blocked" ? "#d5d2cb" :
+                  object.type === "window" ? "#9fd6ea" :
+                  object.type === "door" ? "#d8b878" :
+                  object.type === "planter" ? "#699c59" :
+                  object.type === "desk" ? "#dff2d9" :
+                  object.type === "meeting_room" ? "#e0f2fe" :
+                  "#cbb99d"
+                }
+                stroke={selectedId === object.id ? "#176b47" : object.type === "meeting_room" ? "#0284c7" : "#4f514c"}
+                strokeWidth={selectedId === object.id ? 4 : 2}
+              />
+              {object.type === "meeting_room" && object.width >= 80 && object.height >= 40 && (
+                <rect
+                  x={object.x + 10}
+                  y={object.y + object.height / 2 - 8}
+                  width={object.width - 20}
+                  height={16}
+                  rx={3}
+                  fill="#ffffff"
+                  stroke="#0284c7"
+                  strokeWidth={1}
+                  opacity={0.7}
+                />
+              )}
+              <text x={object.x + object.width / 2} y={object.y + object.height / 2 + 4} fontSize={11} textAnchor="middle">
+                {object.type === "meeting_room" ? `🏛 ${object.label}` : object.label}
+              </text>
             </g>
           ))}
         </svg>
         {message && <div className="mt-2 p-2 rounded bg-tertiary-fixed/40 text-on-tertiary-fixed-variant text-sm" role="status">{message}</div>}
+
       </section>
 
       <section className="bg-surface-container-low rounded-md p-3 border border-outline-variant/30">

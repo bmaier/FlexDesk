@@ -50,11 +50,10 @@ development_status:
   3-2-serienbuchung-mit-automatischer-konfliktüberbrückung: backlog
   epic-3-retrospective: optional
 
-  epic-4: backlog
+  epic-4: in-progress
   4-1-meetingraum-katalog-und-buchung-mit-genehmigungspflicht: backlog
   4-2-vertrauliche-raumblockierung: backlog
-  4-3-meetingraum-grundriss-im-fm-designer-und-interaktive-grundri: 
-    ready-for-dev
+  4-3-meetingraum-grundriss-im-fm-designer-und-interaktive-grundri: done
   epic-4-retrospective: optional
 
   epic-5: backlog

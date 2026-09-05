@@ -208,6 +208,10 @@ def room_bookings_for_date(room_id: int, target_date: str, db: Session = Depends
 
 class MeetingRoomOut(BaseModel):
     id: int
+    floor_id: int | None = None
+    floor_name: str | None = None
+    building_id: int | None = None
+    building_name: str | None = None
     room_number: str
     name: str
     capacity: int | None
@@ -215,6 +219,10 @@ class MeetingRoomOut(BaseModel):
     restricted_role_code: str | None
     labels: list[str]
     is_occupied_now: bool
+    pos_x: float | None = None
+    pos_y: float | None = None
+    width: float | None = None
+    height: float | None = None
 
 
 @router.get("/properties/{property_id}/meeting-rooms", response_model=list[MeetingRoomOut])
@@ -237,9 +245,46 @@ def meeting_rooms_for_property(property_id: int, db: Session = Depends(get_db)):
             .first()
             is not None
         )
+        floor = db.get(Floor, r.floor_id)
+        building = db.get(Building, floor.building_id) if floor else None
         out.append(MeetingRoomOut(
-            id=r.id, room_number=r.room_number, name=r.name, capacity=r.capacity,
+            id=r.id, floor_id=r.floor_id, floor_name=floor.name if floor else None,
+            building_id=building.id if building else None, building_name=building.name if building else None,
+            room_number=r.room_number, name=r.name, capacity=r.capacity,
             approval_required=r.approval_required, restricted_role_code=r.restricted_role_code,
             labels=_labels_for(db, RoomLabel, "room_id", r.id), is_occupied_now=occupied,
+            pos_x=r.pos_x, pos_y=r.pos_y, width=r.width, height=r.height,
         ))
     return out
+
+
+@router.get("/floors/{floor_id}/meeting-rooms", response_model=list[MeetingRoomOut])
+def meeting_rooms_for_floor(floor_id: int, db: Session = Depends(get_db)):
+    from app.models.bookings import Booking, RoomBooking
+    from app.models.structure import RoomLabel
+
+    now = datetime.utcnow()
+    out = []
+    floor = db.get(Floor, floor_id)
+    if not floor:
+        return []
+    building = db.get(Building, floor.building_id) if floor else None
+    rooms = db.query(Room).filter(Room.floor_id == floor_id, Room.room_type == "meeting").all()
+    for r in rooms:
+        occupied = (
+            db.query(Booking).join(RoomBooking, RoomBooking.booking_id == Booking.id)
+            .filter(RoomBooking.room_id == r.id, Booking.status == "confirmed",
+                    Booking.start_at <= now, Booking.end_at >= now)
+            .first()
+            is not None
+        )
+        out.append(MeetingRoomOut(
+            id=r.id, floor_id=r.floor_id, floor_name=floor.name if floor else None,
+            building_id=building.id if building else None, building_name=building.name if building else None,
+            room_number=r.room_number, name=r.name, capacity=r.capacity,
+            approval_required=r.approval_required, restricted_role_code=r.restricted_role_code,
+            labels=_labels_for(db, RoomLabel, "room_id", r.id), is_occupied_now=occupied,
+            pos_x=r.pos_x, pos_y=r.pos_y, width=r.width, height=r.height,
+        ))
+    return out
+

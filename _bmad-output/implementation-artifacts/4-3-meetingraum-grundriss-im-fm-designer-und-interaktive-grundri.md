@@ -3,8 +3,9 @@ id: "4-3-meetingraum-grundriss-im-fm-designer-und-interaktive-grundri"
 title: "Story 4.3: Meetingraum-Grundriss im FM Designer und interaktive Grundriss-Buchung"
 epic: 4
 story: 3
-status: ready-for-dev
+status: done
 created: 2026-09-05
+completed: 2026-09-05
 ---
 
 # Story 4.3: Meetingraum-Grundriss im FM Designer und interaktive Grundriss-Buchung
@@ -42,3 +43,13 @@ created: 2026-09-05
 ### AC 4: Testabdeckung & Qualitätssicherung
 - Unit-Tests verifizieren die Datenstrukturen und API-Funktionalität für Meetingraum-Grundrisse.
 - Frontend-Build (`tsc -b && vite build`) kompiliert fehlerfrei.
+
+## Durchgeführte Tasks & Verifikation
+- [x] Backend: `MeetingRoomOut` erweitert um `floor_id`, `floor_name`, `building_id`, `building_name`, `pos_x`, `pos_y`, `width`, `height`.
+- [x] Backend: Endpoint `GET /api/catalog/floors/{floor_id}/meeting-rooms` implementiert.
+- [x] Frontend: TypeScript-Typen für `MeetingRoomOut` und `FloorplanObjectType` (`meeting_room`) erweitert.
+- [x] Frontend: `FloorplanCanvas.tsx` um SVG-Rendering für Konferenz- und Meetingräume mit Statushighlights und Klick-Event ergänzt.
+- [x] Frontend: `FloorplanDesigner.tsx` um Meetingraum-Werkzeug, Raumauswahl-Dropdown und Kollisionsprüfung erweitert.
+- [x] Frontend: `MeetingRooms.tsx` um Etagen-/Gebäudeauswahl, Umschalter "Grundriss" vs. "Liste" und direkte Klickbuchung erweitert.
+- [x] Tests: Backend Pytest (29 Tests erfolgreich, inkl. `test_meeting_rooms_and_approvals.py`).
+- [x] Tests: Frontend Typecheck & Build (`tsc -b && vite build` fehlerfrei).

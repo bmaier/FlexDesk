@@ -1,0 +1,151 @@
+<!--
+  Governs: EXPERIENCE.md > Information Architecture (Suchergebnis-Ansicht row),
+  Component Patterns (Listen, Badges/Chips, Avatare), State Patterns (Leer-Fälle),
+  Accessibility Floor.
+  Content scope decided 2026-08-18: breite globale Suche über Desks / Räume /
+  Kolleg:innen / Buchungen, gruppiert nach Entitätstyp.
+  Tokens from DESIGN.md frontmatter, applied literally (no build step).
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Suchergebnis-Ansicht — DeskSharing BAMF</title>
+<style>
+  :root {
+    --background: #f7f9fb;
+    --surface: #ffffff;
+    --surface-container-low: #f2f4f6;
+    --surface-container: #eceef0;
+    --surface-container-highest: #e0e3e5;
+    --on-surface: #191c1e;
+    --on-surface-variant: #43474f;
+    --outline: #737780;
+    --outline-variant: #c3c6d1;
+    --primary: #001e40;
+    --on-primary: #ffffff;
+    --primary-container: #003366;
+    --tertiary-container: #003a35;
+    --on-tertiary-fixed-variant: #005049;
+    --tertiary-fixed: #89f5e7;
+    --focus-ring: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, -apple-system, sans-serif; background: var(--background); color: var(--on-surface); }
+  .browser-frame { max-width: 1280px; margin: 0 auto; padding: 0 24px 48px; }
+  .header { height: 64px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--outline-variant); margin-bottom: 24px; }
+  .search-field { flex: 1; max-width: 480px; display: flex; align-items: center; gap: 8px; background: var(--surface-container-low); border-radius: 9999px; padding: 8px 16px; }
+  .search-field input { border: none; background: none; outline: none; font-size: 14px; flex: 1; color: var(--on-surface); }
+  .search-field:focus-within { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  h1 { font-size: 24px; font-weight: 600; margin: 0 0 4px; }
+  .result-count { color: var(--on-surface-variant); font-size: 14px; margin: 0 0 24px; }
+  .group { margin-bottom: 32px; }
+  .group-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .group-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--on-surface-variant); }
+  .group-link { font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 500; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; }
+  .card:hover, .card:focus-visible { box-shadow: 0px 4px 6px -1px rgba(0,51,102,0.05); outline: none; }
+  .card:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .card-title { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+  .card-sub { font-size: 13px; color: var(--on-surface-variant); margin: 0; }
+  .badge { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 9999px; background: var(--tertiary-fixed); color: var(--on-tertiary-fixed-variant); }
+  .list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 12px; overflow: hidden; }
+  .list-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--outline-variant); cursor: pointer; }
+  .list-row:last-child { border-bottom: none; }
+  .list-row:hover, .list-row:focus-visible { background: var(--surface-container-low); }
+  .avatar { width: 36px; height: 36px; border-radius: 9999px; background: var(--primary-container); color: #799dd6; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .row-body { flex: 1; }
+  .row-title { font-size: 14px; font-weight: 600; margin: 0; }
+  .row-sub { font-size: 13px; color: var(--on-surface-variant); margin: 0; }
+  .empty-group { background: var(--surface); border: 1px dashed var(--outline-variant); border-radius: 12px; padding: 16px; font-size: 13px; color: var(--on-surface-variant); text-align: center; }
+  .caption { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--outline-variant); font-size: 13px; color: var(--on-surface-variant); }
+</style>
+</head>
+<body>
+  <div class="browser-frame">
+    <div class="header">
+      <div class="search-field">
+        <span aria-hidden="true">🔍</span>
+        <input type="text" value="Berlin" aria-label="Globale Suche" readonly>
+      </div>
+    </div>
+
+    <h1>Suchergebnisse für „Berlin"</h1>
+    <p class="result-count">7 Treffer in 3 Kategorien</p>
+
+    <div class="group">
+      <div class="group-header">
+        <span class="group-title">Räume (2)</span>
+      </div>
+      <div class="grid">
+        <div class="card" tabindex="0">
+          <p class="card-title">Konferenzraum Berlin</p>
+          <p class="card-sub">Zentrale Nürnberg · Haus A, 1. OG · 8 Plätze</p>
+          <span class="badge">Verfügbar</span>
+        </div>
+        <div class="card" tabindex="0">
+          <p class="card-title">Raum 'Berlin' (Huddle)</p>
+          <p class="card-sub">Zentrale Nürnberg · Haus B, EG · 4 Plätze</p>
+          <span class="badge">Verfügbar</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-header">
+        <span class="group-title">Desks (1)</span>
+      </div>
+      <div class="grid">
+        <div class="card" tabindex="0">
+          <p class="card-title">Desk B-2.14</p>
+          <p class="card-sub">Zentrale Berlin · Haus C, 2. OG · Fensterplatz</p>
+          <span class="badge">Verfügbar</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-header">
+        <span class="group-title">Kolleg:innen (3)</span>
+        <a class="group-link" href="#">Alle in Wer sitzt wo? →</a>
+      </div>
+      <ul class="list">
+        <li class="list-row" tabindex="0">
+          <span class="avatar">M7</span>
+          <div class="row-body">
+            <p class="row-title">Nutzer:in A7F3-M91 (IDM-Kennung)</p>
+            <p class="row-sub">Referat 4B · heute im Haus, Zentrale Nürnberg</p>
+          </div>
+        </li>
+        <li class="list-row" tabindex="0">
+          <span class="avatar">K2</span>
+          <div class="row-body">
+            <p class="row-title">Nutzer:in B2C8-K14 (IDM-Kennung)</p>
+            <p class="row-sub">Referat 2A · Homeoffice heute</p>
+          </div>
+        </li>
+        <li class="list-row" tabindex="0">
+          <span class="avatar">B5</span>
+          <div class="row-body">
+            <p class="row-title">Nutzer:in D5E1-B77 (IDM-Kennung)</p>
+            <p class="row-sub">Referat 4B · heute im Haus, Zentrale Berlin</p>
+          </div>
+        </li>
+      </ul>
+      <p style="font-size:12px;color:var(--on-surface-variant);margin-top:8px;">Klarname erst nach Klick/Hover-Lookup sichtbar (FR-20) — nie automatisch, siehe "Wer sitzt wo?".</p>
+    </div>
+
+    <div class="group">
+      <div class="group-header">
+        <span class="group-title">Buchungen (0)</span>
+      </div>
+      <div class="empty-group">Keine eigenen Buchungen mit „Berlin" im Titel oder Standort gefunden.</div>
+    </div>
+
+    <div class="caption">
+      Zustand: Treffer in 3 von 4 Kategorien, eine Kategorie mit 0 Treffern (Empty-Group-Muster statt Ausblenden der Kategorie). Vollständig-leerer Zustand (0 Treffer app-weit) folgt dem Empty-States-Muster aus DESIGN.md.
+    </div>
+  </div>
+</body>
+</html>

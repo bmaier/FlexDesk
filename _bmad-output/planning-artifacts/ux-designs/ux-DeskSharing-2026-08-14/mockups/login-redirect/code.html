@@ -1,0 +1,71 @@
+<!--
+  Governs: EXPERIENCE.md > Foundation (Authentifizierung — Geklärt), State Patterns
+  (Redirect — Anmeldung; Fehler — Zugriff verweigert), Accessibility Floor
+  (Anmelde-Redirect aria-live).
+  Content scope decided 2026-08-18: kein eigener Login-Screen, Auth komplett an
+  BAMF-IDM/Keycloak delegiert (Standard-OIDC-Redirect). Zwei Zustände in einer Datei.
+  Tokens from DESIGN.md frontmatter, applied literally (no build step).
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Anmelde-Redirect &amp; Zugriff verweigert — DeskSharing BAMF</title>
+<style>
+  :root {
+    --background: #f7f9fb;
+    --surface: #ffffff;
+    --surface-container-high: #e6e8ea;
+    --on-surface: #191c1e;
+    --on-surface-variant: #43474f;
+    --outline-variant: #c3c6d1;
+    --primary: #001e40;
+    --on-primary: #ffffff;
+    --error-container: #ffdad6;
+    --on-error-container: #93000a;
+    --focus-ring: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, -apple-system, sans-serif; background: var(--background); color: var(--on-surface); }
+  .frame { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+  .state { display: flex; align-items: center; justify-content: center; padding: 48px; border-right: 1px dashed var(--outline-variant); }
+  .state:last-child { border-right: none; }
+  .card { text-align: center; max-width: 360px; }
+  .icon-circle { width: 80px; height: 80px; border-radius: 9999px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+  .icon-circle.neutral { background: var(--surface-container-high); }
+  .icon-circle.error { background: var(--error-container); }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--outline-variant); border-top-color: var(--primary); border-radius: 9999px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  h1 { font-size: 24px; font-weight: 600; margin: 0 0 8px; }
+  p { font-size: 14px; color: var(--on-surface-variant); line-height: 1.5; margin: 0 0 20px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-secondary { background: var(--surface-container-high); color: var(--on-surface); }
+  .btn-secondary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .label { position: absolute; top: 16px; left: 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--on-surface-variant); font-weight: 600; }
+  .state { position: relative; }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="state" role="status" aria-live="polite">
+      <span class="label">Zustand 1: Redirect</span>
+      <div class="card">
+        <div class="icon-circle neutral"><div class="spinner" aria-hidden="true"></div></div>
+        <h1>Wird angemeldet…</h1>
+        <p>Sie werden zur Anmeldung bei BAMF-IDM weitergeleitet.</p>
+      </div>
+    </div>
+    <div class="state">
+      <span class="label">Zustand 2: Zugriff verweigert</span>
+      <div class="card">
+        <div class="icon-circle error" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#93000a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
+        </div>
+        <h1>Kein Zugriff</h1>
+        <p>Ihr BAMF-IDM-Konto ist noch nicht für DeskSharing freigeschaltet. Wenden Sie sich an den Service Desk, um Zugriff zu beantragen.</p>
+        <button class="btn btn-secondary">Service Desk kontaktieren</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

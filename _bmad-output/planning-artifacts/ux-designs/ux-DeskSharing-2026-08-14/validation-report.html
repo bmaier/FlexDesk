@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>UX Design Validation: DeskSharing BAMF</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --text: #1c1917;
+    --muted: #78716c;
+
+    --verdict-strong: #16a34a;
+    --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706;
+    --verdict-broken: #dc2626;
+
+    --sev-low: #64748b;
+    --sev-medium: #ca8a04;
+    --sev-high: #ea580c;
+    --sev-critical: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  header.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .synthesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    font-size: 15.5px;
+  }
+  .synthesis p { margin: 0 0 10px; }
+  .synthesis p:last-child { margin-bottom: 0; }
+
+  .dimension-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dim-card .dim-verdict { font-size: 14px; font-weight: 600; }
+
+  section.dimension, section.reviewer-section { margin-bottom: 14px; }
+  section.dimension details, section.reviewer-section details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  section summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section summary::-webkit-details-marker { display: none; }
+  section summary::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  section details[open] summary::before { transform: rotate(90deg); }
+  section summary h2 {
+    display: inline;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    flex: 1;
+  }
+  .verdict-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  .verdict-strong { background: var(--verdict-strong); }
+  .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); }
+  .verdict-broken { background: var(--verdict-broken); }
+
+  .dim-body { padding: 4px 20px 18px; }
+  .dim-judgment { color: var(--text); font-size: 14.5px; }
+  .dim-judgment p { margin: 0 0 10px; }
+
+  .findings-list { padding: 0 20px 4px; }
+  article.finding {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  article.finding:first-child { border-top: none; }
+  article.finding header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
+  .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
+  .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
+  .finding-fix strong { color: var(--muted); font-weight: 500; }
+
+  .reviewer-source {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  .mechanical {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mechanical ul { margin: 0; padding-left: 20px; }
+  .mechanical li { margin-bottom: 4px; color: var(--text); }
+
+  footer.report-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="report-header">
+      <div class="title">
+        <h1>DeskSharing BAMF — UX Design Validation Report</h1>
+        <div class="subtitle">_bmad-output/planning-artifacts/ux-designs/ux-DeskSharing-2026-08-14/{DESIGN.md, EXPERIENCE.md}</div>
+      </div>
+    </header>
+
+    <div class="synthesis">
+      <p>Das Spine-Paar extrahiert sich sauber: jede <code>{colors.x}</code>/<code>{rounded.x}</code>/<code>{spacing.x}</code>-Referenz in beiden Dateien löst zu einem definierten Frontmatter-Token auf, alle 14 Komponenten haben passende visuelle (DESIGN.md) und verhaltensbezogene (EXPERIENCE.md) Specs unter identischen Namen, und alle drei PRD-UJs plus die wichtigsten FR-Cluster (genehmigungspflichtig, VS-NfD, Vertretung) haben vollständige Key Flows mit Protagonist:in, Klimax und Failure-Pfad. Nichts ist mechanisch kaputt. Die realen Lücken liegen an den Rändern: keine Inline-Verlinkung von den Spines zu den 32 rohen <code>imports/</code>-Exporten, eine Facility-Management-Persona mit reichhaltigen Verhaltens-Specs aber ohne eigenen durchgespielten Key Flow, mehrere IA-Oberflächen ohne Cold-Load/Empty-States, und eine fehlende "Inspiration & Anti-patterns"-Sektion, obwohl <code>reconcile-stitch-imports.md</code> genau diesen Inhalt bereits in Prosaform enthält.</p>
+      <p>Der zusätzliche Accessibility-Review verschiebt das Bild spürbar: er deckt zwei <strong>kritische, bislang unerkannte AA-Verstöße</strong> auf, die dem Rubric-Walker entgingen, weil dieser primär auf bereits als "korrigiert" markierte Kombinationen prüfte — Sidebar-/KPI-Labels in <code>{colors.outline}</code> verfehlen 4.5:1 Textkontrast, und der Grundriss-Verfügbar-Rand verfehlt 1.4.11 (Nicht-Text-Kontrast) bei gleichzeitig falsch begründeter Ausnahme im Dokument selbst. Dazu kommen strukturelle BITV-Pflichtthemen, die in der Accessibility Floor komplett fehlen: Zoom/Reflow bis 200%, <code>prefers-reduced-motion</code> für die endlos loopende Grundriss-Pulsanimation, und eine Formularfehler-Ansage-Spezifikation. Für eine rechtsverbindlich BITV-2.0-pflichtige Bundesbehörden-Anwendung sind das keine kosmetischen Punkte — sie sollten vor Beginn der Umsetzung geschlossen werden.</p>
+    </div>
+
+    <div class="dimension-summary">
+      <div class="dim-card"><div class="dim-name">1. Flow coverage</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div>
+      <div class="dim-card"><div class="dim-name">2. Token completeness</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
+      <div class="dim-card"><div class="dim-name">3. Component coverage</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
+      <div class="dim-card"><div class="dim-name">4. State coverage</div><div class="dim-verdict" style="color: var(--verdict-thin)">thin</div></div>
+      <div class="dim-card"><div class="dim-name">5. Visual reference coverage</div><div class="dim-verdict" style="color: var(--verdict-thin)">thin</div></div>
+      <div class="dim-card"><div class="dim-name">6. Bloat &amp; overspecification</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div>
+      <div class="dim-card"><div class="dim-name">7. Inheritance discipline</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
+      <div class="dim-card"><div class="dim-name">8. Shape fit</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong (2 Lücken)</div></div>
+    </div>
+
+    <section class="dimension">
+      <details>
+        <summary><h2>1. Flow coverage</h2><span class="verdict-pill verdict-adequate">adequate</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p>PRD §2.3 nennt drei UJs (UJ-1 Yilmaz, UJ-2 Kaya, UJ-3 Berger) und fünf JTBD-Personas. EXPERIENCE.mds sechs Key Flows wurden dagegen sowie gegen FR-39/40 (Genehmigung) und FR-16/17 (VS-NfD) geprüft.</p></div></div>
+        <div class="findings-list">
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Facility Management hat keinen eigenen Key Flow</h3><span class="finding-location">EXPERIENCE.md, Key Flows</span></header><div class="finding-note">FM ist eine volle PRD-Persona (§2.1) mit zwei VERWALTUNG-Oberflächen und detaillierten Verhaltens-Specs, tritt aber nur als Nebenfigur in Flow 6 auf. Zuweisung Raumverantwortlicher, Genehmigungspflicht-Toggle, Zwangsstorno (FR-43) werden nie end-to-end durchgespielt.</div><div class="finding-fix"><strong>Fix:</strong> Flow 7 für FM-Admin-Protagonist ergänzen (Label/Sperren/Zuweisen/Zwangsstorno).</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">"Wer sitzt wo"-Persona ohne Key Flow</h3><span class="finding-location">EXPERIENCE.md, Open Question #1</span></header><div class="finding-note">Ehrlich offengelegt statt still weggelassen — daher niedrigere Schwere als der FM-Gap.</div><div class="finding-fix"><strong>Fix:</strong> Keine Aktion nötig, bis Open Question #1 geklärt ist; dann Flow ergänzen.</div></article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary><h2>2. Token completeness</h2><span class="verdict-pill verdict-strong">strong</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p>Alle 47 <code>colors</code>-Keys, 8 <code>typography</code>-Rollen, 6 <code>rounded</code>-Stufen, 8 <code>spacing</code>-Einträge und 23 <code>components</code>-Einträge extrahiert; jede <code>{path.to.token}</code>-Referenz in beiden Dateien löst auf. Keine hängenden Tokens.</p></div></div>
+        <div class="findings-list">
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Zwei zitierte Kontrastwerte stimmen bei Nachrechnung nicht exakt</h3><span class="finding-location">DESIGN.md, Colors + Badges-Note</span></header><div class="finding-note"><code>on-tertiary-fixed-variant</code> auf <code>tertiary-fixed</code>: behauptet "~8.6:1", nachgerechnet ~7.26:1. <code>on-primary-fixed-variant</code> auf <code>primary-fixed</code>: behauptet "~8:1", nachgerechnet ~7.24:1. Beide bestehen AA weiterhin klar.</div><div class="finding-fix"><strong>Fix:</strong> Mit Kontrastrechner neu ermitteln oder auf "komfortabel &gt;7:1" abschwächen statt Dezimalzahl.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">8 tote MD3-Farbtoken ohne zugewiesene Rolle</h3><span class="finding-location">DESIGN.md, Frontmatter colors</span></header><div class="finding-note"><code>surface-dim</code>, <code>surface-bright</code>, <code>inverse-on-surface</code>, <code>surface-tint</code>, <code>inverse-primary</code>, <code>secondary-fixed-dim</code>, <code>on-secondary-fixed-variant</code>, <code>on-background</code> erscheinen nirgends außerhalb der eigenen Definition. <code>surface-bright</code> = identischer Hex wie <code>surface</code>.</div><div class="finding-fix"><strong>Fix:</strong> Löschen oder je eine Ein-Zeilen-Rolle gemäß Spec zuweisen.</div></article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary><h2>3. Component coverage</h2><span class="verdict-pill verdict-strong">strong</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p>Alle 14 Komponenten (Buttons bis Empty States) haben eine DESIGN.md-<code>###</code>-Subsektion und eine korrespondierende EXPERIENCE.md-Component-Patterns-Zeile mit echten Verhaltensregeln, nicht nur Ein-Wort-Beschreibungen.</p></div></div>
+        <div class="findings-list"></div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details open>
+        <summary><h2>4. State coverage</h2><span class="verdict-pill verdict-thin">thin</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p>Alle 17 IA-Oberflächen gegen den State-Set (leer, cold-load, Fokus, Fehler, offline, permission-denied) und die 12-Zeilen-State-Patterns-Tabelle geprüft.</p></div></div>
+        <div class="findings-list">
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Fünf Oberflächen ohne Cold-Load/Empty-State-Zeile</h3><span class="finding-location">EXPERIENCE.md, State Patterns</span></header><div class="finding-note">Facility-Management-Baumstruktur (leere Liegenschaft, keine Treffer), Genehmigungscenter (keine offenen Anfragen), Meine Präferenzen (Erstnutzung), Standort-Exploration, Meetingräume-Ops-Ansicht fehlen.</div><div class="finding-fix"><strong>Fix:</strong> Zeilen ergänzen, DESIGN.md-Empty-States-Pattern wiederverwenden.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Vertrauliche Raumblockierung: kein Post-Submit-Fehlerzustand</h3><span class="finding-location">EXPERIENCE.md, Flow 5 Failure; Component Patterns Formulare/Wizard</span></header><div class="finding-note">Nur der frühzeitige Loslass-Abbruch ist spezifiziert, nicht eine Backend-Ablehnung nach vollständigem Long-Press (z.B. doppelte aktive Blockierung, ungültiges Aktenzeichen) — bei der sicherheitskritischsten Aktion der App ein überdurchschnittlich riskanter Gap.</div><div class="finding-fix"><strong>Fix:</strong> Expliziten Post-Submit-Fehlerzustand ergänzen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Benachrichtigungs-Panel/Suchergebnis-Ansicht ungeklärt</h3><span class="finding-location">EXPERIENCE.md, Open Questions #4, #7</span></header><div class="finding-note">Transparent offengelegt statt still übergangen.</div><div class="finding-fix"><strong>Fix:</strong> Keine Aktion bis Klärung.</div></article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details open>
+        <summary><h2>5. Visual reference coverage</h2><span class="verdict-pill verdict-thin">thin</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p><code>mockups/</code>/<code>wireframes/</code> existieren erwartungsgemäß noch nicht; <code>imports/</code> (32 Stitch-Exporte + Basis-Dateien) wird in DESIGN.mds Frontmatter-<code>sources</code> zitiert, aber ohne Verlinkung auf Abschnittsebene.</p></div></div>
+        <div class="findings-list">
+          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Keine auflösbaren Links von den Spines zu einzelnen Imports</h3><span class="finding-location">DESIGN.md / EXPERIENCE.md, durchgängig</span></header><div class="finding-note">Import-Ordnernamen erscheinen nur als bloße Backtick-Wörter ohne Pfad. Verifizieren, welcher der 32 Imports eine Behauptung stützt, erfordert manuelles Nachschlagen in <code>reconcile-stitch-imports.md</code>/<code>.memlog.md</code> außerhalb des Spine-Vertrags.</div><div class="finding-fix"><strong>Fix:</strong> Die bereits existierende Winner-zu-Abschnitt-Zuordnung aus <code>reconcile-stitch-imports.md</code> als Referenzzeilen in die Spines übernehmen — reine Platzierungskorrektur, keine neue Recherche.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Keine "Spines gewinnen bei Konflikt"-Regel</h3><span class="finding-location">DESIGN.md / EXPERIENCE.md, Foundation/IA</span></header><div class="finding-note">Fehlt, obwohl in beiden Beispiel-EXPERIENCE.md-Dateien wörtlich vorhanden. Die 32 rohen Imports enthalten weiterhin die von DESIGN.md korrigierten WCAG-Fail-Farben (z.B. <code>#38AC9F</code>-auf-Weiß) — ohne diese Regel könnte ein Implementierer, der <code>imports/</code> direkt öffnet, den korrigierten Defekt wieder einführen.</div><div class="finding-fix"><strong>Fix:</strong> Eine Zeile in Foundation/IA ergänzen: "<code>imports/</code> ist rohes Quellmaterial; DESIGN.md/EXPERIENCE.md gewinnen bei jedem Konflikt."</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title"><code>mockups/</code>/<code>wireframes/</code> fehlen noch</h3><span class="finding-location">Workspace-Root</span></header><div class="finding-note">Erwartungsgemäß für diesen Projektstand, kein Mangel an sich.</div><div class="finding-fix"><strong>Fix:</strong> Im Rahmen des Key-Screen-Mock-Abgleichs adressieren.</div></article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary><h2>6. Bloat &amp; overspecification</h2><span class="verdict-pill verdict-adequate">adequate</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p>DESIGN.mds editoriale Stimme in Brand &amp; Style ist rollengerecht; EXPERIENCE.md bleibt funktional. Key-Flow-Erzählfarbe bleibt durchgängig entscheidungsrelevant.</p></div></div>
+        <div class="findings-list">
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">WCAG-Fail-Korrektur am Teal-Badge/Button viermal wiederholt</h3><span class="finding-location">DESIGN.md, Colors/Buttons/Badges/Do's-Don'ts</span></header><div class="finding-note">Nicht falsch, aber redundant.</div><div class="finding-fix"><strong>Fix:</strong> Eine vollständige Erklärung behalten (Colors), die anderen drei auf Querverweis kürzen.</div></article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary><h2>7. Inheritance discipline</h2><span class="verdict-pill verdict-strong">strong</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p><code>sources</code>-Frontmatter löst auf beiden Seiten auf; UJ-Titel sind wortgleich aus PRD §2.3 (inkl. Gedankenstriche); FR-Referenzen stichprobenartig korrekt (FR-1, FR-5a, FR-12, FR-16/17, FR-27/29, FR-39/40).</p></div></div>
+        <div class="findings-list">
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Schreibweisen-Drift "VS-NfD" vs. PRD "VS-NFD"</h3><span class="finding-location">DESIGN.md / EXPERIENCE.md, durchgängig vs. PRD/Addendum</span></header><div class="finding-note">Beide Spines schreiben konsistent "VS-NfD" (gemischte Groß-/Kleinschreibung); PRD und Addendum durchgängig "VS-NFD" (Versalien) — Drift bei einem compliance-sensiblen Begriff, der in ein Audit-Log (FR-17) einfließt.</div><div class="finding-fix"><strong>Fix:</strong> Schreibweise auf PRD-Kanon angleichen, bevor sie in Schema-/Feldnamen weiterläuft.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Laufzeit-Platzhalter <code>{Desk}</code> kollidiert syntaktisch mit Token-Referenzen</h3><span class="finding-location">EXPERIENCE.md, Flow 1</span></header><div class="finding-note">Identische Klammersyntax wie <code>{colors.x}</code>, obwohl <code>Desk</code> kein Frontmatter-Root ist — ein Parser könnte es fälschlich als unauflösbare Token-Referenz lesen.</div><div class="finding-fix"><strong>Fix:</strong> Andere Platzhalter-Konvention für Laufzeit-Copy verwenden (z.B. <code>&lt;Desk&gt;</code>).</div></article>
+        </div>
+      </details>
+    </section>
+
+    <section class="dimension">
+      <details>
+        <summary><h2>8. Shape fit</h2><span class="verdict-pill verdict-strong">strong (2 Lücken)</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p>DESIGN.mds Abschnittsreihenfolge ist vollständig kanonisch. EXPERIENCE.md hat alle acht Standard-Sektionen.</p></div></div>
+        <div class="findings-list">
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">"Inspiration &amp; Anti-patterns" fehlt trotz vorhandenem Inhalt</h3><span class="finding-location">EXPERIENCE.md (fehlend); Inhalt liegt in reconcile-stitch-imports.md</span></header><div class="finding-note">Ausgelöst durch die umfangreichen "Verworfen"/"Nicht übernommen"-Abschnitte in reconcile-stitch-imports.md (Flat-Liste vs. Baum, Du-Form, Master-Detail-Mehrfach-Genehmiger, "leichtere" VS-NfD-Stufe, zweiseitiges Meetingraum-Modell). Die Begründung lebt aktuell nur außerhalb des Spine-Paars.</div><div class="finding-fix"><strong>Fix:</strong> Reject-Begründung im "Rejected — X: because Y"-Format aus den Beispieldateien in eine neue Sektion übernehmen — Inhalt existiert bereits, reine Platzierungskorrektur.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">"Responsive &amp; Platform" fehlt (transparent offengelegt)</h3><span class="finding-location">EXPERIENCE.md, Open Question #5</span></header><div class="finding-note">Ausgelöst durch die Desktop-First-mit-Degradation-Formulierung in Foundation. Fehlt mangels Quellmaterial, korrekt als Open Question begründet — akzeptabler Zwischenstand, sollte aber jede Story-Arbeit zu Responsive-Verhalten blockieren, bis geklärt.</div><div class="finding-fix"><strong>Fix:</strong> Keine Sofortaktion; als Blocker für Responsive-spezifische Stories vormerken.</div></article>
+        </div>
+      </details>
+    </section>
+
+    <section class="reviewer-section">
+      <details open>
+        <summary><h2>Accessibility Review</h2><span class="reviewer-source">review-accessibility.md</span></summary>
+        <div class="dim-body"><div class="dim-judgment"><p>Das System zeigt echte WCAG-Sorgfalt (dokumentierte Kontrastkorrekturen, dedizierter Fokusring), aber reale, unerkannte Lücken: mindestens eine nicht erkannte AA-Textkontrast-Verletzung, eine falsch begründete 1.4.11-Ausnahme, mehrere knapp bestandene, nirgends geprüfte Kombinationen. Structural fehlen für eine BITV-2.0-Bundesbehörden-App drei Standardpflichten: Zoom/Reflow bis 200%, <code>prefers-reduced-motion</code>, Formularfehler-Ansagen. Rollenbasiertes Ausblenden der VERWALTUNG-Sektion ist WCAG-seitig unproblematisch.</p></div></div>
+        <div class="findings-list">
+          <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Sidebar-/KPI-Labels in {colors.outline} verfehlen 4.5:1</h3><span class="finding-location">DESIGN.md, Sidebar-Navigation + KPI-Kacheln</span></header><div class="finding-note">#737780 auf surface-container-low (#f2f4f6) = 4.07:1; auf Weiß (KPI-Kachel) = 4.49:1 — beide unter 4.5:1 für label-md-Normaltext. Anders als alle anderen dokumentierten Kontrastfälle nirgends als geprüft/korrigiert vermerkt.</div><div class="finding-fix"><strong>Fix:</strong> Auf {colors.on-surface-variant} (#43474f, ≥7:1) umstellen oder outline dediziert prüfen/anpassen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">floorplan-desk-available-Rand verfehlt WCAG 1.4.11, Begründung fehlerhaft</h3><span class="finding-location">DESIGN.md, Components → Interaktive Karten/Grundriss; Frontmatter floorplan-desk-available</span></header><div class="finding-note">on-tertiary-container (#38ac9f) auf surface (#f7f9fb) = 2.63:1, verfehlt die 3:1-Anforderung für Nicht-Text-UI-Grenzen. Die Doku-Begründung "Rand-only, da kein Text" wendet 1.4.11 falsch an — die Regel gilt gerade für Nicht-Text-Elemente. Zusätzlich unterscheiden sich verfügbar/belegt/Top-Match primär über Farbe/Opazität ohne Icon-Redundanz (1.4.1-Risiko).</div><div class="finding-fix"><strong>Fix:</strong> Randfarbe auf ≥3:1-Ton anheben (z.B. on-tertiary-fixed-variant) und Status-Icon/-Muster ergänzen, das nicht allein auf Farbe beruht.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Kein Zoom-/Reflow-Konzept bis 200%</h3><span class="finding-location">EXPERIENCE.md Foundation + Open Question #5; DESIGN.md Layout &amp; Spacing</span></header><div class="finding-note">Konsequent Desktop-First mit fixer 288px-Sidebar/64px-Header/1280px-Grid; für eine BITV-pflichtige Anwendung ist Reflow bei Zoom kein optionales Extra.</div><div class="finding-fix"><strong>Fix:</strong> Reflow-/Zoom-Verhalten für Sidebar, Grundriss, Timeline-Grid vor Umsetzung spezifizieren.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Keine prefers-reduced-motion-Behandlung</h3><span class="finding-location">DESIGN.md Elevation &amp; Depth "Ambient-Glow", Components "animate-ping"; EXPERIENCE.md Accessibility Floor (keine Erwähnung)</span></header><div class="finding-note">Endlos loopende animate-ping-Pulshalo auf "Perfect-Match"-Desks plus Ambient-Glow/Hover-Lift/Wizard-Übergänge ohne Pause/Stop/Hide-Mechanismus — WCAG-2.2.2-Risiko (AA-Niveau).</div><div class="finding-fix"><strong>Fix:</strong> @media (prefers-reduced-motion: reduce) app-weit definieren; für die Pulsation Stop-Mechanismus oder Zeitbegrenzung (&lt;5s) vorsehen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Keine Formularfehler-Ansage-Spezifikation</h3><span class="finding-location">EXPERIENCE.md Accessibility Floor "Screenreader-Ankündigungen"</span></header><div class="finding-note">Deckt nur Buchungsbestätigung und Genehmigungsstatus ab, nicht die zahlreichen Pflichtfeld-/Validierungsfehler (VS-NfD-Begründung, Serienbuchungs-Konfiguration, Ablehnen-Modal-Grund, fehlende Vertretungsberechtigung).</div><div class="finding-fix"><strong>Fix:</strong> aria-invalid/aria-describedby-Kopplung plus role="alert"/aria-live="assertive" bei Submit-Fehlschlag pro Pflichtfeld festlegen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Long-Press-Äquivalent nur beispielhaft, nicht verbindlich</h3><span class="finding-location">EXPERIENCE.md Accessibility Floor, "Long-Press"</span></header><div class="finding-note">"z.B. Enter gedrückt halten... oder alternativ Doppelbestätigung" ist keine verbindliche Entscheidung. Fehlt zudem: Ansage des Fortschrittsbalkens für Screenreader (aria-live-Spam-Risiko), Praktikabilität von 1,5s für motorisch eingeschränkte Nutzer.</div><div class="finding-fix"><strong>Fix:</strong> Eine Alternative als Pflichtlösung festschreiben — empfohlen: nicht-zeitbasierte Doppelbestätigung statt zeitkritischer Halte-Geste; bei Beibehaltung Fortschritt in diskreten Stufen ansagen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">SVG-Grundriss ohne Listen-Alternative für Screenreader</h3><span class="finding-location">EXPERIENCE.md Accessibility Floor, "Grundriss/Floorplan"</span></header><div class="finding-note">Reine Pfeiltasten-Navigation über ein visuelles Raster ist ohne visuelle Wahrnehmung der Nachbarschaftsbeziehungen schwer nachvollziehbar.</div><div class="finding-fix"><strong>Fix:</strong> Zusätzliche linearisierte Listenansicht (gleiche Desks/Aktionen) als AT-Alternative anbieten, analog zum Meetingräume-Karten↔Ops-Ansicht-Umschalter.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">sidebar-nav-item-active/tree-node-selected: nur 0,05 Marge über AA</h3><span class="finding-location">DESIGN.md Frontmatter + Components Sidebar-Navigation/Baumstruktur</span></header><div class="finding-note">on-secondary-container auf secondary-container = 4.55:1 — besteht AA nur knapp, für eine sehr prominente, app-weit wiederkehrende Komponente nirgends explizit als geprüft vermerkt.</div><div class="finding-fix"><strong>Fix:</strong> Kombination mit Kontrastrechner verifizieren, Marge erhöhen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Widerspruch bei input-field-Rand zwischen Frontmatter und Prosa</h3><span class="finding-location">DESIGN.md components.input-field vs. Abschnitt "Formulare/Wizard-Schritte"</span></header><div class="finding-note">Frontmatter definiert border: outline-variant; Prosa beschreibt "kein sichtbarer Rand im Ruhezustand". outline-variant (#c3c6d1) auf Weiß = 1.70:1, weit unter den 3:1 für Formularfeld-Grenzen, falls doch gerendert.</div><div class="finding-fix"><strong>Fix:</strong> Widerspruch auflösen — Rand konsequent weglassen oder auf ≥3:1 anheben.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Baumstruktur: Home/End, Typeahead, aria-selected fehlen</h3><span class="finding-location">EXPERIENCE.md Accessibility Floor, "Baumstruktur"</span></header><div class="finding-note">Nur Pfeiltasten/Enter abgedeckt; unklar, wie die Kennzahl-Pille ("4 passen") für AT zugänglich wird.</div><div class="finding-fix"><strong>Fix:</strong> WAI-ARIA-Tree-View-Pattern vollständig referenzieren, Kennzahl-Pillen mit aria-label versehen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Timeline-Tastaturweg ohne Live-Ansage/Escape/Accessible Names</h3><span class="finding-location">EXPERIENCE.md Accessibility Floor "Timeline-Drag-to-Select"; Component Patterns Kalender/Timeline-Grid</span></header><div class="finding-note">Fehlt: Live-Region für sich änderndes Zeitfenster, expliziter Escape-Abbruch, Text-/ARIA-Alternativen für nur farblich unterschiedene Blöcke.</div><div class="finding-fix"><strong>Fix:</strong> Live-Region, Escape-Abbruch, Text-Alternativen pro Blocktyp ergänzen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">VERWALTUNG-Ausblendung: Orientierungsrisiko bei Rollenwechsel</h3><span class="finding-location">EXPERIENCE.md Component Patterns, Sidebar-Navigation</span></header><div class="finding-note">WCAG-seitig unproblematisch (vollständig aus DOM entfernt, kein Trap), aber Nutzer mit neu zugewiesener Rolle erhalten kein In-App-Signal für den neu verfügbaren Bereich.</div><div class="finding-fix"><strong>Fix:</strong> Einmaligen In-App-Hinweis bei Rollenänderung vorsehen (kein WCAG-Pflichtpunkt, aber sinnvoll).</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Kein Skip-Link dokumentiert</h3><span class="finding-location">EXPERIENCE.md Foundation/Accessibility Floor</span></header><div class="finding-note">Jede Seite durchläuft persistente Sidebar+Header vor dem Hauptinhalt (WCAG 2.4.1).</div><div class="finding-fix"><strong>Fix:</strong> Sichtbaren/fokussierbaren Skip-Link als erstes Tab-Stopp-Element ergänzen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Modal-Fokus-Management nicht spezifiziert</h3><span class="finding-location">EXPERIENCE.md Interaction Primitives + Component Patterns Modals/Dialoge</span></header><div class="finding-note">Nur Escape-Verhalten dokumentiert, nicht Fokus-Trap oder Fokus-Rückgabe (WCAG 2.4.3).</div><div class="finding-fix"><strong>Fix:</strong> Fokus-Trap- und Rückgabe-Verhalten für alle Modals/Sliding-Panels festlegen.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Kontrastwerte rechnerisch ungenau (Ergebnis bleibt AA-konform)</h3><span class="finding-location">DESIGN.md Colors + Badges-Note</span></header><div class="finding-note">Deutet darauf hin, dass Werte geschätzt statt mit Kontrastrechner ermittelt wurden.</div><div class="finding-fix"><strong>Fix:</strong> Einmalig mit WCAG-Kontrastrechner nachrechnen, bevor als Compliance-Nachweis referenziert.</div></article>
+          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Knappe Erfolgsmeldungen ggf. zu kontextlos für aria-live</h3><span class="finding-location">EXPERIENCE.md Voice and Tone "Gebucht."; Accessibility Floor Screenreader-Ankündigungen</span></header><div class="finding-note">Visuell eindeutig durch Button-Label+Farbe, als alleinstehende Ansage ohne visuellen Kontext möglicherweise zu knapp.</div><div class="finding-fix"><strong>Fix:</strong> Für aria-live ausführlichere Formulierungen vorsehen als für sichtbare Labels (z.B. "Platz A.101 erfolgreich gebucht.").</div></article>
+        </div>
+      </details>
+    </section>
+
+    <div class="mechanical">
+      <h3>Mechanical notes</h3>
+      <ul>
+        <li>Keine kaputten Cross-Referenzen: jede {colors.x}/{rounded.x}/{spacing.x}-Referenz in beiden Dateien löst auf; beide sources-Listen zeigen auf existierende Dateien.</li>
+        <li>Component-Abschnittsnamen unterscheiden sich nur kosmetisch zwischen den Dateien (z.B. "Badges / Chips / Status-Tags" vs. "Badges/Chips") — keine Mehrdeutigkeit, aber Normalisierung nötig für strikten Name-Matcher.</li>
+        <li><code>imports/DESIGN.md</code> (Top-Level) ist byte-identisch zu <code>imports/federal_administrative_design_system/DESIGN.md</code> — verwaiste Duplikat-Datei, nicht in sources zitiert, kann bereinigt werden.</li>
+        <li>Keine Mermaid-Diagramme vorhanden — n/a.</li>
+        <li>Frontmatter-Vollständigkeit: DESIGN.md hat status: in-review, EXPERIENCE.md hat status: draft — vor Abschluss als fertiges Spine-Paar zu vereinheitlichen (wird im Finalize-Schritt "Polish" ohnehin auf status: final gesetzt).</li>
+      </ul>
+    </div>
+
+    <footer class="report-footer">
+      <div class="meta">
+        <span>Rubric: review-rubric.md</span>
+        <span>Accessibility: review-accessibility.md</span>
+        <span>Generated: 2026-08-18</span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

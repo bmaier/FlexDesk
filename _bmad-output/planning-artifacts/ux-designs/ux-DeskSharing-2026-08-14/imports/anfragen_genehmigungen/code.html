@@ -1,0 +1,359 @@
+<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"primary-fixed":"#d5e3ff","on-tertiary-container":"#38ac9f","primary":"#001e40","secondary-container":"#d0e1fb","on-error":"#ffffff","surface-container":"#eceef0","outline":"#737780","surface-container-lowest":"#ffffff","secondary":"#505f76","outline-variant":"#c3c6d1","inverse-surface":"#2d3133","surface-dim":"#d8dadc","background":"#f7f9fb","on-primary":"#ffffff","surface-container-high":"#e6e8ea","error-container":"#ffdad6","secondary-fixed-dim":"#b7c8e1","primary-container":"#003366","on-secondary-container":"#54647a","on-primary-fixed-variant":"#1f477b","tertiary":"#00231f","inverse-on-surface":"#eff1f3","on-tertiary-fixed-variant":"#005049","on-error-container":"#93000a","inverse-primary":"#a7c8ff","on-secondary-fixed-variant":"#38485d","surface-container-highest":"#e0e3e5","on-tertiary-fixed":"#00201d","on-secondary":"#ffffff","on-surface":"#191c1e","on-secondary-fixed":"#0b1c30","primary-fixed-dim":"#a7c8ff","on-background":"#191c1e","surface-container-low":"#f2f4f6","surface-variant":"#e0e3e5","surface-tint":"#3a5f94","tertiary-fixed":"#89f5e7","error":"#ba1a1a","tertiary-container":"#003a35","surface-bright":"#f7f9fb","on-primary-fixed":"#001b3c","on-primary-container":"#799dd6","secondary-fixed":"#d3e4fe","tertiary-fixed-dim":"#6bd8cb","on-surface-variant":"#43474f","on-tertiary":"#ffffff","surface":"#f7f9fb"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"md":"16px","xl":"32px","sm":"8px","gutter":"20px","lg":"24px","base":"4px","container-max":"1280px","xs":"4px"},"fontFamily":{"body-lg":["Inter"],"body-md":["Inter"],"data-tabular":["Inter"],"headline-md":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"headline-lg-mobile":["Inter"],"headline-sm":["Inter"]},"fontSize":{"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"data-tabular":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}]}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-background"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[1px_0_8px_rgba(0,0,0,0.02)]"><div class="p-lg mb-md flex flex-col gap-sm"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Navigation</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="schnellbuchung" href="#"><span class="material-symbols-outlined text-on-tertiary-container">bolt</span><span>Schnellbuchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="gezielte-buchung" href="#"><span class="material-symbols-outlined">account_tree</span><span>Gezielte Buchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="meetingraum-buchung" href="#"><span class="material-symbols-outlined">meeting_room</span><span>Meetingraum-Buchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="meine-buchungen" href="#"><span class="material-symbols-outlined">event_available</span><span>Meine Buchungen</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="wer-sitzt-wo" href="#"><span class="material-symbols-outlined">person_search</span><span>Wer sitzt wo?</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="facility-management" href="#"><span class="material-symbols-outlined">settings_applications</span><span>Facility-Management</span></a></nav></div><div class="p-lg flex flex-col gap-sm border-t border-outline-variant/30"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Verwaltung</div><nav class="flex flex-col gap-xs"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="genehmigungs-inbox" href="#"><span class="material-symbols-outlined">move_to_inbox</span><span>Genehmigungs-Inbox</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="buchen-fuer" href="#"><span class="material-symbols-outlined">group_add</span><span>Buchen für...</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="raum-blockieren" href="#"><span class="material-symbols-outlined">lock</span><span>Raum blockieren</span></a></nav></div><div class="mt-auto p-md"><div class="bg-surface-container-highest/50 p-sm rounded-xl flex items-center gap-md border border-outline-variant/20"><img alt="Profile" class="w-10 h-10 rounded-full border border-surface-container-highest object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLX7diI59ghzJV9sLUp2Hwf19Ea9nxUYOeXRHVqULSS3iJ19fk7nVcSs9TgP8wUIxvntg_tX-KVc5e1bLib5BO2qQmpaG4bYlK4D2XuAgbr0hVLMzrKwBwSlkc4u62SOg4YR0vwtetHKW-Sia_ZPpYvJmmDnpnsQ6VTsPaYhjAZm3rQ3jfkuRsYuaQ8ilY9MFKAdhTOIXRKYF0JXy4qX-BIrg_zuCMYSun2qyOLIxYCUXQLDlKNtcp"/><div class="flex flex-col overflow-hidden"><span class="text-body-md font-semibold text-primary truncate">Dr. Maria Schmidt</span><span class="text-label-md text-on-surface-variant">Abteilungsleitung</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-md z-40 px-lg flex items-center justify-between border-b border-outline-variant/20 shadow-sm"><div class="flex items-center gap-md"><img alt="DeskSharing BAMF Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnH8Bm-kxxQIXnytwczryq-RDYhz3IM0nwSZDF_YFocmn6xzhu0LnfjuJauAIl9qL6jMb1vaAnkUtSbzQQfXA9uVJQLCXODAR7MQ66S62sVzGjFRIEawaSZsCQgBagw3nLb_8JR217aU-CR-RsVzNDu0ooRKuFWBE2SjRS8qRFtYWITd0j7QdPBpHdBWaQdAfgsuaczFSWVVCd5pNNYiD3Jjb_wlFqmUST5TCU2eIqBezySiAzUYUW"/><span class="font-headline-sm text-primary">DeskSharing BAMF</span></div><div class="flex items-center gap-lg"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline">search</span><input class="bg-surface-container h-10 w-96 pl-10 pr-4 rounded-full text-body-md border-none focus:ring-2 focus:ring-on-tertiary-container/50 outline-none transition-all" placeholder="Suche nach Desk, Team oder Raum..." type="text"/></div><div class="flex items-center gap-sm"><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">help_outline</span></button><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors relative"><span class="material-symbols-outlined">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span></button></div></div></header><main class="relative pt-16 bg-background min-h-screen"><div class="flex flex-col w-full relative">
+<div class="px-xl py-xl pb-xl mb-xl relative z-10 flex flex-col gap-lg bg-surface-container rounded-b-[40px] shadow-sm">
+<div class="flex items-end justify-between w-full max-w-container-max mx-auto gap-xl flex-wrap">
+<div class="flex flex-col gap-sm flex-1 min-w-[300px]">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[32px]">move_to_inbox</span>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Genehmigungscenter</h1>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                    Verwalten Sie Ihre Buchungsanfragen für zugangsbeschränkte Räume oder bearbeiten Sie Anfragen als Raumverantwortliche:r.
+                </p>
+</div>
+<div class="flex items-center bg-surface rounded-full p-xs shadow-sm" id="view-toggle">
+<button class="relative px-lg py-sm rounded-full flex items-center gap-sm transition-all duration-300 font-label-md text-label-md bg-primary text-on-primary shadow-sm toggle-btn" data-target="inbox-view">
+<span class="material-symbols-outlined text-[18px]">inbox</span>
+<span>Inbox (3)</span>
+</button>
+<button class="relative px-lg py-sm rounded-full flex items-center gap-sm transition-all duration-300 font-label-md text-label-md text-on-surface hover:bg-surface-container-high toggle-btn" data-target="requests-view">
+<span class="material-symbols-outlined text-[18px]">outbox</span>
+<span>Meine Anfragen</span>
+</button>
+</div>
+</div>
+</div>
+<div class="w-full max-w-container-max mx-auto px-xl flex flex-col gap-xl pb-xl relative z-20 -mt-xl">
+<div class="view-section flex flex-col gap-lg transition-opacity duration-300 opacity-100" id="inbox-view">
+<div class="flex items-center justify-between mb-sm">
+<h2 class="font-headline-md text-headline-md text-on-background flex items-center gap-sm">
+                    Zu bearbeitende Anfragen
+                    <span class="bg-error text-on-error font-label-md text-label-md px-sm py-xs rounded-full inline-flex items-center justify-center min-w-[24px]">3</span>
+</h2>
+<div class="flex gap-sm">
+<button class="font-label-md text-label-md text-primary bg-primary-fixed hover:bg-primary-fixed-dim px-md py-sm rounded-lg transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+                        Alle genehmigen
+                    </button>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-md">
+<div class="bg-surface rounded-xl shadow-sm hover:shadow-md transition-shadow p-lg flex flex-col lg:flex-row gap-lg items-start lg:items-center relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-fixed"></div>
+<div class="flex items-center gap-md min-w-[250px]">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-headline-sm overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of a middle-aged man in business casual attire, well-lit studio setting, plain background, conveying approachability and competence. Neutral corporate color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDP4elCFWXfwR7zXWy5BUVLlrD0KJ0TpsEnnlS_XTN2WHuVUTmCFB2jPKRndHYRdr4n2vJ_aO3uzzIlXgCtD3KnFcniZsDhNlS4pv2VTV9uyxdnd3YFAIKKoYKLPSRXXcURBHfaEXl5gR4qEKZfjOgUNq1wveMKONq331BSJQY4ARc5WDwVaVV6l-qdB3gWiSj62xjIE7DeC5MG6BUUdpfkcRAZWmo16TbY2bC_3D5kJoL5Q6wi0Qw-"/>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Thomas Weber</span>
+<span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">corporate_fare</span> Referat 3B
+                            </span>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-md w-full bg-surface-container-low p-md rounded-lg">
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-outline uppercase">Raum & Zeit</span>
+<div class="flex flex-col">
+<span class="font-data-tabular text-data-tabular text-on-surface font-semibold">Konferenzraum A (Haus 2)</span>
+<span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs mt-xs">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span> 14. Nov 2023, 10:00 - 15:00
+                                </span>
+</div>
+</div>
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-outline uppercase">Zweck</span>
+<p class="font-body-md text-body-md text-on-surface line-clamp-2">
+                                Jährliches Planungstreffen mit externen Dienstleistern. Benötige Videokonferenz-Setup und Catering-Zugang.
+                            </p>
+</div>
+</div>
+<div class="flex flex-row lg:flex-col gap-sm w-full lg:w-auto mt-md lg:mt-0 justify-end">
+<button class="flex-1 lg:flex-none font-label-md text-label-md text-on-tertiary-container bg-tertiary-fixed hover:bg-tertiary-fixed-dim px-lg py-md rounded-lg transition-colors flex items-center justify-center gap-sm shadow-sm" onclick="openModal('approve-modal')">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Genehmigen
+                        </button>
+<button class="flex-1 lg:flex-none font-label-md text-label-md text-error bg-error-container hover:bg-error-container/80 px-lg py-md rounded-lg transition-colors flex items-center justify-center gap-sm" onclick="openModal('reject-modal')">
+<span class="material-symbols-outlined text-[20px]">cancel</span>
+                            Ablehnen
+                        </button>
+</div>
+</div>
+<div class="bg-surface rounded-xl shadow-sm hover:shadow-md transition-shadow p-lg flex flex-col lg:flex-row gap-lg items-start lg:items-center relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-fixed"></div>
+<div class="flex items-center gap-md min-w-[250px]">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-headline-sm">
+                            SK
+                        </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Sabine Kraus</span>
+<span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">corporate_fare</span> IT-Abteilung
+                            </span>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-md w-full bg-surface-container-low p-md rounded-lg">
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-outline uppercase">Raum & Zeit</span>
+<div class="flex flex-col">
+<span class="font-data-tabular text-data-tabular text-on-surface font-semibold">Serverraum-Vorraum (Sicherheitszone 2)</span>
+<span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs mt-xs">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span> 16. Nov 2023, 08:00 - 18:00
+                                </span>
+</div>
+</div>
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-outline uppercase">Zweck</span>
+<p class="font-body-md text-body-md text-on-surface line-clamp-2">
+                                Außerplanmäßige Wartungsarbeiten am Hauptswitch. Externer Techniker wird begleitet.
+                            </p>
+</div>
+</div>
+<div class="flex flex-row lg:flex-col gap-sm w-full lg:w-auto mt-md lg:mt-0 justify-end">
+<button class="flex-1 lg:flex-none font-label-md text-label-md text-on-tertiary-container bg-tertiary-fixed hover:bg-tertiary-fixed-dim px-lg py-md rounded-lg transition-colors flex items-center justify-center gap-sm shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Genehmigen
+                        </button>
+<button class="flex-1 lg:flex-none font-label-md text-label-md text-error bg-error-container hover:bg-error-container/80 px-lg py-md rounded-lg transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">cancel</span>
+                            Ablehnen
+                        </button>
+</div>
+</div>
+</div>
+<div class="mt-lg">
+<h3 class="font-headline-sm text-headline-sm text-on-surface-variant mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined">history</span> Kürzlich bearbeitet
+                </h3>
+<div class="bg-surface rounded-xl shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase">
+<th class="p-md font-medium">Antragsteller</th>
+<th class="p-md font-medium">Ressource</th>
+<th class="p-md font-medium">Datum</th>
+<th class="p-md font-medium text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-md font-body-md text-on-surface">Julia Fischer</td>
+<td class="p-md font-body-md text-on-surface">Projektraum C</td>
+<td class="p-md font-data-tabular text-on-surface-variant">10. Nov 2023</td>
+<td class="p-md text-right">
+<span class="inline-flex items-center gap-xs font-label-md text-label-md text-on-tertiary-container bg-tertiary-fixed/30 px-sm py-xs rounded-full">
+<span class="material-symbols-outlined text-[14px]">check</span> Genehmigt
+                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-md font-body-md text-on-surface">Markus Meier</td>
+<td class="p-md font-body-md text-on-surface">VIP-Parkplatz 12</td>
+<td class="p-md font-data-tabular text-on-surface-variant">09. Nov 2023</td>
+<td class="p-md text-right">
+<span class="inline-flex items-center gap-xs font-label-md text-label-md text-error bg-error-container/50 px-sm py-xs rounded-full">
+<span class="material-symbols-outlined text-[14px]">close</span> Abgelehnt
+                                    </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="view-section hidden flex-col gap-lg opacity-0 transition-opacity duration-300 absolute w-full left-0 px-xl top-0" id="requests-view">
+<div class="flex items-center justify-between mb-sm">
+<h2 class="font-headline-md text-headline-md text-on-background">Meine gestellten Anfragen</h2>
+<button class="font-label-md text-label-md text-on-primary bg-primary hover:bg-primary-container px-md py-sm rounded-lg transition-colors flex items-center gap-xs shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Neue Anfrage
+                </button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+<div class="bg-surface rounded-xl shadow-sm p-lg flex flex-col gap-md relative overflow-hidden">
+<div class="absolute top-0 right-0 p-sm">
+<span class="inline-flex items-center gap-xs font-label-md text-label-md text-outline bg-surface-container px-sm py-xs rounded-full">
+<span class="material-symbols-outlined text-[14px]">pending</span> Ausstehend
+                        </span>
+</div>
+<div class="w-16 h-16 rounded-xl bg-surface-container-high mb-sm" data-alt="A brightly lit, modern conference room with a large wooden table, ergonomic chairs, and a presentation screen on the wall. The style is clean and corporate, using the app's teal and navy color palette in subtle accents." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuACmSHYivss0XwPCztOGT41AzZXZ5hLN_o3bpKrsNVCS7WMSesTarqO6RkfM-TCp6Eb7MI_eGRFA8Q3Ly81NMb-OQkiCOBR2mSs0eSQtH0NS8GL9cKAF4YnVf-Io_qFyMx9jMsMwkScQtRW78cLifFva5LyRLg4ebSvKhYiKxeR3j5S_tWbaahjrjZBVtnY6lp-NeVsfeLlpCwfSnxMpKwkiBs8JeDaZ7T37Jl7T537StyNRCZNAsmZ')"></div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Audimax (Haus 1)</h3>
+<p class="font-data-tabular text-data-tabular text-on-surface-variant mt-xs">20. Nov 2023 • 09:00 - 17:00</p>
+</div>
+<div class="bg-surface-container-low p-sm rounded-lg mt-auto">
+<p class="font-body-md text-body-md text-on-surface-variant text-sm italic line-clamp-2">"Abteilungsübergreifende Schulung. Beamer und Mikrofon-Setup benötigt."</p>
+</div>
+</div>
+<div class="bg-surface rounded-xl shadow-sm p-lg flex flex-col gap-md relative overflow-hidden border border-tertiary-fixed/30">
+<div class="absolute top-0 right-0 p-sm">
+<span class="inline-flex items-center gap-xs font-label-md text-label-md text-on-tertiary-container bg-tertiary-fixed px-sm py-xs rounded-full shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span> Genehmigt
+                        </span>
+</div>
+<div class="w-16 h-16 rounded-xl bg-surface-container-high mb-sm flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">directions_car</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Dienstwagen (M-BM 123)</h3>
+<p class="font-data-tabular text-data-tabular text-on-surface-variant mt-xs">15. Nov 2023 • 08:00 - 12:00</p>
+</div>
+<div class="bg-surface-container-low p-sm rounded-lg mt-auto flex flex-col gap-xs">
+<p class="font-body-md text-body-md text-on-surface-variant text-sm italic truncate">"Dienstreise nach München Außenstelle"</p>
+<div class="border-t border-surface-container pt-xs mt-xs flex items-start gap-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary mt-[2px]">chat</span>
+<p class="font-body-md text-body-md text-tertiary text-sm">"Schlüssel liegt beim Pförtner. Gute Fahrt!" - M. Schmidt</p>
+</div>
+</div>
+</div>
+<div class="bg-surface rounded-xl shadow-sm p-lg flex flex-col gap-md relative overflow-hidden opacity-75 grayscale-[50%]">
+<div class="absolute top-0 right-0 p-sm">
+<span class="inline-flex items-center gap-xs font-label-md text-label-md text-error bg-error-container px-sm py-xs rounded-full">
+<span class="material-symbols-outlined text-[14px]">close</span> Abgelehnt
+                        </span>
+</div>
+<div class="w-16 h-16 rounded-xl bg-surface-container-high mb-sm flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">meeting_room</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Kreativ-Raum B</h3>
+<p class="font-data-tabular text-data-tabular text-on-surface-variant mt-xs">12. Nov 2023 • 13:00 - 15:00</p>
+</div>
+<div class="bg-error-container/30 p-sm rounded-lg mt-auto flex flex-col gap-xs border border-error-container">
+<div class="flex items-start gap-xs">
+<span class="material-symbols-outlined text-[16px] text-error mt-[2px]">info</span>
+<p class="font-body-md text-body-md text-error text-sm">"Raum ist an diesem Tag wegen Reinigungsarbeiten gesperrt. Bitte weichen Sie auf Raum C aus."</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden items-center justify-center p-md" id="approve-modal">
+<div class="bg-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="approve-modal-content">
+<div class="p-lg bg-tertiary-fixed/20 flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed text-on-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Anfrage genehmigen</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Konferenzraum A für Thomas Weber</p>
+</div>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<label class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">Kommentar hinzufügen (optional)</span>
+<textarea class="bg-surface-container rounded-lg p-sm font-body-md text-body-md text-on-surface border border-outline-variant focus:border-tertiary focus:ring-2 focus:ring-tertiary/20 outline-none resize-none min-h-[100px]" placeholder="z.B. Hinweise zur Schlüsselübergabe..."></textarea>
+</label>
+<div class="flex items-center gap-sm mt-sm">
+<span class="material-symbols-outlined text-tertiary text-[20px]">info</span>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm">Der Antragsteller wird per E-Mail benachrichtigt.</span>
+</div>
+</div>
+<div class="p-md bg-surface-container-low flex justify-end gap-sm">
+<button class="px-md py-sm font-label-md text-label-md text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" onclick="closeModal('approve-modal')">Abbrechen</button>
+<button class="px-md py-sm font-label-md text-label-md text-on-tertiary-container bg-tertiary-fixed hover:bg-tertiary-fixed-dim rounded-lg transition-colors shadow-sm" onclick="closeModal('approve-modal')">Jetzt genehmigen</button>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden items-center justify-center p-md" id="reject-modal">
+<div class="bg-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="reject-modal-content">
+<div class="p-lg bg-error-container/30 flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-error text-on-error flex items-center justify-center">
+<span class="material-symbols-outlined">close</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Anfrage ablehnen</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Konferenzraum A für Thomas Weber</p>
+</div>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<label class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">Begründung <span class="text-error">*</span></span>
+<textarea class="bg-surface-container rounded-lg p-sm font-body-md text-body-md text-on-surface border border-outline-variant focus:border-error focus:ring-2 focus:ring-error/20 outline-none resize-none min-h-[100px]" placeholder="Bitte geben Sie einen Grund für die Ablehnung an..."></textarea>
+</label>
+</div>
+<div class="p-md bg-surface-container-low flex justify-end gap-sm">
+<button class="px-md py-sm font-label-md text-label-md text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" onclick="closeModal('reject-modal')">Abbrechen</button>
+<button class="px-md py-sm font-label-md text-label-md text-on-error bg-error hover:bg-error/90 rounded-lg transition-colors shadow-sm" onclick="closeModal('reject-modal')">Endgültig ablehnen</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+    
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const targetId = e.currentTarget.getAttribute('data-target');
+            
+            
+            document.querySelectorAll('.toggle-btn').forEach(b => {
+                b.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+                b.classList.add('text-on-surface', 'hover:bg-surface-container-high');
+            });
+            
+            e.currentTarget.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+            e.currentTarget.classList.remove('text-on-surface', 'hover:bg-surface-container-high');
+
+            
+            const inboxView = document.getElementById('inbox-view');
+            const requestsView = document.getElementById('requests-view');
+
+            if (targetId === 'inbox-view') {
+                requestsView.classList.remove('opacity-100');
+                requestsView.classList.add('opacity-0');
+                setTimeout(() => {
+                    requestsView.classList.add('hidden');
+                    requestsView.classList.remove('flex');
+                    inboxView.classList.remove('hidden', 'absolute');
+                    inboxView.classList.add('flex', 'relative');
+                    setTimeout(() => {
+                        inboxView.classList.remove('opacity-0');
+                        inboxView.classList.add('opacity-100');
+                    }, 50);
+                }, 300);
+            } else {
+                inboxView.classList.remove('opacity-100');
+                inboxView.classList.add('opacity-0');
+                setTimeout(() => {
+                    inboxView.classList.add('hidden');
+                    inboxView.classList.remove('flex', 'relative');
+                    inboxView.classList.add('absolute');
+                    requestsView.classList.remove('hidden');
+                    requestsView.classList.add('flex');
+                    setTimeout(() => {
+                        requestsView.classList.remove('opacity-0');
+                        requestsView.classList.add('opacity-100');
+                    }, 50);
+                }, 300);
+            }
+        });
+    });
+
+    
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        const content = document.getElementById(`${id}-content`);
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        requestAnimationFrame(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        });
+    }
+
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        const content = document.getElementById(`${id}-content`);
+        
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+</script></main></div></body></html>

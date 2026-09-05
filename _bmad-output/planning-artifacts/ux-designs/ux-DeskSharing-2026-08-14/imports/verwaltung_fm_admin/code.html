@@ -1,0 +1,280 @@
+<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"on-tertiary-fixed-variant":"#005049","on-surface":"#191c1e","on-error-container":"#93000a","surface-container":"#eceef0","secondary-fixed":"#d3e4fe","surface-variant":"#e0e3e5","outline":"#737780","surface-bright":"#f7f9fb","inverse-on-surface":"#eff1f3","inverse-primary":"#a7c8ff","on-secondary-fixed":"#0b1c30","tertiary-fixed-dim":"#6bd8cb","surface-container-lowest":"#ffffff","on-tertiary-container":"#38ac9f","on-secondary":"#ffffff","surface-dim":"#d8dadc","primary":"#001e40","secondary-fixed-dim":"#b7c8e1","inverse-surface":"#2d3133","on-background":"#191c1e","secondary":"#505f76","on-primary-container":"#799dd6","surface-container-high":"#e6e8ea","surface-container-highest":"#e0e3e5","on-primary-fixed":"#001b3c","tertiary-fixed":"#89f5e7","surface-container-low":"#f2f4f6","surface":"#f7f9fb","surface-tint":"#3a5f94","on-error":"#ffffff","on-primary-fixed-variant":"#1f477b","on-tertiary-fixed":"#00201d","on-primary":"#ffffff","primary-container":"#003366","outline-variant":"#c3c6d1","primary-fixed":"#d5e3ff","on-secondary-container":"#54647a","background":"#f7f9fb","on-secondary-fixed-variant":"#38485d","tertiary-container":"#003a35","error-container":"#ffdad6","error":"#ba1a1a","secondary-container":"#d0e1fb","on-tertiary":"#ffffff","on-surface-variant":"#43474f","primary-fixed-dim":"#a7c8ff","tertiary":"#00231f"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"md":"16px","xl":"32px","sm":"8px","gutter":"20px","lg":"24px","base":"4px","container-max":"1280px","xs":"4px"},"fontFamily":{"body-lg":["Inter"],"body-md":["Inter"],"data-tabular":["Inter"],"headline-md":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"headline-lg-mobile":["Inter"],"headline-sm":["Inter"]},"fontSize":{"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"data-tabular":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}]}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-background"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[1px_0_8px_rgba(0,0,0,0.02)]"><div class="p-lg mb-md flex flex-col gap-sm"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Workspace</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="schnellbuchung" href="#">Schnellbuchung</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="gezielte-buchung" href="#">Gezielte Buchung</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="meetingraeume" href="#">Meetingräume</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="meine-buchungen" href="#">Meine Buchungen</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="wer-sitzt-wo" href="#">Wer sitzt wo?</a></nav></div><div class="p-lg flex flex-col gap-sm border-t border-outline-variant/30"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Verwaltung</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="genehmigungen" href="#">Genehmigungen</a><a aria-current="page" class="flex items-center gap-md px-md py-sm rounded-lg transition-all bg-secondary-container text-on-secondary-container font-semibold shadow-sm" data-path="verwaltung" href="#">Facility Management</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="vertrauliche-blockierung" href="#">Vertrauliche Blockierung</a></nav></div><div class="mt-auto p-md flex flex-col gap-sm"><nav class="flex flex-col gap-xs mb-sm" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="praeferenzen" href="#">Präferenzen</a></nav><div class="bg-surface-container-highest/50 p-sm rounded-xl flex items-center gap-md border border-outline-variant/20"><img alt="Profile" class="w-10 h-10 rounded-full border border-surface-container-highest object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLX7diI59ghzJV9sLUp2Hwf19Ea9nxUYOeXRHVqULSS3iJ19fk7nVcSs9TgP8wUIxvntg_tX-KVc5e1bLib5BO2qQmpaG4bYlK4D2XuAgbr0hVLMzrKwBwSlkc4u62SOg4YR0vwtetHKW-Sia_ZPpYvJmmDnpnsQ6VTsPaYhjAZm3rQ3jfkuRsYuaQ8ilY9MFKAdhTOIXRKYF0JXy4qX-BIrg_zuCMYSun2qyOLIxYCUXQLDlKNtcp"/><div class="flex flex-col overflow-hidden"><span class="text-body-md font-semibold text-primary truncate">Dr. Maria Schmidt</span><span class="text-label-md text-on-surface-variant">Abteilungsleitung</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-md z-40 px-lg flex items-center justify-between border-b border-outline-variant/20 shadow-sm"><div class="flex items-center gap-md"><img alt="DeskSharing BAMF Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnH8Bm-kxxQIXnytwczryq-RDYhz3IM0nwSZDF_YFocmn6xzhu0LnfjuJauAIl9qL6jMb1vaAnkUtSbzQQfXA9uVJQLCXODAR7MQ66S62sVzGjFRIEawaSZsCQgBagw3nLb_8JR217aU-CR-RsVzNDu0ooRKuFWBE2SjRS8qRFtYWITd0j7QdPBpHdBWaQdAfgsuaczFSWVVCd5pNNYiD3Jjb_wlFqmUST5TCU2eIqBezySiAzUYUW"/><span class="font-headline-sm text-primary">DeskSharing BAMF</span></div><div class="flex items-center gap-lg"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline">search</span><input class="bg-surface-container h-10 w-96 pl-10 pr-4 rounded-full text-body-md border-none focus:ring-2 focus:ring-on-tertiary-container/50 outline-none transition-all" placeholder="Suche nach Desk, Team oder Raum..." type="text"/></div><div class="flex items-center gap-sm"><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">help_outline</span></button><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors relative"><span class="material-symbols-outlined">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span></button></div></div></header><main class="relative pt-16 bg-background min-h-screen"><div class="flex flex-col w-full h-full p-lg gap-lg">
+<!-- Header -->
+<div class="flex flex-col gap-xs mb-md">
+<h1 class="font-headline-lg text-headline-lg text-on-background">Facility Management</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+            Verwalten Sie Liegenschaften, Gebäude und Räume. Konfigurieren Sie Raumfreigaben, weisen Sie Verantwortlichkeiten zu und steuern Sie die Auslastung.
+        </p>
+</div>
+<div class="grid grid-cols-12 gap-lg flex-1">
+<!-- Resource Hierarchy Tree (Left Sidebar) -->
+<div class="col-span-4 flex flex-col bg-surface-container rounded-xl shadow-sm overflow-hidden border-r border-outline-variant/30">
+<div class="p-md bg-surface-container-high border-b border-outline-variant/20 flex justify-between items-center">
+<span class="font-headline-sm text-headline-sm text-on-surface">Struktur</span>
+<button class="w-8 h-8 rounded flex items-center justify-center text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="p-md overflow-y-auto flex-1">
+<div class="flex flex-col gap-sm">
+<!-- Liegenschaft 1 -->
+<div class="flex flex-col">
+<div class="flex items-center gap-sm p-sm rounded hover:bg-surface-container-high cursor-pointer group">
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors text-[20px]">keyboard_arrow_down</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">domain</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Campus Mitte</span>
+</div>
+<div class="pl-lg flex flex-col gap-xs mt-xs border-l-2 border-outline-variant/20 ml-4">
+<!-- Gebäude A -->
+<div class="flex flex-col relative">
+<div class="absolute -left-[2px] top-4 w-4 h-[2px] bg-outline-variant/20"></div>
+<div class="flex items-center gap-sm p-sm rounded hover:bg-surface-container-high cursor-pointer group ml-3">
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors text-[20px]">keyboard_arrow_down</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">apartment</span>
+<span class="font-body-md text-body-md text-on-surface">Gebäude A</span>
+</div>
+<div class="pl-lg flex flex-col gap-xs mt-xs border-l-2 border-outline-variant/20 ml-[26px]">
+<!-- Räume -->
+<div class="flex items-center gap-sm p-sm rounded bg-primary/10 cursor-pointer relative">
+<div class="absolute -left-[2px] top-1/2 w-4 h-[2px] bg-primary/30"></div>
+<span class="material-symbols-outlined text-primary text-[18px]">meeting_room</span>
+<span class="font-body-md text-body-md text-primary font-semibold">A.101 (Konferenzraum)</span>
+</div>
+<div class="flex items-center gap-sm p-sm rounded hover:bg-surface-container-highest cursor-pointer relative">
+<div class="absolute -left-[2px] top-1/2 w-4 h-[2px] bg-outline-variant/20"></div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">desk</span>
+<span class="font-body-md text-body-md text-on-surface-variant">A.102 (Großraumbüro)</span>
+</div>
+<div class="flex items-center gap-sm p-sm rounded hover:bg-surface-container-highest cursor-pointer relative">
+<div class="absolute -left-[2px] top-1/2 w-4 h-[2px] bg-outline-variant/20"></div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">meeting_room</span>
+<span class="font-body-md text-body-md text-on-surface-variant">A.103 (Fokusraum)</span>
+</div>
+</div>
+</div>
+<!-- Gebäude B -->
+<div class="flex items-center gap-sm p-sm rounded hover:bg-surface-container-high cursor-pointer group relative">
+<div class="absolute -left-[2px] top-1/2 w-4 h-[2px] bg-outline-variant/20"></div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors text-[20px] ml-3">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">apartment</span>
+<span class="font-body-md text-body-md text-on-surface">Gebäude B</span>
+</div>
+</div>
+</div>
+<!-- Liegenschaft 2 -->
+<div class="flex items-center gap-sm p-sm rounded hover:bg-surface-container-high cursor-pointer group">
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors text-[20px]">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">domain</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Außenstelle Süd</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Room Details & Management (Main Content) -->
+<div class="col-span-8 flex flex-col gap-lg overflow-y-auto pb-xl">
+<!-- Context Header -->
+<div class="bg-surface rounded-xl shadow-md p-lg border border-outline-variant/20 flex flex-col gap-md relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+<div class="flex justify-between items-start z-10">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="font-label-md text-label-md uppercase">Campus Mitte</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="font-label-md text-label-md uppercase">Gebäude A</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Raum A.101</h2>
+<div class="flex gap-sm mt-xs">
+<span class="px-sm py-[2px] bg-secondary-container text-on-secondary-container font-label-md text-label-md rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">groups</span> Konferenzraum
+                            </span>
+<span class="px-sm py-[2px] bg-tertiary-container text-on-tertiary-container font-label-md text-label-md rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Aktiv
+                            </span>
+</div>
+</div>
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-md py-sm rounded-lg font-body-md text-body-md font-semibold transition-colors flex items-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">edit</span> Bearbeiten
+                    </button>
+</div>
+<div class="grid grid-cols-3 gap-md mt-sm z-10 border-t border-outline-variant/20 pt-md">
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">Kapazität</span>
+<span class="font-data-tabular text-data-tabular text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-primary">person</span> 12 Plätze
+                        </span>
+</div>
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">Ausstattung</span>
+<span class="font-body-md text-body-md text-on-surface line-clamp-1" title="Beamer, Whiteboard, Videokonferenzsystem">
+                            Beamer, Whiteboard...
+                        </span>
+</div>
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">Fläche</span>
+<span class="font-data-tabular text-data-tabular text-on-surface">
+                            45 m²
+                        </span>
+</div>
+</div>
+</div>
+<!-- Configuration & Ownership -->
+<div class="grid grid-cols-2 gap-lg">
+<!-- Settings -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-lg border border-outline-variant/20 flex flex-col gap-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">settings</span> Konfiguration
+                    </h3>
+<div class="flex items-center justify-between p-sm bg-surface-container rounded-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Genehmigungspflichtig</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Buchungen erfordern Freigabe durch Owner</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-sm hover:bg-surface-container transition-colors rounded-lg">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Vertrauliche Blockierung</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Erlaubt anonymisierte Buchungstitel</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<!-- Ownership -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-lg border border-outline-variant/20 flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">shield_person</span> Room Owner
+                        </h3>
+<button class="text-primary hover:bg-primary/10 p-xs rounded transition-colors" title="Owner hinzufügen">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+</button>
+</div>
+<div class="flex flex-col gap-sm">
+<!-- Owner 1 -->
+<div class="flex items-center justify-between bg-surface-container p-sm rounded-lg border border-outline-variant/10">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-headline-sm text-headline-sm">
+                                    MS
+                                </div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Maria Schmidt</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Abteilungsleitung IT</span>
+</div>
+</div>
+<button class="text-outline hover:text-error transition-colors p-xs rounded">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Owner 2 -->
+<div class="flex items-center justify-between bg-surface-container p-sm rounded-lg border border-outline-variant/10">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-headline-sm text-headline-sm">
+                                    TL
+                                </div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Thomas Lange</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Teamleitung Infrastruktur</span>
+</div>
+</div>
+<button class="text-outline hover:text-error transition-colors p-xs rounded">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Desk Overview & FM Actions -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md p-lg border border-outline-variant/20 flex flex-col gap-md">
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Arbeitsplätze & Auslastung</h3>
+<div class="flex gap-sm">
+<span class="px-sm py-xs bg-tertiary/10 text-tertiary font-data-tabular text-data-tabular rounded-md">Heute: 8/12 Belegt</span>
+</div>
+</div>
+<!-- FM Tools Bar -->
+<div class="flex items-center justify-between bg-error-container/20 p-sm rounded-lg border border-error-container">
+<span class="font-body-md text-body-md text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-error">warning</span> Administrative Eingriffe
+                    </span>
+<button class="bg-error text-on-error hover:bg-error/90 px-md py-sm rounded-lg font-body-md text-body-md font-semibold transition-colors flex items-center gap-sm shadow-sm" onclick="alert('Sind Sie sicher? Dies storniert alle aktuellen Buchungen in diesem Raum.')">
+<span class="material-symbols-outlined text-[18px]">cancel</span> Force Cancellation (Ganzen Raum räumen)
+                    </button>
+</div>
+<!-- Desk Grid -->
+<div class="grid grid-cols-4 gap-md mt-sm">
+<!-- Desk 1 (Occupied) -->
+<div class="bg-surface border border-outline-variant/30 rounded-lg p-md flex flex-col gap-sm shadow-sm relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-outline-variant"></div>
+<div class="flex justify-between items-start pl-xs">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Desk 01</span>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">monitor</span>
+</div>
+<div class="flex flex-col pl-xs">
+<span class="font-label-md text-label-md text-error">Belegt (09:00 - 17:00)</span>
+<span class="font-body-md text-body-md text-on-surface-variant truncate">J. Doe</span>
+</div>
+<div class="mt-auto pl-xs pt-sm border-t border-outline-variant/10 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-error font-label-md text-label-md flex items-center gap-xs hover:underline">
+<span class="material-symbols-outlined text-[14px]">remove_circle</span> Stornieren
+                            </button>
+</div>
+</div>
+<!-- Desk 2 (Available) -->
+<div class="bg-surface border border-tertiary/30 rounded-lg p-md flex flex-col gap-sm shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary"></div>
+<div class="flex justify-between items-start pl-xs">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Desk 02</span>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">monitor</span>
+</div>
+<div class="flex flex-col pl-xs mt-auto">
+<span class="font-label-md text-label-md text-tertiary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> Frei
+                            </span>
+</div>
+</div>
+<!-- Desk 3 (Available) -->
+<div class="bg-surface border border-tertiary/30 rounded-lg p-md flex flex-col gap-sm shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary"></div>
+<div class="flex justify-between items-start pl-xs">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Desk 03</span>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">monitor</span>
+</div>
+<div class="flex flex-col pl-xs mt-auto">
+<span class="font-label-md text-label-md text-tertiary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> Frei
+                            </span>
+</div>
+</div>
+<!-- Desk 4 (Occupied) -->
+<div class="bg-surface border border-outline-variant/30 rounded-lg p-md flex flex-col gap-sm shadow-sm relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-outline-variant"></div>
+<div class="flex justify-between items-start pl-xs">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Desk 04</span>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">laptop_mac</span>
+</div>
+<div class="flex flex-col pl-xs">
+<span class="font-label-md text-label-md text-error">Belegt (13:00 - 15:00)</span>
+<span class="font-body-md text-body-md text-on-surface-variant truncate">M. Müller</span>
+</div>
+<div class="mt-auto pl-xs pt-sm border-t border-outline-variant/10 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-error font-label-md text-label-md flex items-center gap-xs hover:underline">
+<span class="material-symbols-outlined text-[14px]">remove_circle</span> Stornieren
+                            </button>
+</div>
+</div>
+</div>
+<div class="text-center mt-sm">
+<button class="text-primary font-body-md text-body-md font-semibold hover:underline">Alle Arbeitsplätze anzeigen (12)</button>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Party Mode — Desk Sharing BAMF, 13. August 2026</title>
+<style>
+  :root{
+    --bg:#141318; --panel:#1e1c22; --ink:#f1efe9; --muted:#9a95a3;
+    --line:#332f3a; --gold:#d9b25c; --rose:#c8586a; --teal:#5fb8a8; --blue:#6f9ceb; --lilac:#a583d1;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f5f2ec; --panel:#ffffff; --ink:#211f24; --muted:#6b6675;
+      --line:#e4ded0; --gold:#a97a1f; --rose:#a53c4d; --teal:#1f8a76; --blue:#3a63b8; --lilac:#7451a8; }
+  }
+  :root[data-theme="dark"]{ --bg:#141318; --panel:#1e1c22; --ink:#f1efe9; --muted:#9a95a3;
+      --line:#332f3a; --gold:#d9b25c; --rose:#c8586a; --teal:#5fb8a8; --blue:#6f9ceb; --lilac:#a583d1; }
+  :root[data-theme="light"]{ --bg:#f5f2ec; --panel:#ffffff; --ink:#211f24; --muted:#6b6675;
+      --line:#e4ded0; --gold:#a97a1f; --rose:#a53c4d; --teal:#1f8a76; --blue:#3a63b8; --lilac:#7451a8; }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:
+      radial-gradient(ellipse at 20% -10%, color-mix(in srgb, var(--gold) 10%, transparent), transparent 55%),
+      radial-gradient(ellipse at 90% 10%, color-mix(in srgb, var(--lilac) 8%, transparent), transparent 50%),
+      var(--bg);
+    color:var(--ink);
+    font-family: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    line-height:1.6;
+  }
+  .wrap{ max-width: 780px; margin:0 auto; padding: 3rem 1.25rem 4rem; }
+
+  header{ text-align:center; margin-bottom:2.5rem; }
+  header .eyebrow{ letter-spacing:.18em; text-transform:uppercase; font-size:.72rem; color:var(--muted); }
+  header h1{ font-size:1.9rem; margin:.4rem 0 .3rem; }
+  header p{ color:var(--muted); margin:0; font-size:.95rem; }
+
+  .table{ display:flex; justify-content:center; margin: 1.75rem 0 2.5rem; }
+  .table svg{ max-width: 100%; height:auto; }
+  .seat text{ font-size: 11px; }
+  .seat .glow{ animation: pulse 4.5s ease-in-out infinite; }
+  .seat:nth-child(2) .glow{ animation-delay: .5s; }
+  .seat:nth-child(3) .glow{ animation-delay: 1s; }
+  .seat:nth-child(4) .glow{ animation-delay: 1.5s; }
+  .seat:nth-child(5) .glow{ animation-delay: 2s; }
+  @keyframes pulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+
+  .divider{ text-align:center; color:var(--muted); margin: 2.5rem 0 1.5rem; font-size:.8rem; letter-spacing:.15em; text-transform:uppercase; }
+  .divider::before, .divider::after{ content:""; }
+
+  .beat{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:1.1rem 1.4rem; margin-bottom:1rem;
+  }
+  .beat .who{ display:flex; align-items:center; gap:.5rem; font-weight:700; margin-bottom:.35rem; }
+  .beat .who .icon{ font-size:1.2rem; }
+  .beat p{ margin:.15rem 0; }
+  .beat .stage{ color:var(--muted); font-style:italic; font-size:.9rem; }
+
+  .analyst .who{ color:var(--blue); }
+  .pm .who{ color:var(--rose); }
+  .ux .who{ color:var(--gold); }
+  .arch .who{ color:var(--teal); }
+  .dev .who{ color:var(--lilac); }
+
+  .verdict{
+    margin-top: 2.5rem; padding: 1.5rem; border-radius: 14px;
+    border:1px solid var(--line); background: var(--panel); position:relative; overflow:hidden;
+  }
+  .verdict h2{ margin:0 0 .8rem; font-size:1.05rem; text-transform:uppercase; letter-spacing:.06em; color:var(--gold); }
+  .verdict ul{ margin:.3rem 0; padding-left: 1.2rem; }
+  .verdict li{ margin-bottom:.4rem; }
+
+  footer{ text-align:center; color:var(--muted); font-size:.82rem; margin-top: 3rem; }
+  footer .sig{ font-style:italic; margin-top:.3rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">BMad Party Mode · Protokoll</div>
+    <h1>Der Tisch, an dem Desk Sharing BAMF Form annahm</h1>
+    <p>13. August 2026 · im Anschluss an die gehärtete Idee aus der Forge-Session</p>
+  </header>
+
+  <div class="table">
+    <svg width="420" height="220" viewBox="0 0 420 220">
+      <ellipse cx="210" cy="115" rx="150" ry="70" fill="none" stroke="var(--line)" stroke-width="2"/>
+      <ellipse cx="210" cy="115" rx="150" ry="70" fill="color-mix(in srgb, var(--gold) 6%, transparent)"/>
+      <g class="seat" font-family="Georgia, serif" text-anchor="middle">
+        <circle class="glow" cx="210" cy="35" r="16" fill="color-mix(in srgb, var(--blue) 25%, transparent)" stroke="var(--blue)" stroke-width="1.5"/>
+        <text x="210" y="40" fill="var(--blue)">📊</text>
+        <text x="210" y="60" fill="var(--ink)">Mary</text>
+      </g>
+      <g class="seat" font-family="Georgia, serif" text-anchor="middle">
+        <circle class="glow" cx="358" cy="80" r="16" fill="color-mix(in srgb, var(--rose) 25%, transparent)" stroke="var(--rose)" stroke-width="1.5"/>
+        <text x="358" y="85" fill="var(--rose)">📋</text>
+        <text x="358" y="105" fill="var(--ink)">John</text>
+      </g>
+      <g class="seat" font-family="Georgia, serif" text-anchor="middle">
+        <circle class="glow" cx="300" cy="180" r="16" fill="color-mix(in srgb, var(--gold) 25%, transparent)" stroke="var(--gold)" stroke-width="1.5"/>
+        <text x="300" y="185" fill="var(--gold)">🎨</text>
+        <text x="300" y="205" fill="var(--ink)">Sally</text>
+      </g>
+      <g class="seat" font-family="Georgia, serif" text-anchor="middle">
+        <circle class="glow" cx="120" cy="180" r="16" fill="color-mix(in srgb, var(--teal) 25%, transparent)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="120" y="185" fill="var(--teal)">🏗️</text>
+        <text x="120" y="205" fill="var(--ink)">Winston</text>
+      </g>
+      <g class="seat" font-family="Georgia, serif" text-anchor="middle">
+        <circle class="glow" cx="62" cy="80" r="16" fill="color-mix(in srgb, var(--lilac) 25%, transparent)" stroke="var(--lilac)" stroke-width="1.5"/>
+        <text x="62" y="85" fill="var(--lilac)">💻</text>
+        <text x="62" y="105" fill="var(--ink)">Amelia</text>
+      </g>
+      <text x="210" y="118" text-anchor="middle" font-size="10" fill="var(--muted)" letter-spacing="2">FORGED IDEA</text>
+      <text x="210" y="132" text-anchor="middle" font-size="10" fill="var(--muted)" letter-spacing="1">13 LOCKS</text>
+    </svg>
+  </div>
+
+  <div class="divider">Was am Tisch geschah</div>
+
+  <div class="beat pm">
+    <div class="who"><span class="icon">📋</span> John</div>
+    <p class="stage">verhört die Feature-Liste wie einen kalten Fall</p>
+    <p>"Was ist der Job, den ein Mitarbeiter Montag früh um acht tatsächlich erledigen will? Nicht eine semantisch verlinkte Ontologie seiner Sitzplatzpräferenz."</p>
+  </div>
+
+  <div class="beat arch">
+    <div class="who"><span class="icon">🏗️</span> Winston</div>
+    <p class="stage">verspottet die Feature-Liste erst — und rudert dann selbst zurück</p>
+    <p>"Dreizehn gelockte Entscheidungen. Das ist nicht dein MVP, das ist dein Enddungsband." — und später: "First-class für Release 2 heißt, die Semantik-Schicht kriegt endlich einen echten Job."</p>
+  </div>
+
+  <div class="beat ux">
+    <div class="who"><span class="icon">🎨</span> Sally</div>
+    <p class="stage">verteidigt den Ein-Klick-Chip mit sanfter Entschlossenheit</p>
+    <p>"Gegen den Ein-Klick-Chip gewinnt keine Konversation. Zwei ehrliche Türen ins selbe Haus — wer klicken will, klickt in drei Sekunden."</p>
+  </div>
+
+  <div class="beat dev">
+    <div class="who"><span class="icon">💻</span> Amelia</div>
+    <p class="stage">prüft nach, statt zu spekulieren</p>
+    <p>"Ich hab's geprüft, nicht geraten: CopilotKit ist Launch-Partner für A2UI, AG-UI unterstützt die Spec direkt. Kein Frankenstein-Stack. Einziger echter Punkt: v0.9 ist jung — Reifegrad-Risiko, kein Kompatibilitätsrisiko."</p>
+  </div>
+
+  <div class="beat analyst">
+    <div class="who"><span class="icon">📊</span> Mary</div>
+    <p class="stage">zieht die Evidenz-Leine straff, bis zum letzten Wort</p>
+    <p>"'Wird bevorzugt' ist vom Tisch als Erfolgskriterium für Release 1 — das messen wir erst, wenn Release 2a wirklich läuft. Notiert als offener Punkt für die PRD, nicht als Blocker heute."</p>
+  </div>
+
+  <div class="verdict">
+    <h2>Der Release-Schnitt, der aus dem Tisch kam</h2>
+    <ul>
+      <li><b>R1</b> — Schnellpfad (Ein-Klick-Standardstandort) + Explorationspfad (Kartenzoom), nach Winstons drei Architektur-Bedingungen: benannte Operationen, stabile Bezeichner, strukturierte Fehlerantworten.</li>
+      <li><b>R2a</b> — Chat-Buchung als vollwertiger paralleler Weg (nicht ersetzend), generative UI-Komponenten im Chat statt Fließtext, Stack A2UI + AG-UI + CopilotKit + Google Agent ADK.</li>
+      <li><b>R2b</b> — Chat auch für Facility-Management-Verwaltung.</li>
+    </ul>
+    <p style="color:var(--muted); font-size:.88rem; margin-top:.9rem;">Nächster Halt: <code>bmad-prd</code>, mit <code>forged-idea.md</code> und diesem Protokoll im Rücken.</p>
+  </div>
+
+  <footer>
+    Party Mode · Roster: Mary · John · Sally · Winston · Amelia
+    <div class="sig">für Berthold, 13. August 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>

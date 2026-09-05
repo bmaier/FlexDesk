@@ -1,0 +1,313 @@
+<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"on-tertiary-fixed-variant":"#005049","on-surface":"#191c1e","on-error-container":"#93000a","surface-container":"#eceef0","secondary-fixed":"#d3e4fe","surface-variant":"#e0e3e5","outline":"#737780","surface-bright":"#f7f9fb","inverse-on-surface":"#eff1f3","inverse-primary":"#a7c8ff","on-secondary-fixed":"#0b1c30","tertiary-fixed-dim":"#6bd8cb","surface-container-lowest":"#ffffff","on-tertiary-container":"#38ac9f","on-secondary":"#ffffff","surface-dim":"#d8dadc","primary":"#001e40","secondary-fixed-dim":"#b7c8e1","inverse-surface":"#2d3133","on-background":"#191c1e","secondary":"#505f76","on-primary-container":"#799dd6","surface-container-high":"#e6e8ea","surface-container-highest":"#e0e3e5","on-primary-fixed":"#001b3c","tertiary-fixed":"#89f5e7","surface-container-low":"#f2f4f6","surface":"#f7f9fb","surface-tint":"#3a5f94","on-error":"#ffffff","on-primary-fixed-variant":"#1f477b","on-tertiary-fixed":"#00201d","on-primary":"#ffffff","primary-container":"#003366","outline-variant":"#c3c6d1","primary-fixed":"#d5e3ff","on-secondary-container":"#54647a","background":"#f7f9fb","on-secondary-fixed-variant":"#38485d","tertiary-container":"#003a35","error-container":"#ffdad6","error":"#ba1a1a","secondary-container":"#d0e1fb","on-tertiary":"#ffffff","on-surface-variant":"#43474f","primary-fixed-dim":"#a7c8ff","tertiary":"#00231f"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"md":"16px","xl":"32px","sm":"8px","gutter":"20px","lg":"24px","base":"4px","container-max":"1280px","xs":"4px"},"fontFamily":{"body-lg":["Inter"],"body-md":["Inter"],"data-tabular":["Inter"],"headline-md":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"headline-lg-mobile":["Inter"],"headline-sm":["Inter"]},"fontSize":{"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"data-tabular":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}]}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-background"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[1px_0_8px_rgba(0,0,0,0.02)]"><div class="p-lg mb-md flex flex-col gap-sm"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Workspace</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="schnellbuchung" href="#">Schnellbuchung</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="gezielte-buchung" href="#">Gezielte Buchung</a><a aria-current="page" class="flex items-center gap-md px-md py-sm rounded-lg transition-all bg-secondary-container text-on-secondary-container font-semibold shadow-sm" data-path="meetingraeume" href="#">Meetingräume</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="meine-buchungen" href="#">Meine Buchungen</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="wer-sitzt-wo" href="#">Wer sitzt wo?</a></nav></div><div class="p-lg flex flex-col gap-sm border-t border-outline-variant/30"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Verwaltung</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="genehmigungen" href="#">Genehmigungen</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="verwaltung" href="#">Facility Management</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="vertrauliche-blockierung" href="#">Vertrauliche Blockierung</a></nav></div><div class="mt-auto p-md flex flex-col gap-sm"><nav class="flex flex-col gap-xs mb-sm" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="praeferenzen" href="#">Präferenzen</a></nav><div class="bg-surface-container-highest/50 p-sm rounded-xl flex items-center gap-md border border-outline-variant/20"><img alt="Profile" class="w-10 h-10 rounded-full border border-surface-container-highest object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLX7diI59ghzJV9sLUp2Hwf19Ea9nxUYOeXRHVqULSS3iJ19fk7nVcSs9TgP8wUIxvntg_tX-KVc5e1bLib5BO2qQmpaG4bYlK4D2XuAgbr0hVLMzrKwBwSlkc4u62SOg4YR0vwtetHKW-Sia_ZPpYvJmmDnpnsQ6VTsPaYhjAZm3rQ3jfkuRsYuaQ8ilY9MFKAdhTOIXRKYF0JXy4qX-BIrg_zuCMYSun2qyOLIxYCUXQLDlKNtcp"/><div class="flex flex-col overflow-hidden"><span class="text-body-md font-semibold text-primary truncate">Dr. Maria Schmidt</span><span class="text-label-md text-on-surface-variant">Abteilungsleitung</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-md z-40 px-lg flex items-center justify-between border-b border-outline-variant/20 shadow-sm"><div class="flex items-center gap-md"><img alt="DeskSharing BAMF Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnH8Bm-kxxQIXnytwczryq-RDYhz3IM0nwSZDF_YFocmn6xzhu0LnfjuJauAIl9qL6jMb1vaAnkUtSbzQQfXA9uVJQLCXODAR7MQ66S62sVzGjFRIEawaSZsCQgBagw3nLb_8JR217aU-CR-RsVzNDu0ooRKuFWBE2SjRS8qRFtYWITd0j7QdPBpHdBWaQdAfgsuaczFSWVVCd5pNNYiD3Jjb_wlFqmUST5TCU2eIqBezySiAzUYUW"/><span class="font-headline-sm text-primary">DeskSharing BAMF</span></div><div class="flex items-center gap-lg"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline">search</span><input class="bg-surface-container h-10 w-96 pl-10 pr-4 rounded-full text-body-md border-none focus:ring-2 focus:ring-on-tertiary-container/50 outline-none transition-all" placeholder="Suche nach Desk, Team oder Raum..." type="text"/></div><div class="flex items-center gap-sm"><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">help_outline</span></button><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors relative"><span class="material-symbols-outlined">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span></button></div></div></header><main class="relative pt-16 bg-background min-h-screen"><div class="flex flex-col w-full h-full relative" id="meeting-rooms-app">
+<!-- Interactive Background Element -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+<div class="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-secondary-fixed/30 blur-[100px] opacity-60"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[30vw] h-[30vw] rounded-full bg-tertiary-fixed/20 blur-[80px] opacity-50"></div>
+</div>
+<div class="w-full max-w-container-max mx-auto px-lg md:px-xl py-xl z-10 flex flex-col gap-xl">
+<!-- Header Section: Typography driven, asymmetrical -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-md relative">
+<div class="flex flex-col gap-sm max-w-2xl relative z-10">
+<div class="text-label-md text-primary tracking-[0.1em] uppercase font-label-md mb-xs flex items-center gap-sm">
+<span class="w-8 h-[1px] bg-primary"></span>
+          Facility Overview
+        </div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Meetingräume</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-sm">Planen und buchen Sie kollaborative Arbeitsbereiche. Räume mit erweiterter Ausstattung oder hoher Kapazität erfordern eine gesonderte Freigabe.</p>
+</div>
+<!-- Quick Stats Bento Mini -->
+<div class="flex gap-sm mt-md md:mt-0 relative z-10">
+<div class="bg-surface-container-low p-md rounded-xl shadow-sm flex flex-col justify-center min-w-[120px]">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Verfügbar Jetzt</span>
+<div class="flex items-baseline gap-xs">
+<span class="font-headline-lg text-headline-lg text-tertiary-container">4</span>
+<span class="font-body-md text-body-md text-outline">/ 12</span>
+</div>
+</div>
+<div class="bg-primary p-md rounded-xl shadow-md flex flex-col justify-center min-w-[120px]">
+<span class="font-label-md text-label-md text-on-primary/80 uppercase">Ihre Buchungen</span>
+<div class="flex items-baseline gap-xs">
+<span class="font-headline-lg text-headline-lg text-on-primary">2</span>
+<span class="font-body-md text-body-md text-on-primary/60">diese Woche</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter & Timeline Controls -->
+<div class="bg-surface-container-lowest p-md rounded-2xl shadow-sm flex flex-col lg:flex-row gap-lg items-center justify-between z-10 relative">
+<!-- Date/Time Picker Mockup -->
+<div class="flex items-center gap-sm bg-surface-container p-sm rounded-lg w-full lg:w-auto">
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-container-highest text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<div class="flex flex-col items-center px-md min-w-[140px]">
+<span class="font-label-md text-label-md text-on-surface-variant">Heute</span>
+<span class="font-data-tabular text-data-tabular text-on-surface">14. Nov 2023</span>
+</div>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-container-highest text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+<div class="w-[1px] h-6 bg-outline-variant mx-xs"></div>
+<button class="flex items-center gap-xs px-md py-xs rounded-md bg-surface-container-highest hover:bg-outline-variant/20 text-on-surface transition-colors font-data-tabular text-data-tabular">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+          09:00 - 11:00
+        </button>
+</div>
+<!-- Filters -->
+<div class="flex flex-wrap items-center gap-sm w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0 hide-scrollbar">
+<span class="font-label-md text-label-md text-outline mr-sm whitespace-nowrap">Filter:</span>
+<button class="px-md py-xs rounded-full bg-primary text-on-primary font-body-md text-body-md whitespace-nowrap shadow-sm transition-transform hover:scale-105">Alle Räume</button>
+<button class="px-md py-xs rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant font-body-md text-body-md whitespace-nowrap transition-colors">Beamer / Screen</button>
+<button class="px-md py-xs rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant font-body-md text-body-md whitespace-nowrap transition-colors">Videokonferenz</button>
+<button class="px-md py-xs rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant font-body-md text-body-md whitespace-nowrap transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">group</span> > 10 Pers.
+        </button>
+</div>
+</div>
+<!-- Main Content: Room List & Map Split -->
+<div class="flex flex-col xl:flex-row gap-lg z-10">
+<!-- Room List Container -->
+<div class="w-full xl:w-2/3 flex flex-col gap-md">
+<!-- Room Card 1: Berlin (Available, Large) -->
+<div class="bg-surface-container-lowest rounded-2xl p-md flex flex-col md:flex-row gap-md shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+<!-- Availability Strip -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-tertiary-container"></div>
+<!-- Image Section -->
+<div class="w-full md:w-48 h-32 md:h-full rounded-xl overflow-hidden relative shrink-0">
+<div class="bg-cover bg-center w-full h-full transform group-hover:scale-105 transition-transform duration-500" data-alt="A bright, modern corporate boardroom with a large wooden table, ergonomic black chairs, and a massive video conferencing screen on the wall. Natural light streams in from floor-to-ceiling windows showing a cityscape. Corporate, clean, high-end design, matching the teal and navy brand colors." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC6UBa0awanFyXRleqQPk5gj4SL9odfCvR0zo1XajxX1rbHE1NnWmM2XcJAFEYnYrz4mEuWXpKEZKgWArNBy6j2dwK-duicjfvv36PrRwAXFeWzJftMdj43xroUaRy-Du7aMporBmaCZM-JpfCXlvOXUnxg2CAaj2fTAv8cD-K94JLMqp5hvDd2pjoN8OElB4OecCCzJI8Pgl5FMjGopnLfk38_XpJ-Udde3OOg_tj6MG8sfzQTJfUR')"></div>
+<div class="absolute top-sm left-sm bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-label-md font-label-md text-on-surface flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></div>
+               Frei
+             </div>
+</div>
+<!-- Content Section -->
+<div class="flex flex-col flex-grow justify-between py-xs">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Konferenzraum 'Berlin'</h3>
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-md text-label-md text-[10px] uppercase flex items-center gap-xs" title="Genehmigungspflichtig">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                    Freigabe Req.
+                  </span>
+</div>
+<div class="flex items-center gap-md text-on-surface-variant font-body-md text-body-md">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">location_on</span> Gebäude A, 3. OG</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">group</span> max. 24 Personen</span>
+</div>
+</div>
+</div>
+<!-- Equipment Tags -->
+<div class="flex flex-wrap gap-xs mt-sm md:mt-0">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-body-md text-body-md text-xs flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]">videocam</span> 4K Videokonferenz</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-body-md text-body-md text-xs flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]">tv</span> 2x 85" Screen</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-body-md text-body-md text-xs flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]">wifi</span> High-Speed WiFi</span>
+</div>
+<!-- Mini Timeline -->
+<div class="mt-md">
+<div class="flex justify-between text-label-md font-label-md text-outline mb-xs">
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full flex overflow-hidden relative">
+<!-- Timeline segments: Free(Teal), Booked(Gray) -->
+<div class="h-full bg-tertiary-container/80" style="width: 25%" title="08:00 - 11:00 (Frei)"></div>
+<div class="h-full bg-outline-variant/50" style="width: 15%" title="11:00 - 12:30 (Gebucht)"></div>
+<div class="h-full bg-tertiary-container/80" style="width: 40%" title="12:30 - 16:30 (Frei)"></div>
+<div class="h-full bg-outline-variant/50" style="width: 20%" title="16:30 - 18:30 (Gebucht)"></div>
+</div>
+</div>
+</div>
+<!-- Action Container -->
+<div class="flex flex-row md:flex-col justify-end md:justify-center items-end md:items-end md:pl-md border-t md:border-t-0 md:border-l border-surface-container pt-sm md:pt-0 shrink-0">
+<button class="bg-tertiary-container text-on-tertiary-container hover:brightness-110 px-lg py-sm rounded-lg font-headline-sm text-headline-sm text-[14px] transition-all shadow-sm flex items-center gap-sm">
+               Anfragen <span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+<!-- Room Card 2: Wien (Occupied) -->
+<div class="bg-surface-container-lowest rounded-2xl p-md flex flex-col md:flex-row gap-md shadow-sm relative overflow-hidden opacity-80">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-outline"></div>
+<!-- Image Section -->
+<div class="w-full md:w-48 h-32 md:h-full rounded-xl overflow-hidden relative shrink-0">
+<div class="bg-cover bg-center w-full h-full grayscale-[30%]" data-alt="A medium-sized modern meeting room with a round glass table and 6 chairs. A whiteboard with some diagrams is visible. The lighting is bright and functional. Professional setting, matching the navy and teal UI themes." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBMAZW4OSIMegVYN_j4hOjc2zIHj_pONsC26v88PU6_1uH259bNZcWokeIS6BtZ1ySru_O7zO9QZpNZsX8lGs29c3IfQYh5yFO0bVCTw8N5uYaMlKME6jngHL7j3UCyglgQM5MHnxHLsEv-6ymcR7x9Gr8y5cldkVX0Pg2YtwYmAIVE-cWx30iDjLiPtdcvxFat7Sw-mIYylImXs79Ot9HxnNwwg7JhldK1fVSFLceppTheguPt0AAP')"></div>
+<div class="absolute top-sm left-sm bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-label-md font-label-md text-on-surface flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+               Belegt
+             </div>
+</div>
+<!-- Content Section -->
+<div class="flex flex-col flex-grow justify-between py-xs">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Boardroom 'Wien'</h3>
+<div class="flex items-center gap-md text-on-surface-variant font-body-md text-body-md">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">location_on</span> Gebäude B, EG</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">group</span> max. 8 Personen</span>
+</div>
+</div>
+</div>
+<!-- Equipment Tags -->
+<div class="flex flex-wrap gap-xs mt-sm md:mt-0">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-body-md text-body-md text-xs flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]">tv</span> 65" Screen</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-body-md text-body-md text-xs flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]">edit</span> Whiteboard</span>
+</div>
+<!-- Mini Timeline -->
+<div class="mt-md">
+<div class="flex justify-between text-label-md font-label-md text-outline mb-xs">
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full flex overflow-hidden relative">
+<div class="h-full bg-outline-variant/50" style="width: 45%" title="08:00 - 12:30 (Gebucht)"></div>
+<div class="h-full bg-tertiary-container/80" style="width: 15%" title="12:30 - 14:00 (Frei)"></div>
+<div class="h-full bg-outline-variant/50" style="width: 40%" title="14:00 - 18:00 (Gebucht)"></div>
+</div>
+</div>
+</div>
+<!-- Action Container -->
+<div class="flex flex-row md:flex-col justify-end md:justify-center items-end md:items-end md:pl-md border-t md:border-t-0 md:border-l border-surface-container pt-sm md:pt-0 shrink-0">
+<button class="bg-surface-container-high text-on-surface-variant hover:bg-surface-variant px-lg py-sm rounded-lg font-headline-sm text-headline-sm text-[14px] transition-colors cursor-not-allowed">
+               Besetzt
+             </button>
+</div>
+</div>
+<!-- Room Card 3: Paris (Available, Small) -->
+<div class="bg-surface-container-lowest rounded-2xl p-md flex flex-col md:flex-row gap-md shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-tertiary-container"></div>
+<div class="w-full md:w-48 h-32 md:h-full rounded-xl overflow-hidden relative shrink-0">
+<div class="bg-cover bg-center w-full h-full transform group-hover:scale-105 transition-transform duration-500" data-alt="A small, cozy focus room or huddle space with sound-absorbing acoustic panels on the wall in teal colors. A small high table with two bar stools. Warm lighting, modern corporate style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB5XB27xyFyQwBVhiKas5m8TirOksxITCGFdQeTT1NDXz4q4VUPYsdgpd0vrt6olSCitvs45qg0eEP9GQDEzzY8YYISdPmTtkqZALv-nhjTAHSEeF1wrWqxIjxO0O9RzM2c5eCOz8cf6uG_MdkcUx7RoD9n8oHS2PgP6AwHJfg-mEd1cMZHpzf_qTpFJ_UYZ0JYaDz5lr5c0h3EdRNiEsl7Tg2P-046WNT9beqozkXuIRPBmONFyEBA')"></div>
+<div class="absolute top-sm left-sm bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-label-md font-label-md text-on-surface flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></div>
+               Frei
+             </div>
+</div>
+<div class="flex flex-col flex-grow justify-between py-xs">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Huddle 'Paris'</h3>
+<div class="flex items-center gap-md text-on-surface-variant font-body-md text-body-md">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">location_on</span> Gebäude A, 1. OG</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">group</span> max. 4 Personen</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-xs mt-sm md:mt-0">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-body-md text-body-md text-xs flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]">headphones</span> Akustik-isoliert</span>
+</div>
+<div class="mt-md">
+<div class="flex justify-between text-label-md font-label-md text-outline mb-xs">
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full flex overflow-hidden relative">
+<div class="h-full bg-tertiary-container/80" style="width: 100%" title="Ganztägig Frei"></div>
+</div>
+</div>
+</div>
+<div class="flex flex-row md:flex-col justify-end md:justify-center items-end md:items-end md:pl-md border-t md:border-t-0 md:border-l border-surface-container pt-sm md:pt-0 shrink-0">
+<button class="bg-primary text-on-primary hover:brightness-110 px-lg py-sm rounded-lg font-headline-sm text-headline-sm text-[14px] transition-all shadow-sm">
+               Buchen
+             </button>
+</div>
+</div>
+</div>
+<!-- Right Column: Visual Map / Context -->
+<div class="w-full xl:w-1/3 flex flex-col gap-md">
+<!-- Floorplan Widget -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm p-md flex flex-col h-[400px]">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Gebäudeplan</h3>
+<button class="text-primary p-xs hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">zoom_out_map</span>
+</button>
+</div>
+<div class="flex-grow bg-surface-container-low rounded-xl relative overflow-hidden group">
+<!-- Simulated Floorplan SVG Graphic -->
+<svg class="absolute inset-0 w-full h-full text-outline-variant/30" fill="none" viewbox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+<rect height="260" rx="8" stroke="currentColor" stroke-width="2" width="360" x="20" y="20"></rect>
+<line stroke="currentColor" stroke-width="2" x1="120" x2="120" y1="20" y2="280"></line>
+<line stroke="currentColor" stroke-width="2" x1="280" x2="280" y1="20" y2="150"></line>
+<line stroke="currentColor" stroke-width="2" x1="120" x2="280" y1="150" y2="150"></line>
+<!-- Decor dots -->
+<circle cx="70" cy="80" fill="currentColor" r="4"></circle>
+<circle cx="200" cy="80" fill="currentColor" r="4"></circle>
+<circle cx="330" cy="80" fill="currentColor" r="4"></circle>
+</svg>
+<!-- Interactive Map Markers -->
+<!-- Berlin -->
+<div class="absolute top-[30%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group/marker">
+<div class="w-6 h-6 bg-tertiary-container rounded-full border-2 border-surface-container-lowest shadow-md flex items-center justify-center animate-bounce">
+<div class="w-2 h-2 bg-on-tertiary-container rounded-full"></div>
+</div>
+<div class="absolute top-8 left-1/2 transform -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-2 py-1 rounded text-[10px] font-label-md whitespace-nowrap opacity-0 group-hover/marker:opacity-100 transition-opacity pointer-events-none">
+                Berlin (Frei)
+              </div>
+</div>
+<!-- Wien -->
+<div class="absolute top-[70%] left-[20%] transform -translate-x-1/2 -translate-y-1/2 cursor-not-allowed group/marker">
+<div class="w-6 h-6 bg-outline rounded-full border-2 border-surface-container-lowest shadow-sm flex items-center justify-center"></div>
+<div class="absolute top-8 left-1/2 transform -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-2 py-1 rounded text-[10px] font-label-md whitespace-nowrap opacity-0 group-hover/marker:opacity-100 transition-opacity pointer-events-none z-10">
+                Wien (Belegt)
+              </div>
+</div>
+<!-- Paris -->
+<div class="absolute top-[30%] left-[80%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group/marker">
+<div class="w-6 h-6 bg-tertiary-container rounded-full border-2 border-surface-container-lowest shadow-sm flex items-center justify-center"></div>
+<div class="absolute top-8 left-1/2 transform -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-2 py-1 rounded text-[10px] font-label-md whitespace-nowrap opacity-0 group-hover/marker:opacity-100 transition-opacity pointer-events-none">
+                Paris (Frei)
+              </div>
+</div>
+</div>
+<div class="flex items-center justify-center gap-md mt-sm text-label-md font-label-md text-on-surface-variant">
+<span class="flex items-center gap-xs"><div class="w-3 h-3 rounded-full bg-tertiary-container"></div> Frei</span>
+<span class="flex items-center gap-xs"><div class="w-3 h-3 rounded-full bg-outline"></div> Belegt</span>
+</div>
+</div>
+<!-- Info Widget: Approvals -->
+<div class="bg-primary-container text-on-primary-container rounded-2xl p-md relative overflow-hidden shadow-sm">
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-[120px]">admin_panel_settings</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-xs relative z-10">Freigabeprozess</h3>
+<p class="font-body-md text-body-md mb-md relative z-10 opacity-90">Große Konferenzräume und VIP-Boardrooms erfordern eine Bestätigung durch das Facility Management.</p>
+<a class="inline-flex items-center gap-xs font-label-md text-label-md uppercase tracking-wider relative z-10 hover:underline" href="#">
+            Richtlinien ansehen <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple interaction for tab/filter selection
+  document.addEventListener('DOMContentLoaded', () => {
+    const filterButtons = document.querySelectorAll('.flex-wrap button');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        if(this.classList.contains('bg-primary')) return; // Already active
+        
+        // Remove active state from others (simplified logic for demo)
+        filterButtons.forEach(btn => {
+           if(btn.classList.contains('bg-primary')) {
+             btn.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm', 'transform', 'hover:scale-105');
+             btn.classList.add('bg-surface-container-high', 'text-on-surface-variant', 'hover:bg-surface-variant');
+           }
+        });
+
+        // Add active state to clicked
+        this.classList.remove('bg-surface-container-high', 'text-on-surface-variant', 'hover:bg-surface-variant');
+        this.classList.add('bg-primary', 'text-on-primary', 'shadow-sm', 'transform', 'hover:scale-105');
+      });
+    });
+  });
+</script></main></div></body></html>

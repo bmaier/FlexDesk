@@ -1,0 +1,357 @@
+<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"on-tertiary-fixed-variant":"#005049","on-surface":"#191c1e","on-error-container":"#93000a","surface-container":"#eceef0","secondary-fixed":"#d3e4fe","surface-variant":"#e0e3e5","outline":"#737780","surface-bright":"#f7f9fb","inverse-on-surface":"#eff1f3","inverse-primary":"#a7c8ff","on-secondary-fixed":"#0b1c30","tertiary-fixed-dim":"#6bd8cb","surface-container-lowest":"#ffffff","on-tertiary-container":"#38ac9f","on-secondary":"#ffffff","surface-dim":"#d8dadc","primary":"#001e40","secondary-fixed-dim":"#b7c8e1","inverse-surface":"#2d3133","on-background":"#191c1e","secondary":"#505f76","on-primary-container":"#799dd6","surface-container-high":"#e6e8ea","surface-container-highest":"#e0e3e5","on-primary-fixed":"#001b3c","tertiary-fixed":"#89f5e7","surface-container-low":"#f2f4f6","surface":"#f7f9fb","surface-tint":"#3a5f94","on-error":"#ffffff","on-primary-fixed-variant":"#1f477b","on-tertiary-fixed":"#00201d","on-primary":"#ffffff","primary-container":"#003366","outline-variant":"#c3c6d1","primary-fixed":"#d5e3ff","on-secondary-container":"#54647a","background":"#f7f9fb","on-secondary-fixed-variant":"#38485d","tertiary-container":"#003a35","error-container":"#ffdad6","error":"#ba1a1a","secondary-container":"#d0e1fb","on-tertiary":"#ffffff","on-surface-variant":"#43474f","primary-fixed-dim":"#a7c8ff","tertiary":"#00231f"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"md":"16px","xl":"32px","sm":"8px","gutter":"20px","lg":"24px","base":"4px","container-max":"1280px","xs":"4px"},"fontFamily":{"body-lg":["Inter"],"body-md":["Inter"],"data-tabular":["Inter"],"headline-md":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"headline-lg-mobile":["Inter"],"headline-sm":["Inter"]},"fontSize":{"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"data-tabular":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}]}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-background"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[1px_0_8px_rgba(0,0,0,0.02)]"><div class="p-lg mb-md flex flex-col gap-sm"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Workspace</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="schnellbuchung" href="#">Schnellbuchung</a><a aria-current="page" class="flex items-center gap-md px-md py-sm rounded-lg transition-all bg-secondary-container text-on-secondary-container font-semibold shadow-sm" data-path="gezielte-buchung" href="#">Gezielte Buchung</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="meetingraeume" href="#">Meetingräume</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="meine-buchungen" href="#">Meine Buchungen</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="wer-sitzt-wo" href="#">Wer sitzt wo?</a></nav></div><div class="p-lg flex flex-col gap-sm border-t border-outline-variant/30"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Verwaltung</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="genehmigungen" href="#">Genehmigungen</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="verwaltung" href="#">Facility Management</a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="vertrauliche-blockierung" href="#">Vertrauliche Blockierung</a></nav></div><div class="mt-auto p-md flex flex-col gap-sm"><nav class="flex flex-col gap-xs mb-sm" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" data-path="praeferenzen" href="#">Präferenzen</a></nav><div class="bg-surface-container-highest/50 p-sm rounded-xl flex items-center gap-md border border-outline-variant/20"><img alt="Profile" class="w-10 h-10 rounded-full border border-surface-container-highest object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLX7diI59ghzJV9sLUp2Hwf19Ea9nxUYOeXRHVqULSS3iJ19fk7nVcSs9TgP8wUIxvntg_tX-KVc5e1bLib5BO2qQmpaG4bYlK4D2XuAgbr0hVLMzrKwBwSlkc4u62SOg4YR0vwtetHKW-Sia_ZPpYvJmmDnpnsQ6VTsPaYhjAZm3rQ3jfkuRsYuaQ8ilY9MFKAdhTOIXRKYF0JXy4qX-BIrg_zuCMYSun2qyOLIxYCUXQLDlKNtcp"/><div class="flex flex-col overflow-hidden"><span class="text-body-md font-semibold text-primary truncate">Dr. Maria Schmidt</span><span class="text-label-md text-on-surface-variant">Abteilungsleitung</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-md z-40 px-lg flex items-center justify-between border-b border-outline-variant/20 shadow-sm"><div class="flex items-center gap-md"><img alt="DeskSharing BAMF Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnH8Bm-kxxQIXnytwczryq-RDYhz3IM0nwSZDF_YFocmn6xzhu0LnfjuJauAIl9qL6jMb1vaAnkUtSbzQQfXA9uVJQLCXODAR7MQ66S62sVzGjFRIEawaSZsCQgBagw3nLb_8JR217aU-CR-RsVzNDu0ooRKuFWBE2SjRS8qRFtYWITd0j7QdPBpHdBWaQdAfgsuaczFSWVVCd5pNNYiD3Jjb_wlFqmUST5TCU2eIqBezySiAzUYUW"/><span class="font-headline-sm text-primary">DeskSharing BAMF</span></div><div class="flex items-center gap-lg"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline">search</span><input class="bg-surface-container h-10 w-96 pl-10 pr-4 rounded-full text-body-md border-none focus:ring-2 focus:ring-on-tertiary-container/50 outline-none transition-all" placeholder="Suche nach Desk, Team oder Raum..." type="text"/></div><div class="flex items-center gap-sm"><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">help_outline</span></button><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors relative"><span class="material-symbols-outlined">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span></button></div></div></header><main class="relative pt-16 bg-background min-h-screen"><div class="flex flex-col w-full h-[calc(100vh-64px)] overflow-hidden">
+<div class="flex h-full w-full">
+<!-- Left Sidebar: Building Hierarchy & Preferences -->
+<div class="w-80 h-full bg-surface-container flex flex-col shadow-lg z-10 shrink-0">
+<!-- Hierarchy Navigation -->
+<div class="p-lg flex flex-col gap-md">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Standortauswahl</h2>
+<div class="flex flex-col gap-xs mt-sm">
+<!-- Level 1: City -->
+<button class="flex items-center gap-sm px-sm py-xs w-full text-left rounded-md hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] transition-transform group-hover:rotate-90">arrow_right</span>
+<span class="material-symbols-outlined text-primary text-[20px]">location_city</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Nürnberg (Zentrale)</span>
+</button>
+<!-- Level 2: Building -->
+<div class="pl-lg flex flex-col gap-xs">
+<button class="flex items-center gap-sm px-sm py-xs w-full text-left rounded-md hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] transition-transform group-hover:rotate-90">arrow_drop_down</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">domain</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Haus A</span>
+</button>
+<!-- Level 3: Floor -->
+<div class="pl-xl flex flex-col gap-xs relative">
+<!-- Visual connection line -->
+<div class="absolute left-md top-0 bottom-6 w-[2px] bg-outline-variant/50 rounded-full"></div>
+<button class="flex items-center gap-sm px-sm py-xs w-full text-left rounded-md bg-secondary-container text-on-secondary-container transition-colors relative">
+<div class="absolute left-[-16px] top-1/2 w-4 h-[2px] bg-outline-variant/50"></div>
+<span class="material-symbols-outlined text-[18px]">layers</span>
+<span class="font-data-tabular text-data-tabular">1. Obergeschoss</span>
+</button>
+<button class="flex items-center gap-sm px-sm py-xs w-full text-left rounded-md text-on-surface-variant hover:bg-surface-variant transition-colors relative group">
+<div class="absolute left-[-16px] top-1/2 w-4 h-[2px] bg-outline-variant/50 group-hover:bg-outline-variant transition-colors"></div>
+<span class="material-symbols-outlined text-[18px]">layers</span>
+<span class="font-data-tabular text-data-tabular">2. Obergeschoss</span>
+</button>
+<button class="flex items-center gap-sm px-sm py-xs w-full text-left rounded-md text-on-surface-variant hover:bg-surface-variant transition-colors relative group">
+<div class="absolute left-[-16px] top-1/2 w-4 h-[2px] bg-outline-variant/50 group-hover:bg-outline-variant transition-colors"></div>
+<span class="material-symbols-outlined text-[18px]">layers</span>
+<span class="font-data-tabular text-data-tabular">Erdgeschoss</span>
+</button>
+</div>
+<button class="flex items-center gap-sm px-sm py-xs w-full text-left rounded-md hover:bg-surface-variant transition-colors group mt-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] transition-transform group-hover:rotate-90">arrow_right</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">domain</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Haus B</span>
+</button>
+</div>
+<button class="flex items-center gap-sm px-sm py-xs w-full text-left rounded-md hover:bg-surface-variant transition-colors group mt-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] transition-transform group-hover:rotate-90">arrow_right</span>
+<span class="material-symbols-outlined text-primary text-[20px]">location_city</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Berlin (Außenstelle)</span>
+</button>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-px bg-outline-variant/30 mx-lg"></div>
+<!-- Filters & Preferences -->
+<div class="p-lg flex flex-col gap-md flex-grow overflow-y-auto">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-widest">Filter & Präferenzen</h3>
+<!-- Date Picker (Simplified) -->
+<div class="flex flex-col gap-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Datum</label>
+<div class="flex items-center gap-sm bg-surface p-sm rounded-lg border border-outline-variant/50 focus-within:ring-2 focus-within:ring-primary-container/30 transition-all">
+<span class="material-symbols-outlined text-outline">calendar_month</span>
+<input class="bg-transparent border-none outline-none font-data-tabular text-data-tabular text-on-surface w-full cursor-pointer pointer-events-none" readonly="" type="text" value="Heute, 24. Okt"/>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary transition-colors">edit</span>
+</div>
+</div>
+<!-- Equipment Chips -->
+<div class="flex flex-col gap-sm mt-md">
+<label class="font-label-md text-label-md text-on-surface-variant">Ausstattung</label>
+<div class="flex flex-wrap gap-xs">
+<button class="px-sm py-xs rounded-full bg-primary text-on-primary font-label-md text-label-md flex items-center gap-xs shadow-md transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[16px]">check</span>
+                2 Monitore
+             </button>
+<button class="px-sm py-xs rounded-full bg-surface-container-high text-on-surface font-label-md text-label-md hover:bg-surface-container-highest transition-colors active:scale-95">
+                Höhenverstellbar
+             </button>
+<button class="px-sm py-xs rounded-full bg-primary text-on-primary font-label-md text-label-md flex items-center gap-xs shadow-md transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[16px]">check</span>
+                Fensterplatz
+             </button>
+<button class="px-sm py-xs rounded-full bg-surface-container-high text-on-surface font-label-md text-label-md hover:bg-surface-container-highest transition-colors active:scale-95">
+                Ruhezone
+             </button>
+</div>
+</div>
+<!-- Top Choice Highlight Card -->
+<div class="mt-auto bg-gradient-to-br from-tertiary-container/20 to-surface-container rounded-xl p-md flex flex-col gap-sm relative overflow-hidden shadow-sm group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-tertiary-fixed/30 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-tertiary-container text-[20px] fill-current" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="font-label-md text-label-md text-on-tertiary-container uppercase tracking-widest">Top Match</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Desk A101-1</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Haus A • 1. OG • Fensterplatz</span>
+</div>
+<button class="mt-sm w-full py-sm bg-tertiary-container text-on-tertiary-container rounded-lg font-label-md text-label-md shadow-md hover:bg-tertiary-container/90 transition-all flex items-center justify-center gap-xs active:scale-[0.98]">
+                Auf Karte zeigen
+                <span class="material-symbols-outlined text-[16px]">map</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Area: Interactive Map & Booking Detail -->
+<div class="flex-grow flex flex-col relative bg-surface-bright overflow-hidden">
+<!-- Floor Info Header overlay -->
+<div class="absolute top-lg left-lg z-20 bg-surface/90 backdrop-blur-md rounded-xl shadow-md p-md border-l-4 border-l-primary flex items-center gap-md">
+<div class="flex flex-col">
+<h1 class="font-headline-md text-headline-md text-on-surface m-0 leading-tight">1. Obergeschoss</h1>
+<span class="font-body-md text-body-md text-on-surface-variant">Haus A • Nürnberg (Zentrale)</span>
+</div>
+<div class="h-8 w-px bg-outline-variant/50 mx-sm"></div>
+<div class="flex flex-col items-center">
+<span class="font-headline-sm text-headline-sm text-on-tertiary-container leading-none">14</span>
+<span class="font-label-md text-label-md text-outline">Frei</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-headline-sm text-headline-sm text-error leading-none">32</span>
+<span class="font-label-md text-label-md text-outline">Belegt</span>
+</div>
+</div>
+<!-- Map Controls -->
+<div class="absolute bottom-lg left-lg z-20 flex flex-col gap-xs bg-surface/90 backdrop-blur-md rounded-lg shadow-md p-xs">
+<button class="w-10 h-10 flex items-center justify-center text-on-surface hover:bg-surface-container rounded-md transition-colors" title="Vergrößern">
+<span class="material-symbols-outlined">add</span>
+</button>
+<div class="w-6 h-px bg-outline-variant/30 mx-auto"></div>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface hover:bg-surface-container rounded-md transition-colors" title="Verkleinern">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<div class="w-6 h-px bg-outline-variant/30 mx-auto"></div>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface hover:bg-surface-container rounded-md transition-colors" title="Zentrieren">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+</div>
+<!-- Legend -->
+<div class="absolute bottom-lg right-lg z-20 bg-surface/90 backdrop-blur-md rounded-xl shadow-md p-sm flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<div class="w-4 h-4 rounded-sm bg-tertiary-fixed shadow-inner"></div>
+<span class="font-label-md text-label-md text-on-surface">Verfügbar</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-4 h-4 rounded-sm bg-surface-container-highest shadow-inner opacity-50"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">Belegt</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-4 h-4 rounded-sm bg-primary border-2 border-surface shadow-md"></div>
+<span class="font-label-md text-label-md text-on-surface">Ausgewählt</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-4 h-4 rounded-sm bg-transparent border-2 border-tertiary-container animate-pulse"></div>
+<span class="font-label-md text-label-md text-on-surface">Top Match</span>
+</div>
+</div>
+<!-- The Interactive Map Area (Simulated SVG) -->
+<div class="w-full h-full cursor-grab active:cursor-grabbing relative overflow-hidden bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CgkJPHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPgoJCTxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U2ZThlYSIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjwvc3ZnPg==')] bg-repeat" id="map-container">
+<!-- Map Content Wrapper (Draggable/Zoomable conceptually) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-surface rounded-2xl shadow-xl flex p-xl" id="map-floorplan">
+<!-- Floor outline -->
+<div class="absolute inset-lg border-4 border-surface-variant rounded-xl opacity-50"></div>
+<!-- Zone: Nord (Quiet) -->
+<div class="absolute top-xl left-xl w-[300px] h-[200px] bg-secondary-fixed/10 rounded-lg flex flex-col p-sm">
+<span class="font-label-md text-label-md text-secondary tracking-widest uppercase mb-sm opacity-70">Zone Nord • Ruhebereich</span>
+<div class="flex flex-wrap gap-md">
+<!-- Desks -->
+<div class="w-12 h-12 rounded-md bg-surface-container-highest opacity-50 flex items-center justify-center cursor-not-allowed" title="Belegt">
+<span class="material-symbols-outlined text-outline text-[16px]">person</span>
+</div>
+<div class="w-12 h-12 rounded-md bg-surface-container-highest opacity-50 flex items-center justify-center cursor-not-allowed" title="Belegt">
+<span class="material-symbols-outlined text-outline text-[16px]">person</span>
+</div>
+<div class="w-12 h-12 rounded-md bg-tertiary-fixed shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-center group">
+<span class="font-data-tabular text-data-tabular text-on-tertiary-fixed text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">A102</span>
+</div>
+<div class="w-12 h-12 rounded-md bg-tertiary-fixed shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-center group">
+<span class="font-data-tabular text-data-tabular text-on-tertiary-fixed text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">A103</span>
+</div>
+</div>
+</div>
+<!-- Zone: Süd (Team) -->
+<div class="absolute bottom-xl right-xl w-[400px] h-[250px] bg-primary-fixed/5 rounded-lg flex flex-col p-sm items-end">
+<span class="font-label-md text-label-md text-primary tracking-widest uppercase mb-sm opacity-70">Zone Süd • Team Area</span>
+<!-- Top Match Desk Highlight -->
+<div class="relative mt-md mr-md">
+<!-- Pulsing ring -->
+<div class="absolute -inset-2 rounded-lg border-2 border-tertiary-container animate-ping opacity-20"></div>
+<div class="absolute -inset-2 rounded-lg border-2 border-tertiary-container opacity-50"></div>
+<!-- Active Selected Desk -->
+<button class="w-14 h-14 rounded-md bg-primary border-2 border-surface shadow-lg z-10 relative flex flex-col items-center justify-center gap-xs cursor-pointer transform hover:scale-105 transition-transform" id="desk-a101" onclick="toggleBookingPanel()">
+<span class="material-symbols-outlined text-on-primary text-[20px] fill-current" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="font-data-tabular text-data-tabular text-on-primary text-[10px]">A101-1</span>
+</button>
+<!-- Line to window -->
+<div class="absolute top-1/2 -right-16 w-16 h-px bg-outline-variant/40 border-dashed border-t"></div>
+<span class="absolute top-1/2 -right-24 -translate-y-1/2 font-label-md text-label-md text-outline-variant [writing-mode:vertical-rl]">Fensterfront</span>
+</div>
+<div class="flex gap-md mt-xl mr-md">
+<div class="w-12 h-12 rounded-md bg-surface-container-highest opacity-50 flex items-center justify-center cursor-not-allowed"></div>
+<div class="w-12 h-12 rounded-md bg-tertiary-fixed shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-center group">
+<span class="font-data-tabular text-data-tabular text-on-tertiary-fixed text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">A101-3</span>
+</div>
+</div>
+</div>
+<!-- Central core (Elevators/Stairs) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150px] h-[200px] bg-surface-container-high rounded-sm flex flex-col items-center justify-center gap-md shadow-inner">
+<span class="material-symbols-outlined text-outline text-[32px]">elevator</span>
+<span class="font-label-md text-label-md text-outline uppercase tracking-widest">Kern</span>
+</div>
+</div>
+</div>
+<!-- Sliding Booking Panel (Hidden by default, shown when desk clicked) -->
+<div class="absolute top-0 right-0 h-full w-[400px] bg-surface shadow-[-10px_0_30px_rgba(0,0,0,0.1)] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col z-30 border-l border-outline-variant/20" id="booking-panel">
+<!-- Header -->
+<div class="p-lg bg-surface-container-lowest border-b border-outline-variant/20 flex items-start justify-between">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-sm">
+<span class="px-sm py-xs rounded bg-tertiary-container text-on-tertiary-container font-label-md text-label-md">Top Match</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Frei zur Buchung</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-sm">Desk A101-1</h2>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                        Haus A, 1. OG, Zone Süd
+                    </p>
+</div>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:bg-surface-container rounded-full transition-colors" onclick="toggleBookingPanel()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Content -->
+<div class="p-lg flex flex-col gap-xl flex-grow overflow-y-auto">
+<!-- Equipment List -->
+<div class="flex flex-col gap-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Ausstattung</h3>
+<ul class="flex flex-col gap-xs">
+<li class="flex items-center gap-md py-sm border-b border-outline-variant/20 last:border-0">
+<span class="material-symbols-outlined text-primary">desktop_windows</span>
+<span class="font-body-md text-body-md text-on-surface">2x 27" Monitore (4K)</span>
+<span class="ml-auto material-symbols-outlined text-tertiary-container text-[20px]">check_circle</span>
+</li>
+<li class="flex items-center gap-md py-sm border-b border-outline-variant/20 last:border-0">
+<span class="material-symbols-outlined text-primary">height</span>
+<span class="font-body-md text-body-md text-on-surface">Elektrisch höhenverstellbar</span>
+<span class="ml-auto material-symbols-outlined text-tertiary-container text-[20px]">check_circle</span>
+</li>
+<li class="flex items-center gap-md py-sm border-b border-outline-variant/20 last:border-0">
+<span class="material-symbols-outlined text-primary">wb_sunny</span>
+<span class="font-body-md text-body-md text-on-surface">Fensterplatz</span>
+<span class="ml-auto material-symbols-outlined text-tertiary-container text-[20px]">check_circle</span>
+</li>
+</ul>
+</div>
+<!-- Booking Details -->
+<div class="flex flex-col gap-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Ihre Buchung</h3>
+<div class="bg-surface-container-low p-md rounded-lg flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Datum</span>
+<span class="font-data-tabular text-data-tabular text-on-surface font-semibold">Heute, 24. Okt 2023</span>
+</div>
+<div class="h-px w-full bg-outline-variant/30"></div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Zeitraum</span>
+<div class="flex items-center gap-xs">
+<span class="font-data-tabular text-data-tabular text-on-surface font-semibold bg-surface px-xs rounded shadow-sm">08:00</span>
+<span class="text-on-surface-variant">-</span>
+<span class="font-data-tabular text-data-tabular text-on-surface font-semibold bg-surface px-xs rounded shadow-sm">17:00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Neighborhood / Who sits nearby -->
+<div class="flex flex-col gap-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined">group</span>
+                         In der Nähe
+                     </h3>
+<div class="flex -space-x-4">
+<img class="w-10 h-10 rounded-full border-2 border-surface object-cover shadow-sm z-[3]" data-alt="Professional headshot portrait of a federal agency employee, neutral background, modern lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGM4T8hpTFmyG4gNMqYoDu8tJ7Q9iLmODS9jYwCwoAL7kc9pYsLQ63dxNZKJLURwGJS-qmX9G0MA1BYJuC_F8jo6pFS1M0cq0uKs3Xt2btPXP7azR8ewiwG_85AmjleRm0pytOj9w2yh3jqjSeoz88I-i2Q2aIGDFEKNnERpb_fhNwFLY3AtQFvSHa37bn0zeJv-l7ag9d-EsENiLLmjrIZd6Wn9BIcMuLKlfSZDIjDhh5N3GP49SD"/>
+<img class="w-10 h-10 rounded-full border-2 border-surface object-cover shadow-sm z-[2]" data-alt="Professional headshot portrait of a female federal agency employee, neutral background, modern lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPns8Q4um-FOndIb3eezuUCgSRhjGlPkLwD2fPmWXPXUHj15zMHjW4S0iqyZ9BP9E46t56dVgpGjYb9K2RGNEnwJ0q3p-XSGI3JUmSlISNyjMqFcZvgVUFFOtu5b5pc51jmw3FZTV2aCVwHPM4hjPGfjykahJUq9e6zefrYau6NuH1rSoYnmqSM3zdJWl9c3_qAcGbNw21iQIYrflOpbsNG4EDARcPlc4HYK3SKTT-j3G6MpIQDKR_"/>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center z-[1] shadow-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">+3</span>
+</div>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm mt-xs">5 Kollegen aus Abteilung 2 heute auf dieser Etage.</span>
+</div>
+</div>
+<!-- Footer / Action -->
+<div class="p-lg bg-surface border-t border-outline-variant/20 mt-auto">
+<button class="w-full py-md bg-primary text-on-primary rounded-lg font-headline-sm text-headline-sm shadow-md hover:bg-primary/90 hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-sm group">
+<span>Jetzt verbindlich buchen</span>
+<span class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Simple micro-interaction for the map zooming/panning simulation
+    const mapFloorplan = document.getElementById('map-floorplan');
+    let isDragging = false;
+    let startX, startY, translateX = 0, translateY = 0;
+
+    const mapContainer = document.getElementById('map-container');
+    
+    mapContainer.addEventListener('mousedown', (e) => {
+        if(e.target.closest('button')) return; // Don't drag if clicking a button
+        isDragging = true;
+        startX = e.clientX - translateX;
+        startY = e.clientY - translateY;
+        mapContainer.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+        mapContainer.style.cursor = 'grab';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        translateX = e.clientX - startX;
+        translateY = e.clientY - startY;
+        
+        // Apply constraints so we don't drag too far out
+        translateX = Math.max(-400, Math.min(400, translateX));
+        translateY = Math.max(-300, Math.min(300, translateY));
+
+        mapFloorplan.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px))`;
+    });
+    
+    // Toggle Booking Panel
+    let panelOpen = true; // Start open for demo purposes
+    
+    function toggleBookingPanel() {
+        const panel = document.getElementById('booking-panel');
+        if(panelOpen) {
+            panel.classList.add('translate-x-full');
+            panelOpen = false;
+        } else {
+            panel.classList.remove('translate-x-full');
+            panelOpen = true;
+        }
+    }
+    
+    // Initialize layout (open panel slightly delayed for visual effect)
+    setTimeout(() => {
+        document.getElementById('booking-panel').classList.remove('translate-x-full');
+    }, 500);
+
+</script></main></div></body></html>

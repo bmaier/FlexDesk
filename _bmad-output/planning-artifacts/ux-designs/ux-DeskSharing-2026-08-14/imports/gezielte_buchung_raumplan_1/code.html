@@ -1,0 +1,310 @@
+<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"primary-fixed":"#d5e3ff","on-tertiary-container":"#38ac9f","primary":"#001e40","secondary-container":"#d0e1fb","on-error":"#ffffff","surface-container":"#eceef0","outline":"#737780","surface-container-lowest":"#ffffff","secondary":"#505f76","outline-variant":"#c3c6d1","inverse-surface":"#2d3133","surface-dim":"#d8dadc","background":"#f7f9fb","on-primary":"#ffffff","surface-container-high":"#e6e8ea","error-container":"#ffdad6","secondary-fixed-dim":"#b7c8e1","primary-container":"#003366","on-secondary-container":"#54647a","on-primary-fixed-variant":"#1f477b","tertiary":"#00231f","inverse-on-surface":"#eff1f3","on-tertiary-fixed-variant":"#005049","on-error-container":"#93000a","inverse-primary":"#a7c8ff","on-secondary-fixed-variant":"#38485d","surface-container-highest":"#e0e3e5","on-tertiary-fixed":"#00201d","on-secondary":"#ffffff","on-surface":"#191c1e","on-secondary-fixed":"#0b1c30","primary-fixed-dim":"#a7c8ff","on-background":"#191c1e","surface-container-low":"#f2f4f6","surface-variant":"#e0e3e5","surface-tint":"#3a5f94","tertiary-fixed":"#89f5e7","error":"#ba1a1a","tertiary-container":"#003a35","surface-bright":"#f7f9fb","on-primary-fixed":"#001b3c","on-primary-container":"#799dd6","secondary-fixed":"#d3e4fe","tertiary-fixed-dim":"#6bd8cb","on-surface-variant":"#43474f","on-tertiary":"#ffffff","surface":"#f7f9fb"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"md":"16px","xl":"32px","sm":"8px","gutter":"20px","lg":"24px","base":"4px","container-max":"1280px","xs":"4px"},"fontFamily":{"body-lg":["Inter"],"body-md":["Inter"],"data-tabular":["Inter"],"headline-md":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"headline-lg-mobile":["Inter"],"headline-sm":["Inter"]},"fontSize":{"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"data-tabular":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}]}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-background"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[1px_0_8px_rgba(0,0,0,0.02)]"><div class="p-lg mb-md flex flex-col gap-sm"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Navigation</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="schnellbuchung" href="#"><span class="material-symbols-outlined text-on-tertiary-container">bolt</span><span>Schnellbuchung</span></a><a aria-current="page" class="flex items-center gap-md px-md py-sm rounded-lg transition-all bg-secondary-container text-on-secondary-container font-semibold shadow-sm" data-path="gezielte-buchung" href="#"><span class="material-symbols-outlined">account_tree</span><span>Gezielte Buchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="meetingraum-buchung" href="#"><span class="material-symbols-outlined">meeting_room</span><span>Meetingraum-Buchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="meine-buchungen" href="#"><span class="material-symbols-outlined">event_available</span><span>Meine Buchungen</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="wer-sitzt-wo" href="#"><span class="material-symbols-outlined">person_search</span><span>Wer sitzt wo?</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="facility-management" href="#"><span class="material-symbols-outlined">settings_applications</span><span>Facility-Management</span></a></nav></div><div class="p-lg flex flex-col gap-sm border-t border-outline-variant/30"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Verwaltung</div><nav class="flex flex-col gap-xs"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="genehmigungs-inbox" href="#"><span class="material-symbols-outlined">move_to_inbox</span><span>Genehmigungs-Inbox</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="buchen-fuer" href="#"><span class="material-symbols-outlined">group_add</span><span>Buchen für...</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="raum-blockieren" href="#"><span class="material-symbols-outlined">lock</span><span>Raum blockieren</span></a></nav></div><div class="mt-auto p-md"><div class="bg-surface-container-highest/50 p-sm rounded-xl flex items-center gap-md border border-outline-variant/20"><img alt="Profile" class="w-10 h-10 rounded-full border border-surface-container-highest object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLX7diI59ghzJV9sLUp2Hwf19Ea9nxUYOeXRHVqULSS3iJ19fk7nVcSs9TgP8wUIxvntg_tX-KVc5e1bLib5BO2qQmpaG4bYlK4D2XuAgbr0hVLMzrKwBwSlkc4u62SOg4YR0vwtetHKW-Sia_ZPpYvJmmDnpnsQ6VTsPaYhjAZm3rQ3jfkuRsYuaQ8ilY9MFKAdhTOIXRKYF0JXy4qX-BIrg_zuCMYSun2qyOLIxYCUXQLDlKNtcp"/><div class="flex flex-col overflow-hidden"><span class="text-body-md font-semibold text-primary truncate">Dr. Maria Schmidt</span><span class="text-label-md text-on-surface-variant">Abteilungsleitung</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-md z-40 px-lg flex items-center justify-between border-b border-outline-variant/20 shadow-sm"><div class="flex items-center gap-md"><img alt="DeskSharing BAMF Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnH8Bm-kxxQIXnytwczryq-RDYhz3IM0nwSZDF_YFocmn6xzhu0LnfjuJauAIl9qL6jMb1vaAnkUtSbzQQfXA9uVJQLCXODAR7MQ66S62sVzGjFRIEawaSZsCQgBagw3nLb_8JR217aU-CR-RsVzNDu0ooRKuFWBE2SjRS8qRFtYWITd0j7QdPBpHdBWaQdAfgsuaczFSWVVCd5pNNYiD3Jjb_wlFqmUST5TCU2eIqBezySiAzUYUW"/><span class="font-headline-sm text-primary">DeskSharing BAMF</span></div><div class="flex items-center gap-lg"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline">search</span><input class="bg-surface-container h-10 w-96 pl-10 pr-4 rounded-full text-body-md border-none focus:ring-2 focus:ring-on-tertiary-container/50 outline-none transition-all" placeholder="Suche nach Desk, Team oder Raum..." type="text"/></div><div class="flex items-center gap-sm"><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">help_outline</span></button><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors relative"><span class="material-symbols-outlined">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span></button></div></div></header><main class="relative pt-16 bg-background min-h-screen"><div class="flex flex-col w-full h-[calc(100vh-4rem)]">
+<div class="flex flex-1 overflow-hidden">
+<!-- Hierarchical Sidebar -->
+<div class="w-80 flex flex-col bg-surface-container shadow-lg z-10 shrink-0">
+<div class="p-lg pb-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md">Liegenschaft wählen</h2>
+<!-- Filters/Preferences summary -->
+<div class="bg-surface-container-high rounded-lg p-sm mb-md">
+<div class="flex items-center justify-between mb-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Aktive Filter</span>
+<button class="text-primary hover:bg-surface-container-highest p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-primary text-on-primary rounded font-label-md text-label-md">
+<span class="material-symbols-outlined text-[14px]">desktop_windows</span> 2 Monitore
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-primary text-on-primary rounded font-label-md text-label-md">
+<span class="material-symbols-outlined text-[14px]">wb_sunny</span> Fensterplatz
+            </span>
+</div>
+</div>
+</div>
+<!-- Navigation Tree -->
+<div class="flex-1 overflow-y-auto px-md pb-lg">
+<div class="flex flex-col gap-sm">
+<!-- Property 1 -->
+<div class="bg-surface rounded-lg shadow-sm overflow-hidden">
+<button class="w-full flex items-center justify-between p-md hover:bg-surface-container-low transition-colors" onclick="toggleNode('prop1')">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">domain</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Zentrale Nürnberg</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant transition-transform" id="icon-prop1">expand_more</span>
+</button>
+<div class="hidden flex-col bg-surface-container-lowest" id="prop1">
+<!-- Building A -->
+<div class="border-l-2 border-surface-container-highest ml-6">
+<button class="w-full flex items-center justify-between p-sm hover:bg-surface-container-low transition-colors" onclick="toggleNode('bldgA')">
+<span class="font-body-md text-body-md text-on-surface">Haus A</span>
+<span class="material-symbols-outlined text-outline-variant text-[18px] transition-transform" id="icon-bldgA">expand_more</span>
+</button>
+<div class="hidden flex-col pl-4" id="bldgA">
+<!-- Floors -->
+<button class="w-full text-left p-sm hover:bg-surface-container-low transition-colors font-body-md text-body-md text-on-surface-variant flex items-center justify-between group">
+<span>EG</span>
+<span class="text-xs bg-surface-container px-2 py-0.5 rounded text-outline group-hover:bg-primary group-hover:text-on-primary transition-colors">12 frei</span>
+</button>
+<button class="w-full text-left p-sm bg-primary-fixed text-on-primary-fixed-variant transition-colors font-body-md text-body-md font-semibold flex items-center justify-between">
+<span>1. OG</span>
+<span class="text-xs bg-primary text-on-primary px-2 py-0.5 rounded">4 passen</span>
+</button>
+<button class="w-full text-left p-sm hover:bg-surface-container-low transition-colors font-body-md text-body-md text-on-surface-variant flex items-center justify-between group">
+<span>2. OG</span>
+<span class="text-xs bg-surface-container px-2 py-0.5 rounded text-outline group-hover:bg-primary group-hover:text-on-primary transition-colors">0 frei</span>
+</button>
+</div>
+</div>
+<!-- Building B -->
+<div class="border-l-2 border-surface-container-highest ml-6">
+<button class="w-full flex items-center justify-between p-sm hover:bg-surface-container-low transition-colors">
+<span class="font-body-md text-body-md text-on-surface">Haus B</span>
+<span class="material-symbols-outlined text-outline-variant text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Property 2 -->
+<div class="bg-surface rounded-lg shadow-sm overflow-hidden">
+<button class="w-full flex items-center justify-between p-md hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant">location_city</span>
+<span class="font-body-md text-body-md text-on-surface">Außenstelle München</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Map Area -->
+<div class="flex-1 relative bg-surface-container-lowest overflow-hidden flex flex-col">
+<!-- Top Bar -->
+<div class="h-16 bg-surface px-lg flex items-center justify-between shadow-sm z-10 shrink-0">
+<div class="flex items-center gap-md">
+<h1 class="font-headline-md text-headline-md text-on-surface">Zentrale Nürnberg / Haus A / 1. OG</h1>
+<div class="h-6 w-[1px] bg-outline-variant/50"></div>
+<span class="font-body-md text-body-md text-on-surface-variant">Heute, 14. Okt</span>
+<button class="text-primary hover:bg-primary-fixed/50 p-1 rounded transition-colors">
+<span class="material-symbols-outlined">edit_calendar</span>
+</button>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm mr-lg">
+<div class="flex items-center gap-xs"><div class="w-3 h-3 rounded-full bg-surface-container-highest"></div><span class="font-label-md text-label-md text-on-surface-variant">Belegt</span></div>
+<div class="flex items-center gap-xs ml-sm"><div class="w-3 h-3 rounded-full bg-surface-container shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)]"></div><span class="font-label-md text-label-md text-on-surface-variant">Frei</span></div>
+<div class="flex items-center gap-xs ml-sm"><div class="w-3 h-3 rounded-full bg-primary relative"><div class="absolute inset-0 rounded-full bg-primary animate-ping opacity-75"></div></div><span class="font-label-md text-label-md text-primary">Perfektes Match</span></div>
+</div>
+<div class="flex bg-surface-container rounded-lg p-1">
+<button class="p-1 rounded bg-surface shadow-sm text-on-surface"><span class="material-symbols-outlined">map</span></button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">list</span></button>
+</div>
+</div>
+</div>
+<!-- Map Container -->
+<div class="flex-1 relative overflow-auto p-lg flex items-center justify-center bg-surface-container-lowest" id="map-container">
+<!-- SVG Floorplan -->
+<div class="relative w-[1000px] h-[600px] bg-surface-container-lowest shadow-md rounded-xl p-8" id="svg-wrapper">
+<svg class="absolute inset-0 z-0" height="100%" viewbox="0 0 1000 600" width="100%" xmlns="http://www.w3.org/2000/svg">
+<!-- Room outlines -->
+<path d="M 50 50 L 950 50 L 950 550 L 50 550 Z" fill="none" stroke="#e0e3e5" stroke-width="4"></path>
+<!-- Inner Walls -->
+<path d="M 300 50 L 300 300 M 300 400 L 300 550" fill="none" stroke="#e0e3e5" stroke-width="4"></path>
+<path d="M 600 50 L 600 250 M 600 350 L 600 550" fill="none" stroke="#e0e3e5" stroke-width="4"></path>
+<path d="M 50 300 L 200 300 M 600 300 L 950 300" fill="none" stroke="#e0e3e5" stroke-width="4"></path>
+<!-- Doors -->
+<path d="M 300 300 Q 350 300 350 350" fill="none" stroke="#a7c8ff" stroke-dasharray="4" stroke-width="2"></path>
+<line stroke="#a7c8ff" stroke-width="2" x1="300" x2="350" y1="300" y2="350"></line>
+<path d="M 600 250 Q 550 250 550 300" fill="none" stroke="#a7c8ff" stroke-dasharray="4" stroke-width="2"></path>
+<line stroke="#a7c8ff" stroke-width="2" x1="600" x2="550" y1="250" y2="300"></line>
+<!-- Windows -->
+<line stroke="#a7c8ff" stroke-width="8" x1="100" x2="250" y1="50" y2="50"></line>
+<line stroke="#a7c8ff" stroke-width="8" x1="350" x2="550" y1="50" y2="50"></line>
+<line stroke="#a7c8ff" stroke-width="8" x1="650" x2="850" y1="50" y2="50"></line>
+<!-- Room Labels -->
+<text fill="#737780" font-family="Inter" font-size="14" text-anchor="middle" x="175" y="280">Raum 1.01 (Team A)</text>
+<text fill="#737780" font-family="Inter" font-size="14" text-anchor="middle" x="450" y="280">Raum 1.02 (Flex)</text>
+<text fill="#737780" font-family="Inter" font-size="14" text-anchor="middle" x="775" y="280">Raum 1.03 (Meeting)</text>
+</svg>
+<!-- Interactive Desks Layer -->
+<div class="absolute inset-0 z-10">
+<!-- Room 1.01 -->
+<button class="absolute left-[120px] top-[100px] w-12 h-12 bg-surface rounded shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-outline-variant/30 flex items-center justify-center hover:-translate-y-1 transition-transform group" onclick="openDetails('D-1.01-01', false)">
+<div class="w-8 h-4 bg-surface-container-highest rounded-sm group-hover:bg-primary/20 transition-colors"></div>
+</button>
+<button class="absolute left-[200px] top-[100px] w-12 h-12 bg-surface-container-highest rounded shadow-[0_2px_4px_rgba(0,0,0,0.05)] flex items-center justify-center cursor-not-allowed group">
+<div class="w-8 h-4 bg-outline-variant rounded-sm flex items-center justify-center"><span class="material-symbols-outlined text-[10px] text-surface">person</span></div>
+</button>
+<!-- Room 1.02 (Flex Space) - Perfect Matches -->
+<button class="absolute left-[380px] top-[120px] w-12 h-12 bg-surface rounded shadow-[0_4px_8px_rgba(0,30,64,0.1)] border-2 border-primary flex items-center justify-center hover:-translate-y-1 transition-transform group" onclick="openDetails('D-1.02-01', true)">
+<div class="absolute -inset-2 rounded-lg bg-primary/20 animate-ping"></div>
+<div class="w-8 h-4 bg-primary/20 rounded-sm flex gap-0.5 justify-center">
+<div class="w-3 h-full bg-primary rounded-[1px]"></div>
+<div class="w-3 h-full bg-primary rounded-[1px]"></div>
+</div>
+</button>
+<button class="absolute left-[480px] top-[120px] w-12 h-12 bg-surface rounded shadow-[0_4px_8px_rgba(0,30,64,0.1)] border-2 border-primary flex items-center justify-center hover:-translate-y-1 transition-transform group" onclick="openDetails('D-1.02-02', true)">
+<div class="absolute -inset-2 rounded-lg bg-primary/20 animate-ping" style="animation-delay: 0.5s"></div>
+<div class="w-8 h-4 bg-primary/20 rounded-sm flex gap-0.5 justify-center">
+<div class="w-3 h-full bg-primary rounded-[1px]"></div>
+<div class="w-3 h-full bg-primary rounded-[1px]"></div>
+</div>
+</button>
+<button class="absolute left-[380px] top-[200px] w-12 h-12 bg-surface rounded shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-outline-variant/30 flex items-center justify-center hover:-translate-y-1 transition-transform group" onclick="openDetails('D-1.02-03', false)">
+<div class="w-8 h-4 bg-surface-container-highest rounded-sm group-hover:bg-primary/20 transition-colors"></div>
+</button>
+<button class="absolute left-[480px] top-[200px] w-12 h-12 bg-surface rounded shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-outline-variant/30 flex items-center justify-center hover:-translate-y-1 transition-transform group" onclick="openDetails('D-1.02-04', false)">
+<div class="w-8 h-4 bg-surface-container-highest rounded-sm group-hover:bg-primary/20 transition-colors"></div>
+</button>
+<!-- Room 1.03 (Meeting - requires approval) -->
+<button class="absolute left-[700px] top-[150px] w-32 h-20 bg-surface rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-tertiary/30 flex items-center justify-center hover:-translate-y-1 transition-transform group" onclick="openDetails('M-1.03', false, true)">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">meeting_room</span>
+<span class="font-label-md text-label-md text-tertiary">Meeting 1</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Zoom Controls -->
+<div class="absolute bottom-lg right-lg flex flex-col gap-sm bg-surface rounded-lg shadow-md p-1">
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-high transition-colors text-on-surface" onclick="zoom(1.1)">
+<span class="material-symbols-outlined">add</span>
+</button>
+<div class="w-full h-[1px] bg-outline-variant/30"></div>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-high transition-colors text-on-surface" onclick="zoom(0.9)">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Side Panel (Details) -->
+<div class="w-96 bg-surface shadow-[-4px_0_15px_rgba(0,0,0,0.05)] z-20 flex flex-col translate-x-full transition-transform duration-300 fixed right-0 top-16 bottom-0" id="details-panel">
+<div class="p-lg flex items-center justify-between border-b border-outline-variant/20">
+<h3 class="font-headline-sm text-headline-sm text-on-surface" id="panel-title">Desk D-1.02-01</h3>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-1 rounded-full transition-colors" onclick="closeDetails()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-lg">
+<div class="w-full h-48 rounded-xl bg-surface-container-high mb-lg bg-cover bg-center" data-alt="A bright, modern office desk near a large window, featuring two monitors, an ergonomic chair, and a small potted plant on the desk. The lighting is natural and inviting, with a color palette of soft whites, light woods, and subtle teal accents." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfxeSedctZXOICu0zE66EcjduUoTEjOsUbywZ6srZBNJEd93H0Gp5GT30KZPCHj0WfvI3axVLd0hBIxzqMJa_d0DonidCiPalvXpIug08yg6Ja8D7K6Hvq501euqJIKgqisNZL8H_-lYkH0AsQ2YktufIOQCXyzjL2SAettD-CgHZKnPaPDlGSU7POkTsvG6-SGWsQ0TkPC0QQBNXcAPjhbnD1Ul-5LBEN8vzSlYoFEwwnzZQ_WPLv')"></div>
+<div class="hidden mb-md" id="match-badge">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-fixed text-on-primary-fixed-variant rounded-full">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-label-md text-label-md">Perfektes Match für Ihre Filter</span>
+</div>
+</div>
+<div class="flex flex-col gap-md mb-xl">
+<div class="flex items-start gap-md">
+<span class="material-symbols-outlined text-outline">location_on</span>
+<div>
+<div class="font-body-md text-body-md text-on-surface">Zentrale Nürnberg, Haus A, 1. OG</div>
+<div class="font-body-md text-body-md text-on-surface-variant">Raum 1.02 (Flex Desk Area)</div>
+</div>
+</div>
+<div class="flex items-start gap-md">
+<span class="material-symbols-outlined text-outline">category</span>
+<div class="font-body-md text-body-md text-on-surface">Standard Arbeitsplatz</div>
+</div>
+</div>
+<div class="mb-xl">
+<h4 class="font-label-md text-label-md text-outline uppercase tracking-widest mb-sm">Ausstattung</h4>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-sm font-body-md text-body-md text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary">check</span> 2 Monitore (27")
+            </div>
+<div class="flex items-center gap-sm font-body-md text-body-md text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary">check</span> Fensterplatz
+            </div>
+<div class="flex items-center gap-sm font-body-md text-body-md text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-outline-variant">check</span> Höhenverstellbar
+            </div>
+<div class="flex items-center gap-sm font-body-md text-body-md text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-outline-variant">check</span> Dockingstation (USB-C)
+            </div>
+</div>
+</div>
+<div class="mb-xl" id="approval-notice" style="display: none;">
+<div class="bg-surface-variant rounded-lg p-md flex gap-md items-start">
+<span class="material-symbols-outlined text-on-surface-variant">info</span>
+<div>
+<div class="font-data-tabular text-data-tabular text-on-surface mb-1">Genehmigungspflichtig</div>
+<div class="font-body-md text-body-md text-on-surface-variant">Dieser Raum erfordert eine Freigabe durch das Facility Management.</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-lg bg-surface border-t border-outline-variant/20">
+<div class="flex gap-sm">
+<button class="flex-1 bg-surface-container text-on-surface font-label-md text-label-md py-3 rounded-lg hover:bg-surface-container-high transition-colors">Abbrechen</button>
+<button class="flex-1 bg-primary text-on-primary font-label-md text-label-md py-3 rounded-lg hover:bg-primary-container transition-colors shadow-md" id="book-button">Buchen</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function toggleNode(id) {
+    const node = document.getElementById(id);
+    const icon = document.getElementById(`icon-${id}`);
+    if (node.classList.contains('hidden')) {
+      node.classList.remove('hidden');
+      node.classList.add('flex');
+      if(icon) icon.style.transform = 'rotate(180deg)';
+    } else {
+      node.classList.add('hidden');
+      node.classList.remove('flex');
+      if(icon) icon.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  // Initialize first node open
+  toggleNode('prop1');
+  toggleNode('bldgA');
+
+  function openDetails(deskId, isMatch, isApprovalRequired = false) {
+    const panel = document.getElementById('details-panel');
+    const title = document.getElementById('panel-title');
+    const badge = document.getElementById('match-badge');
+    const bookBtn = document.getElementById('book-button');
+    const approvalNotice = document.getElementById('approval-notice');
+    
+    title.textContent = isApprovalRequired ? `Raum ${deskId}` : `Desk ${deskId}`;
+    
+    if (isMatch) {
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+    
+    if (isApprovalRequired) {
+      bookBtn.textContent = 'Anfrage senden';
+      approvalNotice.style.display = 'block';
+    } else {
+      bookBtn.textContent = 'Buchen';
+      approvalNotice.style.display = 'none';
+    }
+
+    panel.classList.remove('translate-x-full');
+  }
+
+  function closeDetails() {
+    const panel = document.getElementById('details-panel');
+    panel.classList.add('translate-x-full');
+  }
+
+  let currentZoom = 1;
+  function zoom(factor) {
+    const wrapper = document.getElementById('svg-wrapper');
+    currentZoom *= factor;
+    // Limit zoom
+    if(currentZoom < 0.5) currentZoom = 0.5;
+    if(currentZoom > 2.5) currentZoom = 2.5;
+    wrapper.style.transform = `scale(${currentZoom})`;
+    wrapper.style.transformOrigin = 'center center';
+    wrapper.style.transition = 'transform 0.2s ease-in-out';
+  }
+</script></main></div></body></html>

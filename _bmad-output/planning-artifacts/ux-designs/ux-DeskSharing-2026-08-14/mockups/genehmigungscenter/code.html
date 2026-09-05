@@ -1,0 +1,316 @@
+<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style>
+<link href="../_shared/app.css" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-background"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[1px_0_8px_rgba(0,0,0,0.02)]"><div class="p-lg mb-md flex flex-col gap-sm"><div class="text-label-md text-outline uppercase tracking-widest px-sm">ARBEITSPLATZ</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-primary-fixed-variant font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="schnellbuchung" href="../schnellbuchung/code.html"><span class="material-symbols-outlined">bolt</span><span>Schnellbuchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="standort-exploration" href="../standort-exploration/code.html"><span class="material-symbols-outlined">map</span><span>Gezielte Buchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="meetingraeume" href="../meetingraeume/code.html"><span class="material-symbols-outlined">meeting_room</span><span>Meetingräume</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="serienbuchung" href="../serienbuchung/code.html"><span class="material-symbols-outlined">event_repeat</span><span>Serienbuchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="meine-buchungen" href="../meine-buchungen/code.html"><span class="material-symbols-outlined">event_available</span><span>Meine Buchungen</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="wer-sitzt-wo" href="../wer-sitzt-wo/code.html"><span class="material-symbols-outlined">group</span><span>Wer sitzt wo?</span></a></nav></div><div class="p-lg pt-0 flex flex-col gap-sm border-t border-outline-variant/30 pt-md"><div class="text-label-md text-outline uppercase tracking-widest px-sm">VERWALTUNG</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-primary-fixed-variant font-semibold shadow-sm"><a aria-current="page" class="flex items-center gap-md px-md py-sm rounded-lg transition-all bg-secondary-container text-on-primary-fixed-variant font-semibold shadow-sm" data-path="genehmigungscenter" href="../genehmigungscenter/code.html"><span class="material-symbols-outlined">approval</span><span>Genehmigungscenter</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="facility-management" href="../facility-management/code.html"><span class="material-symbols-outlined">apartment</span><span>Facility-Management</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="vertrauliche-raumblockierung" href="../vertrauliche-raumblockierung/code.html"><span class="material-symbols-outlined">lock</span><span>Vertrauliche Raumblockierung</span></a></nav></div><div class="p-lg pt-0 flex flex-col gap-sm"><div class="text-label-md text-outline uppercase tracking-widest px-sm">SPEZIALFUNKTIONEN</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-primary-fixed-variant font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="buchen-fuer" href="../buchen-fuer/code.html"><span class="material-symbols-outlined">person_add</span><span>Buchen für...</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high" data-path="meine-praeferenzen" href="../meine-praeferenzen/code.html"><span class="material-symbols-outlined">tune</span><span>Meine Präferenzen</span></a></nav></div><div class="mt-auto p-md flex flex-col gap-sm"><div class="bg-surface-container-highest/50 p-sm rounded-xl flex items-center gap-md border border-outline-variant/20"><img alt="Profile" class="w-10 h-10 rounded-full border border-surface-container-highest object-cover" src="../_shared/images/img-85ac77ec13.png"/><div class="flex flex-col overflow-hidden"><span class="text-body-md font-semibold text-primary truncate">Dr. Maria Schmidt</span><span class="text-label-md text-on-surface-variant">Abteilungsleitung</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-md z-40 px-lg flex items-center justify-between border-b border-outline-variant/20 shadow-sm"><div class="flex items-center gap-md"><img alt="DeskSharing BAMF Logo" class="h-8 w-auto object-contain" src="../_shared/images/img-344d5f4039.png"/><span class="font-headline-sm text-primary">DeskSharing BAMF</span></div><div class="flex items-center gap-lg"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline">search</span><input class="bg-surface-container h-10 w-96 pl-10 pr-4 rounded-full text-body-md border-none focus:ring-2 focus:ring-on-tertiary-container/50 outline-none transition-all" placeholder="Suche nach Desk, Team oder Raum..." type="text"/></div><div class="flex items-center gap-sm"><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">help_outline</span></button><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors relative"><span class="material-symbols-outlined">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span></button></div></div></header><main class="relative pt-16 bg-background min-h-screen"><div class="flex flex-col w-full">
+<div class="px-lg pt-lg pb-md">
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary mb-xs">Genehmigungscenter</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+          Hier finden Sie alle anstehenden Buchungsanfragen, die Ihre Freigabe erfordern, sowie das Protokoll kürzlich bearbeiteter Vorgänge.
+        </p>
+</div>
+<div class="flex items-center gap-sm bg-surface-container p-sm rounded-full">
+<button class="px-md py-sm rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md transition-colors hover:bg-primary-container hover:text-on-primary">Ausstehend (12)</button>
+<button class="px-md py-sm rounded-full text-on-surface-variant font-label-md text-label-md transition-colors hover:bg-surface-container-high">Protokoll (45)</button>
+</div>
+</div>
+<!-- Metrics Overview -->
+<div class="grid grid-cols-4 gap-md mb-xl">
+<div class="bg-surface p-md rounded-xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-tertiary-container/10 rounded-full blur-xl group-hover:bg-tertiary-container/20 transition-all"></div>
+<div class="flex items-center gap-sm mb-sm relative z-10">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/20 flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined text-[18px]">pending_actions</span>
+</div>
+<span class="font-label-md text-label-md text-outline">NEUE ANFRAGEN</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary relative z-10">12</div>
+<div class="mt-2 font-body-md text-body-md text-on-surface-variant flex items-center gap-xs relative z-10">
+<span class="material-symbols-outlined text-[14px] text-error">trending_up</span> +3 seit gestern
+        </div>
+</div>
+<div class="bg-surface p-md rounded-xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary-container/10 rounded-full blur-xl group-hover:bg-primary-container/20 transition-all"></div>
+<div class="flex items-center gap-sm mb-sm relative z-10">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+</div>
+<span class="font-label-md text-label-md text-outline">GENEHMIGT HEUTE</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary relative z-10">24</div>
+<div class="mt-2 font-body-md text-body-md text-on-surface-variant flex items-center gap-xs relative z-10">
+<span class="material-symbols-outlined text-[14px] text-tertiary-container">trending_down</span> -5 im Vgl. zu letzter Woche
+        </div>
+</div>
+<div class="bg-surface p-md rounded-xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-error-container/10 rounded-full blur-xl group-hover:bg-error-container/20 transition-all"></div>
+<div class="flex items-center gap-sm mb-sm relative z-10">
+<div class="w-8 h-8 rounded-full bg-error-container/20 flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+</div>
+<span class="font-label-md text-label-md text-outline">ABGELEHNT HEUTE</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary relative z-10">2</div>
+<div class="mt-2 font-body-md text-body-md text-on-surface-variant flex items-center gap-xs relative z-10">
+<span class="material-symbols-outlined text-[14px] text-outline">horizontal_rule</span> Konstant geblieben
+        </div>
+</div>
+<!-- Mini Chart -->
+<div class="bg-surface p-md rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-md text-label-md text-outline mb-xs">AUSLASTUNGSTREND (WOCHE)</span>
+<div class="h-16 w-full mt-auto relative flex items-end justify-between gap-1">
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[30%]"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[50%]"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[80%]"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[65%]"></div>
+<div class="w-full bg-primary rounded-t-sm h-[90%] relative"><div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-[10px] px-1.5 py-0.5 rounded font-bold">Heute</div></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[40%]"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[20%]"></div>
+</div>
+</div>
+</div>
+<!-- Main Content Area: Split Layout -->
+<div class="flex gap-lg h-[600px]">
+<!-- Pending Requests Column -->
+<div class="w-2/3 bg-surface rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-md bg-surface border-b border-surface-container flex items-center justify-between sticky top-0 z-10">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-sm">
+<span class="material-symbols-outlined text-tertiary-container">mark_email_unread</span>
+             Ausstehende Genehmigungen
+           </h2>
+<div class="flex items-center gap-sm">
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">filter_list</span></button>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</div>
+</div>
+<div class="overflow-y-auto flex-1 p-md flex flex-col gap-sm">
+<!-- Request Item 1 -->
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-sm border border-transparent hover:border-outline-variant/30 transition-all group relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-container group-hover:w-1.5 transition-all"></div>
+<div class="flex justify-between items-start pl-sm">
+<div class="flex gap-md">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="A professional headshot of a middle-aged man with glasses, wearing a light blue dress shirt, smiling gently in a well-lit office setting. Warm, natural lighting. Corporate style." src="../_shared/images/img-b76aae6954.png"/>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary text-[18px] leading-tight">Thomas Becker</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">IT-Abteilung • Systemadministration</p>
+<div class="mt-md flex flex-col gap-xs">
+<div class="flex items-center gap-sm font-data-tabular text-data-tabular text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_month</span>
+                         24. Nov - 28. Nov 2023 (Ganze Woche)
+                       </div>
+<div class="flex items-center gap-sm font-data-tabular text-data-tabular text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-outline">desk</span>
+                         Bereich A, Schreibtisch 42 (Fensterplatz)
+                       </div>
+<div class="flex items-start gap-sm font-body-md text-body-md text-on-surface mt-sm bg-surface-container p-sm rounded">
+<span class="material-symbols-outlined text-[16px] text-outline mt-0.5">chat</span>
+<span class="italic">"Benötige den Platz für die Vorbereitung des Server-Audits in der kommenden Woche. Nähe zum Serverraum bevorzugt."</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-sm">
+<span class="bg-surface-container-highest text-on-surface font-label-md text-label-md px-2 py-1 rounded">Priorität: Hoch</span>
+<span class="font-label-md text-label-md text-outline">Eingegangen vor 2 Std.</span>
+<div class="flex gap-sm mt-auto pt-lg">
+<button class="px-md py-2 rounded-lg text-error hover:bg-error-container/50 font-label-md text-label-md transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">close</span> Ablehnen
+                    </button>
+<button class="px-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md transition-colors flex items-center gap-xs shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span> Genehmigen
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Request Item 2 -->
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-sm border border-transparent hover:border-outline-variant/30 transition-all group relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-surface-container-highest group-hover:w-1.5 transition-all"></div>
+<div class="flex justify-between items-start pl-sm">
+<div class="flex gap-md">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-headline-md text-headline-md">
+                   SM
+                 </div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary text-[18px] leading-tight">Sarah Müller</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Personalwesen • Recruiting</p>
+<div class="mt-md flex flex-col gap-xs">
+<div class="flex items-center gap-sm font-data-tabular text-data-tabular text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_month</span>
+                         25. Nov 2023, 08:00 - 12:00
+                       </div>
+<div class="flex items-center gap-sm font-data-tabular text-data-tabular text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-outline">meeting_room</span>
+                         Meetingraum "Berlin" (Kapazität: 8)
+                       </div>
+<div class="flex items-start gap-sm font-body-md text-body-md text-on-surface mt-sm bg-surface-container p-sm rounded">
+<span class="material-symbols-outlined text-[16px] text-outline mt-0.5">chat</span>
+<span class="italic">"Vorstellungsgespräche für die neue Stelle im Projektmanagement."</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-sm">
+<span class="bg-surface-container-highest text-on-surface font-label-md text-label-md px-2 py-1 rounded">Priorität: Normal</span>
+<span class="font-label-md text-label-md text-outline">Eingegangen vor 5 Std.</span>
+<div class="flex gap-sm mt-auto pt-lg">
+<button class="px-md py-2 rounded-lg text-error hover:bg-error-container/50 font-label-md text-label-md transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">close</span> Ablehnen
+                    </button>
+<button class="px-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md transition-colors flex items-center gap-xs shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span> Genehmigen
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Request Item 3 -->
+<div class="bg-surface-container-lowest p-md rounded-lg shadow-sm border border-transparent hover:border-outline-variant/30 transition-all group relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-surface-container-highest group-hover:w-1.5 transition-all"></div>
+<div class="flex justify-between items-start pl-sm">
+<div class="flex gap-md">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="A young professional woman in her late 20s, wearing a navy blazer, standing in a modern office hallway with abstract art on the walls. Confident expression." src="../_shared/images/img-faa804e18b.png"/>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary text-[18px] leading-tight">Julia Weber</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Marketing • Kampagnenmanagement</p>
+<div class="mt-md flex flex-col gap-xs">
+<div class="flex items-center gap-sm font-data-tabular text-data-tabular text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_month</span>
+                         28. Nov 2023 (Ganztägig)
+                       </div>
+<div class="flex items-center gap-sm font-data-tabular text-data-tabular text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-outline">desk</span>
+                         Kreativzone, Desk K-12
+                       </div>
+<div class="flex items-start gap-sm font-body-md text-body-md text-on-surface mt-sm bg-surface-container p-sm rounded">
+<span class="material-symbols-outlined text-[16px] text-outline mt-0.5">warning</span>
+<span class="italic text-on-surface-variant">Kein Kommentar angegeben. Systemnotiz: Nutzerin hat in dieser Woche bereits 3 Tage gebucht.</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-sm">
+<span class="bg-surface-container-highest text-on-surface font-label-md text-label-md px-2 py-1 rounded">Priorität: Normal</span>
+<span class="font-label-md text-label-md text-outline">Eingegangen vor 1 Tag</span>
+<div class="flex gap-sm mt-auto pt-lg">
+<button class="px-md py-2 rounded-lg text-error hover:bg-error-container/50 font-label-md text-label-md transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">close</span> Ablehnen
+                    </button>
+<button class="px-md py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md transition-colors flex items-center gap-xs shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span> Genehmigen
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- History Column -->
+<div class="w-1/3 flex flex-col gap-md">
+<!-- Search / Filter for History -->
+<div class="bg-surface p-md rounded-xl shadow-sm">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">search</span>
+<input class="bg-surface-container w-full h-10 pl-10 pr-4 rounded text-body-md border-none focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Protokoll durchsuchen..." type="text"/>
+</div>
+</div>
+<!-- History List -->
+<div class="bg-surface rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
+<div class="p-md bg-surface-container-lowest flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">history</span>
+                 Kürzlich bearbeitet
+               </h3>
+</div>
+<div class="overflow-y-auto flex-1">
+<ul class="flex flex-col">
+<li class="p-md hover:bg-surface-container-lowest transition-colors flex items-start gap-md border-b border-surface-container/50">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/20 flex items-center justify-center shrink-0 mt-1 text-on-tertiary-container">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+<div>
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-data-tabular text-data-tabular text-primary">Dr. K. Schmidt</span>
+<span class="font-label-md text-label-md text-outline">Vor 10 Min.</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-1 mb-1">Meetingraum "München" (23. Nov)</p>
+<p class="font-label-md text-label-md text-tertiary-container">Genehmigt</p>
+</div>
+</li>
+<li class="p-md hover:bg-surface-container-lowest transition-colors flex items-start gap-md border-b border-surface-container/50">
+<div class="w-8 h-8 rounded-full bg-error-container/20 flex items-center justify-center shrink-0 mt-1 text-on-error-container">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</div>
+<div>
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-data-tabular text-data-tabular text-primary">A. Yilmaz</span>
+<span class="font-label-md text-label-md text-outline">Vor 45 Min.</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-1 mb-1">Desk C-04 (24. Nov)</p>
+<p class="font-label-md text-label-md text-error">Abgelehnt (Grund: Raumwartung)</p>
+</div>
+</li>
+<li class="p-md hover:bg-surface-container-lowest transition-colors flex items-start gap-md border-b border-surface-container/50 opacity-80">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/20 flex items-center justify-center shrink-0 mt-1 text-on-tertiary-container">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+<div>
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-data-tabular text-data-tabular text-primary">F. Wagner</span>
+<span class="font-label-md text-label-md text-outline">Gestern, 16:30</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-1 mb-1">Desk B-12 (22. - 24. Nov)</p>
+<p class="font-label-md text-label-md text-tertiary-container">Genehmigt</p>
+</div>
+</li>
+<li class="p-md hover:bg-surface-container-lowest transition-colors flex items-start gap-md border-b border-surface-container/50 opacity-80">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/20 flex items-center justify-center shrink-0 mt-1 text-on-tertiary-container">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+<div>
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-data-tabular text-data-tabular text-primary">S. Lehmann</span>
+<span class="font-label-md text-label-md text-outline">Gestern, 14:15</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-1 mb-1">Fokusraum 3 (23. Nov, Vormittag)</p>
+<p class="font-label-md text-label-md text-tertiary-container">Genehmigt</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="p-sm bg-surface text-center">
+<button class="font-label-md text-label-md text-primary hover:underline">Gesamtes Protokoll anzeigen</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple interaction for demo purposes (e.g., removing a request when approved/rejected)
+  document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('button:has(.material-symbols-outlined:contains("check")), button:has(.material-symbols-outlined:contains("close"))');
+    
+    buttons.forEach(btn => {
+      // Avoid targeting the icons in the history list, only the primary action buttons
+      if(btn.closest('.bg-surface-container-lowest') && btn.textContent.trim().match(/Genehmigen|Ablehnen/)) {
+          btn.addEventListener('click', function(e) {
+            const card = this.closest('.group');
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    card.remove();
+                    // Update pending count (naive implementation for visual feedback)
+                    const countEl = document.querySelector('.bg-secondary-container');
+                    const text = countEl.textContent;
+                    const match = text.match(/\((\d+)\)/);
+                    if(match && parseInt(match[1]) > 0) {
+                        countEl.textContent = `Ausstehend (${parseInt(match[1]) - 1})`;
+                    }
+                }, 300);
+            }
+          });
+      }
+    });
+  });
+</script></main></div></body></html>

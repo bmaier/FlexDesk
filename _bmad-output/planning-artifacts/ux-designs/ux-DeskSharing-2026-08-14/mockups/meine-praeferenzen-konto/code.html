@@ -1,0 +1,124 @@
+<!--
+  Governs: EXPERIENCE.md > Information Architecture (Meine Präferenzen — Konto-
+  Bereich), Open Questions #6 (geklärt).
+  Content scope decided 2026-08-18: keine neue IA-Oberfläche, sondern ein zweiter
+  Bereich innerhalb der bestehenden "Meine Präferenzen"-Seite. Deckt FR-21
+  (Klarnamen-Opt-in, aus per Default), FR-1 (Standardstandort), FR-29
+  (Benachrichtigungskanal) ab. Identität read-only aus BAMF-IDM.
+  Tokens from DESIGN.md frontmatter, applied literally (no build step).
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Meine Präferenzen — Konto — DeskSharing BAMF</title>
+<style>
+  :root {
+    --background: #f7f9fb;
+    --surface: #ffffff;
+    --surface-container-low: #f2f4f6;
+    --surface-container: #eceef0;
+    --on-surface: #191c1e;
+    --on-surface-variant: #43474f;
+    --outline-variant: #c3c6d1;
+    --primary: #001e40;
+    --on-primary: #ffffff;
+    --primary-container: #003366;
+    --on-primary-container: #799dd6;
+    --tertiary-container: #003a35;
+    --on-tertiary: #ffffff;
+    --focus-ring: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, -apple-system, sans-serif; background: var(--background); color: var(--on-surface); }
+  .frame { max-width: 800px; margin: 0 auto; padding: 32px 24px 64px; }
+  h1 { font-size: 24px; font-weight: 600; margin: 0 0 20px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--outline-variant); margin-bottom: 24px; }
+  .tab { padding: 10px 16px; font-size: 14px; font-weight: 600; color: var(--on-surface-variant); border-bottom: 2px solid transparent; cursor: pointer; }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .section { background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+  .section h2 { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+  .section .sub { font-size: 13px; color: var(--on-surface-variant); margin: 0 0 16px; }
+  .identity-row { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 40px; height: 40px; border-radius: 9999px; background: var(--primary-container); color: var(--on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+  .identity-text { font-size: 14px; }
+  .identity-text .name { font-weight: 600; }
+  .identity-text .meta { color: var(--on-surface-variant); font-size: 13px; }
+  .identity-note { font-size: 12px; color: var(--on-surface-variant); margin-top: 12px; }
+  .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--outline-variant); }
+  .row:first-of-type { border-top: none; padding-top: 0; }
+  .row-label { font-size: 14px; font-weight: 600; }
+  .row-desc { font-size: 13px; color: var(--on-surface-variant); margin-top: 2px; max-width: 420px; }
+  .toggle { width: 44px; height: 24px; border-radius: 9999px; background: var(--outline-variant); position: relative; flex-shrink: 0; cursor: pointer; }
+  .toggle.on { background: var(--tertiary-container); }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #fff; transition: transform 0.15s; }
+  .toggle.on::after { transform: translateX(20px); }
+  .toggle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  select { font-size: 14px; padding: 8px 12px; border-radius: 8px; border: none; background: var(--surface-container-low); color: var(--on-surface); flex-shrink: 0; }
+  .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <h1>Meine Präferenzen</h1>
+    <div class="tabs">
+      <div class="tab">Arbeitsplatz-Präferenzen</div>
+      <div class="tab active">Konto</div>
+    </div>
+
+    <div class="section">
+      <h2>Identität</h2>
+      <p class="sub">Verwaltet über BAMF-IDM, hier nicht editierbar.</p>
+      <div class="identity-row">
+        <div class="avatar">MK</div>
+        <div class="identity-text">
+          <div class="name">Nutzer:in A7F3-K91 (IDM-Kennung)</div>
+          <div class="meta">Referat 4B · Zentrale Nürnberg</div>
+        </div>
+      </div>
+      <p class="identity-note">Änderungen an Name oder Referat erfolgen über BAMF-IDM, nicht in DeskSharing.</p>
+    </div>
+
+    <div class="section">
+      <h2>Sichtbarkeit</h2>
+      <div class="row">
+        <div>
+          <div class="row-label">Klarnamen anzeigen (FR-21)</div>
+          <div class="row-desc">Standardmäßig sehen andere nur Ihre IDM-Kennung in "Wer sitzt wo?" und ähnlichen Ansichten. Aktivieren Sie dies, damit Ihr Klarname stattdessen angezeigt wird.</div>
+        </div>
+        <div class="toggle" role="switch" aria-checked="false" tabindex="0" aria-label="Klarnamen anzeigen"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Standard-Standort</h2>
+      <div class="row">
+        <div>
+          <div class="row-label">Standardstandort für Schnellbuchung (FR-1)</div>
+          <div class="row-desc">Wird als Ein-Klick-Vorschlag auf der Schnellbuchung-Seite verwendet.</div>
+        </div>
+        <select>
+          <option>Zentrale Nürnberg, Haus A</option>
+          <option>Zentrale Berlin, Haus C</option>
+          <option>Zuletzt genutzter Standort</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Benachrichtigungen</h2>
+      <div class="row">
+        <div>
+          <div class="row-label">Benachrichtigungskanal (FR-29)</div>
+          <div class="row-desc">Wie Sie über Stornierungen, Sperrungen und Genehmigungsentscheidungen informiert werden.</div>
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox-row"><input type="checkbox" checked> In-App-Postkorb</label>
+          <label class="checkbox-row"><input type="checkbox" checked> E-Mail</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

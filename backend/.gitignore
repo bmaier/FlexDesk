@@ -1,0 +1,17 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# PoC runtime data
+deskshare.db
+app/static/floorplans/*.svg
+!app/static/floorplans/.gitkeep
+.pytest_cache/
+*.db-journal

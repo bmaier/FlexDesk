@@ -1,0 +1,389 @@
+<html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={theme:{extend:{"colors":{"primary-fixed":"#d5e3ff","on-tertiary-container":"#38ac9f","primary":"#001e40","secondary-container":"#d0e1fb","on-error":"#ffffff","surface-container":"#eceef0","outline":"#737780","surface-container-lowest":"#ffffff","secondary":"#505f76","outline-variant":"#c3c6d1","inverse-surface":"#2d3133","surface-dim":"#d8dadc","background":"#f7f9fb","on-primary":"#ffffff","surface-container-high":"#e6e8ea","error-container":"#ffdad6","secondary-fixed-dim":"#b7c8e1","primary-container":"#003366","on-secondary-container":"#54647a","on-primary-fixed-variant":"#1f477b","tertiary":"#00231f","inverse-on-surface":"#eff1f3","on-tertiary-fixed-variant":"#005049","on-error-container":"#93000a","inverse-primary":"#a7c8ff","on-secondary-fixed-variant":"#38485d","surface-container-highest":"#e0e3e5","on-tertiary-fixed":"#00201d","on-secondary":"#ffffff","on-surface":"#191c1e","on-secondary-fixed":"#0b1c30","primary-fixed-dim":"#a7c8ff","on-background":"#191c1e","surface-container-low":"#f2f4f6","surface-variant":"#e0e3e5","surface-tint":"#3a5f94","tertiary-fixed":"#89f5e7","error":"#ba1a1a","tertiary-container":"#003a35","surface-bright":"#f7f9fb","on-primary-fixed":"#001b3c","on-primary-container":"#799dd6","secondary-fixed":"#d3e4fe","tertiary-fixed-dim":"#6bd8cb","on-surface-variant":"#43474f","on-tertiary":"#ffffff","surface":"#f7f9fb"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"md":"16px","xl":"32px","sm":"8px","gutter":"20px","lg":"24px","base":"4px","container-max":"1280px","xs":"4px"},"fontFamily":{"body-lg":["Inter"],"body-md":["Inter"],"data-tabular":["Inter"],"headline-md":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"headline-lg-mobile":["Inter"],"headline-sm":["Inter"]},"fontSize":{"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"data-tabular":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}]}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/></head><body class="bg-background font-body-md text-on-background"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col shadow-[1px_0_8px_rgba(0,0,0,0.02)]"><div class="p-lg mb-md flex flex-col gap-sm"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Navigation</div><nav class="flex flex-col gap-xs" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-sm"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="schnellbuchung" href="{{DATA:SCREEN:SCREEN_1}}"><span class="material-symbols-outlined text-on-tertiary-container">bolt</span><span>Schnellbuchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="standort-exploration" href="{{DATA:SCREEN:SCREEN_2}}"><span class="material-symbols-outlined">map</span><span>Standort-Exploration</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="meetingraum-buchung" href="{{DATA:SCREEN:SCREEN_3}}"><span class="material-symbols-outlined">meeting_room</span><span>Meetingraum-Buchung</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="meine-buchungen" href="{{DATA:SCREEN:SCREEN_4}}"><span class="material-symbols-outlined">event_available</span><span>Meine Buchungen</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="wer-sitzt-wo" href="{{DATA:SCREEN:SCREEN_6}}"><span class="material-symbols-outlined">person_search</span><span>Wer sitzt wo?</span></a><a aria-current="page" class="flex items-center gap-md px-md py-sm rounded-lg transition-all bg-secondary-container text-on-secondary-container font-semibold shadow-sm" data-path="facility-management" href="{{DATA:SCREEN:SCREEN_5}}"><span class="material-symbols-outlined">settings_applications</span><span>Facility-Management</span></a></nav></div><div class="p-lg flex flex-col gap-sm border-t border-outline-variant/30"><div class="text-label-md text-outline uppercase tracking-widest px-sm">Spezial</div><nav class="flex flex-col gap-xs"><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="buchen-fuer" href="#"><span class="material-symbols-outlined">group_add</span><span>Buchen für...</span></a><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="raum-blockieren" href="#"><span class="material-symbols-outlined">lock</span><span>Raum blockieren</span></a></nav></div><div class="mt-auto p-md"><div class="bg-surface-container-highest/50 p-sm rounded-xl flex items-center gap-md border border-outline-variant/20"><img alt="Profile" class="w-10 h-10 rounded-full border border-surface-container-highest object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLX7diI59ghzJV9sLUp2Hwf19Ea9nxUYOeXRHVqULSS3iJ19fk7nVcSs9TgP8wUIxvntg_tX-KVc5e1bLib5BO2qQmpaG4bYlK4D2XuAgbr0hVLMzrKwBwSlkc4u62SOg4YR0vwtetHKW-Sia_ZPpYvJmmDnpnsQ6VTsPaYhjAZm3rQ3jfkuRsYuaQ8ilY9MFKAdhTOIXRKYF0JXy4qX-BIrg_zuCMYSun2qyOLIxYCUXQLDlKNtcp"/><div class="flex flex-col overflow-hidden"><span class="text-body-md font-semibold text-primary truncate">Dr. Maria Schmidt</span><span class="text-label-md text-on-surface-variant">Abteilungsleitung</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-md z-40 px-lg flex items-center justify-between border-b border-outline-variant/20 shadow-sm"><div class="flex items-center gap-md"><img alt="DeskSharing BAMF Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnH8Bm-kxxQIXnytwczryq-RDYhz3IM0nwSZDF_YFocmn6xzhu0LnfjuJauAIl9qL6jMb1vaAnkUtSbzQQfXA9uVJQLCXODAR7MQ66S62sVzGjFRIEawaSZsCQgBagw3nLb_8JR217aU-CR-RsVzNDu0ooRKuFWBE2SjRS8qRFtYWITd0j7QdPBpHdBWaQdAfgsuaczFSWVVCd5pNNYiD3Jjb_wlFqmUST5TCU2eIqBezySiAzUYUW"/><span class="font-headline-sm text-primary">DeskSharing BAMF</span></div><div class="flex items-center gap-lg"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline">search</span><input class="bg-surface-container h-10 w-96 pl-10 pr-4 rounded-full text-body-md border-none focus:ring-2 focus:ring-on-tertiary-container/50 outline-none transition-all" placeholder="Suche nach Desk, Team oder Raum..." type="text"/></div><div class="flex items-center gap-sm"><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">help_outline</span></button><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors relative"><span class="material-symbols-outlined">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span></button></div></div></header><main class="relative pt-16 bg-background min-h-screen"><div class="flex flex-col w-full h-full relative" id="admin-view-root">
+<div class="px-xl py-lg flex items-center justify-between z-10 sticky top-0 bg-background/90 backdrop-blur-md">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-sm">
+<div class="text-label-md text-outline uppercase tracking-widest font-label-md">Facility Management</div>
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container animate-pulse"></span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Ressourcen-Hierarchie</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+                Zentrale Verwaltung der Liegenschaften, Gebäude, Räume und Arbeitsplätze. Änderungen werden sofort im Buchungssystem wirksam.
+            </p>
+</div>
+<div class="flex gap-md">
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-colors px-lg py-sm rounded-lg flex items-center gap-sm font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-[18px]">cloud_download</span>
+                Export CSV
+            </button>
+<button class="bg-primary hover:bg-primary/90 text-on-primary transition-colors px-lg py-sm rounded-lg flex items-center gap-sm font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                Ressource hinzufügen
+            </button>
+</div>
+</div>
+<div class="px-xl py-md flex-grow flex gap-lg min-h-0">
+<div class="w-1/3 flex flex-col gap-md">
+<div class="bg-surface-container rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+<div class="p-md bg-surface-container-high flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-primary">Standort-Baum</span>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-sm rounded-full hover:bg-surface-container-highest">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<div class="flex-grow overflow-y-auto p-md" id="tree-container">
+<div class="flex flex-col gap-xs tree-node">
+<div class="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-container-highest cursor-pointer transition-colors group" onclick="toggleNode(this)">
+<span class="material-symbols-outlined text-outline transition-transform duration-200">expand_more</span>
+<span class="material-symbols-outlined text-primary">domain</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold flex-grow">Campus Nord</span>
+<span class="text-label-md font-label-md text-outline bg-surface px-sm py-[2px] rounded-full group-hover:bg-surface-container">Liegenschaft</span>
+</div>
+<div class="pl-xl flex flex-col gap-xs transition-all duration-300 origin-top">
+<div class="flex flex-col gap-xs tree-node">
+<div class="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-container-highest cursor-pointer transition-colors group" onclick="toggleNode(this)">
+<span class="material-symbols-outlined text-outline transition-transform duration-200">expand_more</span>
+<span class="material-symbols-outlined text-secondary">apartment</span>
+<span class="font-body-md text-body-md text-on-surface flex-grow">Gebäude A</span>
+</div>
+<div class="pl-xl flex flex-col gap-xs transition-all duration-300 origin-top">
+<div class="flex flex-col gap-xs tree-node">
+<div class="flex items-center gap-sm p-sm rounded-lg bg-secondary-container/50 cursor-pointer transition-colors group" onclick="selectResource('A-101')">
+<span class="material-symbols-outlined text-outline-variant transition-transform duration-200">chevron_right</span>
+<span class="material-symbols-outlined text-primary-container">meeting_room</span>
+<span class="font-body-md text-body-md text-on-secondary-container font-medium flex-grow">Raum A-101 (Großraumbüro)</span>
+<div class="flex -space-x-2">
+<span class="w-6 h-6 rounded-full bg-on-tertiary-container flex items-center justify-center text-white text-[10px] font-bold shadow-sm">4</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-xs tree-node">
+<div class="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-container-highest cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-outline-variant transition-transform duration-200">chevron_right</span>
+<span class="material-symbols-outlined text-secondary">meeting_room</span>
+<span class="font-body-md text-body-md text-on-surface flex-grow">Raum A-102 (Meeting)</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-xs tree-node">
+<div class="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-container-highest cursor-pointer transition-colors group" onclick="toggleNode(this)">
+<span class="material-symbols-outlined text-outline transition-transform duration-200 -rotate-90">expand_more</span>
+<span class="material-symbols-outlined text-secondary">apartment</span>
+<span class="font-body-md text-body-md text-on-surface flex-grow">Gebäude B</span>
+</div>
+<div class="pl-xl hidden flex-col gap-xs transition-all duration-300 origin-top">
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-xs tree-node mt-md">
+<div class="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-container-highest cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-outline transition-transform duration-200 -rotate-90">expand_more</span>
+<span class="material-symbols-outlined text-primary">domain</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold flex-grow">Campus Süd</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="w-2/3 flex flex-col gap-lg" id="resource-details-panel">
+<div class="bg-surface-container rounded-xl shadow-sm p-lg flex flex-col gap-lg relative overflow-hidden">
+<div class="absolute -right-16 -top-16 w-64 h-64 bg-primary-fixed/20 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex items-start justify-between relative z-10">
+<div>
+<div class="flex items-center gap-sm text-label-md font-label-md text-outline mb-xs">
+<span>Campus Nord</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Gebäude A</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary flex items-center gap-md">
+<span class="material-symbols-outlined text-[32px] text-primary-container">meeting_room</span>
+                            Raum A-101
+                        </h2>
+</div>
+<div class="flex gap-sm">
+<button class="text-on-surface-variant hover:text-primary p-sm rounded-lg hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-error hover:bg-error-container/50 p-sm rounded-lg transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-md relative z-10">
+<div class="bg-surface rounded-lg p-md shadow-sm">
+<div class="text-label-md font-label-md text-outline uppercase">Typ</div>
+<div class="font-body-md text-body-md text-on-surface mt-xs font-medium">Großraumbüro</div>
+</div>
+<div class="bg-surface rounded-lg p-md shadow-sm">
+<div class="text-label-md font-label-md text-outline uppercase">Kapazität</div>
+<div class="font-body-md text-body-md text-on-surface mt-xs font-medium">4 Arbeitsplätze</div>
+</div>
+<div class="bg-surface rounded-lg p-md shadow-sm">
+<div class="text-label-md font-label-md text-outline uppercase">Status</div>
+<div class="flex items-center gap-sm mt-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-on-tertiary-container"></span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Aktiv</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl shadow-sm flex flex-col flex-grow overflow-hidden">
+<div class="p-lg bg-surface-container-highest/30 flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-primary">Arbeitsplätze in A-101</h3>
+<button class="text-primary hover:bg-primary-fixed/50 px-md py-sm rounded-lg font-label-md text-label-md transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Desk hinzufügen
+                    </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/50 text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">
+<th class="p-md font-semibold">ID</th>
+<th class="p-md font-semibold">Ausstattung (Tags)</th>
+<th class="p-md font-semibold">Status</th>
+<th class="p-md font-semibold">Aktionen</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<tr class="hover:bg-surface-container-highest/30 transition-colors group">
+<td class="p-md font-data-tabular font-medium text-primary flex items-center gap-sm">
+<span class="w-1 h-8 bg-on-tertiary-container rounded-r-md block absolute left-0"></span>
+                                    Desk-01
+                                </td>
+<td class="p-md">
+<div class="flex flex-wrap gap-xs">
+<span class="bg-surface px-sm py-xs rounded text-xs font-medium text-primary shadow-sm border border-outline-variant/20 flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">monitor</span> Double Monitor
+                                        </span>
+<span class="bg-surface px-sm py-xs rounded text-xs font-medium text-primary shadow-sm border border-outline-variant/20 flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">chair_alt</span> Ergonomic Chair
+                                        </span>
+<button class="text-outline hover:text-primary transition-colors ml-xs">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+</button>
+</div>
+</td>
+<td class="p-md">
+<span class="bg-tertiary-container/10 text-on-tertiary-container px-sm py-xs rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
+                                        Verfügbar
+                                    </span>
+</td>
+<td class="p-md">
+<div class="flex items-center gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs rounded hover:bg-surface-container-highest tooltip-trigger" data-tooltip="Bearbeiten">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-error transition-colors p-xs rounded hover:bg-error-container/50 tooltip-trigger" data-tooltip="Wartung blockieren" onclick="openMaintenanceModal('Desk-01')">
+<span class="material-symbols-outlined text-[20px]">build</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors group">
+<td class="p-md font-data-tabular font-medium text-primary flex items-center gap-sm">
+<span class="w-1 h-8 bg-on-tertiary-container rounded-r-md block absolute left-0"></span>
+                                    Desk-02
+                                </td>
+<td class="p-md">
+<div class="flex flex-wrap gap-xs">
+<span class="bg-surface px-sm py-xs rounded text-xs font-medium text-primary shadow-sm border border-outline-variant/20 flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">desk</span> Standing Desk
+                                        </span>
+<button class="text-outline hover:text-primary transition-colors ml-xs">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+</button>
+</div>
+</td>
+<td class="p-md">
+<span class="bg-tertiary-container/10 text-on-tertiary-container px-sm py-xs rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
+                                        Verfügbar
+                                    </span>
+</td>
+<td class="p-md">
+<div class="flex items-center gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-error transition-colors p-xs rounded hover:bg-error-container/50" onclick="openMaintenanceModal('Desk-02')">
+<span class="material-symbols-outlined text-[20px]">build</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors group bg-surface-container-highest/10">
+<td class="p-md font-data-tabular font-medium text-outline flex items-center gap-sm">
+<span class="w-1 h-8 bg-outline-variant rounded-r-md block absolute left-0"></span>
+                                    Desk-03
+                                </td>
+<td class="p-md">
+<div class="flex flex-wrap gap-xs opacity-70">
+<span class="bg-surface px-sm py-xs rounded text-xs font-medium text-primary shadow-sm border border-outline-variant/20 flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">monitor</span> Double Monitor
+                                        </span>
+</div>
+</td>
+<td class="p-md">
+<span class="bg-outline-variant/20 text-outline px-sm py-xs rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">build</span>
+                                        In Wartung (bis 15.11.)
+                                    </span>
+</td>
+<td class="p-md">
+<div class="flex items-center gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary-container transition-colors p-xs rounded hover:bg-primary-fixed/50 tooltip-trigger" data-tooltip="Wartung aufheben">
+<span class="material-symbols-outlined text-[20px]">lock_open</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors group">
+<td class="p-md font-data-tabular font-medium text-primary flex items-center gap-sm">
+<span class="w-1 h-8 bg-on-tertiary-container rounded-r-md block absolute left-0"></span>
+                                    Desk-04
+                                </td>
+<td class="p-md">
+<div class="flex flex-wrap gap-xs">
+<button class="text-outline hover:text-primary transition-colors ml-xs">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+<span class="text-xs ml-xs">Tag hinzufügen</span>
+</button>
+</div>
+</td>
+<td class="p-md">
+<span class="bg-tertiary-container/10 text-on-tertiary-container px-sm py-xs rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
+                                        Verfügbar
+                                    </span>
+</td>
+<td class="p-md">
+<div class="flex items-center gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs rounded hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="text-on-surface-variant hover:text-error transition-colors p-xs rounded hover:bg-error-container/50" onclick="openMaintenanceModal('Desk-04')">
+<span class="material-symbols-outlined text-[20px]">build</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="maintenance-modal">
+<div class="absolute inset-0 bg-inverse-surface/40 backdrop-blur-sm" onclick="closeMaintenanceModal()"></div>
+<div class="bg-surface rounded-2xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)] w-[480px] p-xl relative z-10 transform scale-95 transition-transform duration-300" id="maintenance-modal-content">
+<div class="flex items-center justify-between mb-lg">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-sm">
+<span class="material-symbols-outlined text-error">build</span>
+                    Ressource sperren
+                </h3>
+<button class="text-on-surface-variant hover:text-primary hover:bg-surface-container p-sm rounded-full transition-colors" onclick="closeMaintenanceModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">
+                Blockieren Sie <strong class="text-primary font-semibold" id="modal-desk-id">Desk-01</strong> für Wartungsarbeiten. Bestehende Buchungen in diesem Zeitraum werden storniert und die Nutzer benachrichtigt.
+            </p>
+<div class="flex flex-col gap-md mb-xl">
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface uppercase">Zeitraum</label>
+<div class="flex items-center gap-sm">
+<div class="relative flex-grow">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">calendar_today</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg pl-xl pr-sm py-sm font-data-tabular text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-on-tertiary-container/50 focus:border-on-tertiary-container transition-all" type="date"/>
+</div>
+<span class="text-outline">bis</span>
+<div class="relative flex-grow">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">calendar_today</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg pl-xl pr-sm py-sm font-data-tabular text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-on-tertiary-container/50 focus:border-on-tertiary-container transition-all" type="date"/>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface uppercase">Grund (Optional)</label>
+<textarea class="w-full bg-surface-container border border-outline-variant rounded-lg p-sm font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-on-tertiary-container/50 focus:border-on-tertiary-container transition-all resize-none h-24" placeholder="Z.B. Austausch Monitore..."></textarea>
+</div>
+</div>
+<div class="flex justify-end gap-md">
+<button class="px-md py-sm rounded-lg font-label-md text-label-md text-primary hover:bg-surface-container transition-colors" onclick="closeMaintenanceModal()">Abbrechen</button>
+<button class="px-md py-sm rounded-lg font-label-md text-label-md bg-error text-on-error hover:bg-error/90 transition-colors shadow-sm flex items-center gap-xs" onclick="closeMaintenanceModal()">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+                    Sperren bestätigen
+                </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+    function toggleNode(element) {
+        const icon = element.querySelector('.material-symbols-outlined:first-child');
+        const content = element.nextElementSibling;
+        
+        if (content && content.classList.contains('flex-col')) {
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                content.classList.add('flex');
+                icon.classList.remove('-rotate-90');
+            } else {
+                content.classList.add('hidden');
+                content.classList.remove('flex');
+                icon.classList.add('-rotate-90');
+            }
+        }
+    }
+
+    function selectResource(id) {
+        
+        const nodes = document.querySelectorAll('.tree-node > div');
+        nodes.forEach(n => {
+            n.classList.remove('bg-secondary-container/50');
+            n.classList.add('hover:bg-surface-container-highest');
+        });
+        
+        const selectedNode = event.currentTarget;
+        selectedNode.classList.remove('hover:bg-surface-container-highest');
+        selectedNode.classList.add('bg-secondary-container/50');
+        
+        
+        const panel = document.getElementById('resource-details-panel');
+        panel.style.opacity = '0';
+        panel.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            panel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            panel.style.opacity = '1';
+            panel.style.transform = 'translateY(0)';
+        }, 50);
+    }
+
+    function openMaintenanceModal(deskId) {
+        const modal = document.getElementById('maintenance-modal');
+        const content = document.getElementById('maintenance-modal-content');
+        document.getElementById('modal-desk-id').innerText = deskId;
+        
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        content.classList.remove('scale-95');
+        content.classList.add('scale-100');
+    }
+
+    function closeMaintenanceModal() {
+        const modal = document.getElementById('maintenance-modal');
+        const content = document.getElementById('maintenance-modal-content');
+        
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        content.classList.remove('scale-100');
+        content.classList.add('scale-95');
+    }
+</script></main></div></body></html>

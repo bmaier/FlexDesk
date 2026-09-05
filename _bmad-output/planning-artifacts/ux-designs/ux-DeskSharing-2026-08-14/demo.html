@@ -1,0 +1,146 @@
+<!--
+  Klickbare Demo-Shell für die 25 mockups/-Screens. Lädt die echten code.html-
+  Dateien per Iframe (volle Bildtreue, inkl. Tailwind-CDN/Google-Fonts/Platzhalter-
+  bilder der Stitch-Exporte) — funktioniert nur lokal im Browser, NICHT als
+  veröffentlichtes Artifact (dessen CSP blockiert genau diese externen Requests).
+  Kein Bestandteil der Spine selbst — reine Navigationshilfe zum Durchklicken.
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>DeskSharing BAMF — Klickbare UX-Demo</title>
+<style>
+  :root {
+    --background: #f7f9fb;
+    --surface: #ffffff;
+    --surface-container-low: #f2f4f6;
+    --surface-container-high: #e6e8ea;
+    --on-surface: #191c1e;
+    --on-surface-variant: #43474f;
+    --outline: #737780;
+    --outline-variant: #c3c6d1;
+    --primary: #001e40;
+    --on-primary: #ffffff;
+    --secondary-container: #d0e1fb;
+    --on-primary-fixed-variant: #1f477b;
+    --focus-ring: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body { font-family: Inter, -apple-system, sans-serif; background: var(--background); color: var(--on-surface); display: flex; }
+
+  .shell-nav { width: 280px; flex-shrink: 0; background: var(--surface-container-low); height: 100vh; overflow-y: auto; padding: 16px 12px; border-right: 1px solid var(--outline-variant); }
+  .shell-nav h1 { font-size: 14px; font-weight: 700; color: var(--primary); margin: 4px 8px 2px; }
+  .shell-nav .sub { font-size: 11px; color: var(--on-surface-variant); margin: 0 8px 16px; }
+  .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--outline); margin: 16px 8px 6px; }
+  .nav-item { display: block; width: 100%; text-align: left; padding: 8px 10px; border-radius: 8px; border: none; background: none; font-size: 13.5px; color: var(--on-surface-variant); cursor: pointer; margin-bottom: 2px; }
+  .nav-item:hover { background: var(--surface-container-high); }
+  .nav-item.active { background: var(--secondary-container); color: var(--on-primary-fixed-variant); font-weight: 600; }
+  .nav-item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .nav-item .flow-tag { display: inline-block; margin-left: 6px; font-size: 10px; color: var(--outline); }
+
+  .shell-main { flex: 1; display: flex; flex-direction: column; height: 100vh; }
+  .shell-topbar { height: 48px; flex-shrink: 0; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--outline-variant); background: var(--surface); gap: 12px; }
+  .shell-topbar .current { font-size: 13px; font-weight: 600; }
+  .shell-topbar .path { font-family: ui-monospace, monospace; font-size: 11.5px; color: var(--on-surface-variant); }
+  .shell-frame-wrap { flex: 1; position: relative; background: #ddd; }
+  iframe { width: 100%; height: 100%; border: none; display: block; }
+  .img-view { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--surface-container-low); }
+  .img-view img { max-width: 70%; max-height: 70%; object-fit: contain; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+</style>
+</head>
+<body>
+  <nav class="shell-nav" id="nav">
+    <h1>DeskSharing BAMF</h1>
+    <p class="sub">Klickbare Mock-Demo · 26 Screens</p>
+  </nav>
+  <main class="shell-main">
+    <div class="shell-topbar">
+      <span class="current" id="current-label">Schnellbuchung</span>
+      <span class="path" id="current-path">mockups/schnellbuchung/code.html</span>
+    </div>
+    <div class="shell-frame-wrap" id="frame-wrap">
+      <iframe id="frame" src="mockups/schnellbuchung/code.html" title="Vorschau"></iframe>
+    </div>
+  </main>
+
+<script>
+const GROUPS = [
+  { label: "ARBEITSPLATZ", items: [
+    ["Schnellbuchung", "schnellbuchung", "Flow 1"],
+    ["Standort-Exploration", "standort-exploration", "Flow 2"],
+    ["Gezielte Buchung — Raumplan", "gezielte-buchung-raumplan", "Flow 2"],
+    ["— Suche (verworfen, siehe reconcile)", "gezielte-buchung-suche"],
+    ["Meetingräume", "meetingraeume", "Flow 4"],
+    ["— Ops-Ansicht (Zeitleiste)", "meetingraeume-ops-ansicht"],
+    ["Serienbuchung", "serienbuchung", "Flow 3"],
+    ["Meine Buchungen", "meine-buchungen"],
+    ["Wer sitzt wo?", "wer-sitzt-wo"],
+  ]},
+  { label: "VERWALTUNG", items: [
+    ["Genehmigungscenter", "genehmigungscenter", "Flow 4"],
+    ["— Inbox/Meine Anfragen", "genehmigungscenter-inbox-toggle"],
+    ["Facility-Management", "facility-management", "Flow 7/8"],
+    ["— Label-Katalog", "facility-management-label-katalog", "Flow 8"],
+    ["— Zonen-Verwaltung", "facility-management-zonen", "Flow 9"],
+    ["— Auslastungsauswertung", "facility-management-auslastung"],
+    ["Vertrauliche Raumblockierung", "vertrauliche-raumblockierung", "Flow 5"],
+  ]},
+  { label: "SPEZIALFUNKTIONEN", items: [
+    ["Buchen für...", "buchen-fuer", "Flow 3"],
+    ["Meine Präferenzen", "meine-praeferenzen"],
+    ["— Konto-Bereich", "meine-praeferenzen-konto"],
+  ]},
+  { label: "CHROME-WEIT", items: [
+    ["Benachrichtigungs-Panel", "benachrichtigungs-panel"],
+    ["Suchergebnis-Ansicht", "suchergebnis-ansicht"],
+  ]},
+  { label: "SYSTEM-/FEHLERZUSTÄNDE", items: [
+    ["Anmelde-Redirect / Zugriff verweigert", "login-redirect"],
+    ["Systemfehler (global)", "systemfehler"],
+    ["Sitzung abgelaufen", "sitzung-abgelaufen"],
+  ]},
+  { label: "ASSETS", items: [
+    ["Logo", "logo", null, "img"],
+    ["Avatar-Referenzbild", "avatar-referenzbild", null, "img"],
+  ]},
+];
+
+const nav = document.getElementById('nav');
+const frameWrap = document.getElementById('frame-wrap');
+const currentLabel = document.getElementById('current-label');
+const currentPath = document.getElementById('current-path');
+
+GROUPS.forEach(group => {
+  const h = document.createElement('div');
+  h.className = 'section-label';
+  h.textContent = group.label;
+  nav.appendChild(h);
+  group.items.forEach(([label, slug, flowTag, type]) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-item';
+    btn.dataset.slug = slug;
+    btn.innerHTML = label + (flowTag ? `<span class="flow-tag">${flowTag}</span>` : '');
+    btn.addEventListener('click', () => loadSlug(slug, label, type));
+    nav.appendChild(btn);
+  });
+});
+
+function loadSlug(slug, label, type) {
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.slug === slug));
+  currentLabel.textContent = label.replace(/^— /, '');
+  if (type === 'img') {
+    currentPath.textContent = `mockups/${slug}/screen.png`;
+    frameWrap.innerHTML = `<div class="img-view"><img src="mockups/${slug}/screen.png" alt="${label}"></div>`;
+  } else {
+    currentPath.textContent = `mockups/${slug}/code.html`;
+    frameWrap.innerHTML = `<iframe id="frame" src="mockups/${slug}/code.html" title="Vorschau"></iframe>`;
+  }
+}
+
+// Initial: erster Eintrag aktiv markieren
+document.querySelector('.nav-item[data-slug="schnellbuchung"]').classList.add('active');
+</script>
+</body>
+</html>

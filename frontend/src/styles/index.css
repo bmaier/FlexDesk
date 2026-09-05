@@ -1,0 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background-color: #f7f9fb;
+  color: #191c1e;
+}
+
+.data-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background-color: #d0e1fb;
+}
+
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

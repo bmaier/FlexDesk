@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+
+<html class="light" lang="de"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Liegenschafts-Explorer | Standort-Exploration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c3c6d1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #737780; }
+        
+        .map-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(.33); opacity: 0.8; }
+            80%, 100% { transform: scale(1.2); opacity: 0; }
+        }
+        .drill-down-zoom {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-primary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-tertiary-fixed": "#00201d",
+                        "surface-bright": "#f7f9fb",
+                        "tertiary-fixed": "#89f5e7",
+                        "primary-container": "#003366",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#005049",
+                        "surface-container": "#eceef0",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#799dd6",
+                        "surface-container-highest": "#e0e3e5",
+                        "primary": "#001e40",
+                        "surface-container-low": "#f2f4f6",
+                        "inverse-primary": "#a7c8ff",
+                        "surface-tint": "#3a5f94",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "primary-fixed": "#d5e3ff",
+                        "outline-variant": "#c3c6d1",
+                        "inverse-surface": "#2d3133",
+                        "error-container": "#ffdad6",
+                        "outline": "#737780",
+                        "tertiary-fixed-dim": "#6bd8cb",
+                        "on-surface-variant": "#43474f",
+                        "surface-variant": "#e0e3e5",
+                        "surface": "#f7f9fb",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "tertiary": "#00231f",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-container": "#38ac9f",
+                        "on-surface": "#191c1e",
+                        "on-secondary-container": "#54647a",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-fixed": "#001b3c",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-background": "#191c1e",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "secondary": "#505f76",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "tertiary-container": "#003a35",
+                        "secondary-fixed": "#d3e4fe"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "sm": "8px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-['Inter'] antialiased">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Header: Shared Component Implementation -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-outline-variant bg-surface-container-lowest px-10 py-3 z-50 shrink-0">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6 text-primary-container">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M39.5563 34.1455V13.8546C39.5563 15.708 36.8773 17.3437 32.7927 18.3189C30.2914 18.916 27.263 19.2655 24 19.2655C20.737 19.2655 17.7086 18.916 15.2073 18.3189C11.1227 17.3437 8.44365 15.708 8.44365 13.8546V34.1455C8.44365 35.9988 11.1227 37.6346 15.2073 38.6098C17.7086 39.2069 20.737 39.5564 24 39.5564C27.1288 39.5564 30.2914 39.2069 32.7927 38.6098C36.8773 37.6346 39.5563 35.9988 39.5563 34.1455Z"></path>
+<path clip-rule="evenodd" d="M10.4485 13.8519C10.4749 13.9271 10.6203 14.246 11.379 14.7361C12.298 15.3298 13.7492 15.9145 15.6717 16.3735C18.0007 16.9296 20.8712 17.2655 24 17.2655C27.1288 17.2655 29.9993 16.9296 32.3283 16.3735C34.2508 15.9145 35.702 15.3298 36.621 14.7361C37.3796 14.246 37.5251 13.9271 37.5515 13.8519C37.5287 13.7876 37.4333 13.5973 37.0635 13.2931C36.5266 12.8516 35.6288 12.3647 34.343 11.9175C31.79 11.0295 28.1333 10.4437 24 10.4437C19.8667 10.4437 16.2099 11.0295 13.657 11.9175C12.3712 12.3647 11.4734 12.8516 10.9365 13.2931C10.5667 13.5973 10.4713 13.7876 10.4485 13.8519ZM37.5563 18.7877C36.3176 19.3925 34.8502 19.8839 33.2571 20.2642C30.5836 20.9025 27.3973 21.2655 24 21.2655C20.6027 21.2655 17.4164 20.9025 14.7429 20.2642C13.1498 19.8839 11.6824 19.3925 10.4436 18.7877V34.1275C10.4515 34.1545 10.5427 34.4867 11.379 35.027C12.298 35.6207 13.7492 36.2054 15.6717 36.6644C18.0007 37.2205 20.8712 37.5564 24 37.5564C27.1288 37.5564 29.9993 37.2205 32.3283 36.6644C34.2508 36.2054 35.702 35.6207 36.621 35.027C37.4573 34.4867 37.5485 34.1546 37.5563 34.1275V18.7877ZM41.5563 13.8546V34.1455C41.5563 36.1078 40.158 37.5042 38.7915 38.3869C37.3498 39.3182 35.4192 40.0389 33.2571 40.5551C30.5836 41.1934 27.3973 41.5564 24 41.5564C20.6027 41.5564 17.4164 41.1934 14.7429 40.5551C12.5808 40.0389 10.6502 39.3182 9.20848 38.3869C7.84205 37.5042 6.44365 36.1078 6.44365 34.1455L6.44365 13.8546C6.44365 12.2684 7.37223 11.0454 8.39581 10.2036C9.43325 9.3505 10.8137 8.67141 12.343 8.13948C15.4203 7.06909 19.5418 6.44366 24 6.44366C28.4582 6.44366 32.5797 7.06909 35.657 8.13948C37.1863 8.67141 38.5667 9.3505 39.6042 10.2036C40.6278 11.0454 41.5563 12.2684 41.5563 13.8546Z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-on-surface text-lg font-bold leading-tight tracking-tight">Liegenschafts-Explorer</h2>
+</div>
+<label class="flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-on-secondary-container flex border-none bg-surface-container items-center justify-center pl-4 rounded-l-lg border-r-0" data-icon="MagnifyingGlass" data-size="24px" data-weight="regular">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-on-surface focus:outline-0 focus:ring-0 border-none bg-surface-container focus:border-none h-full placeholder:text-outline px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="Suche..." value=""/>
+</div>
+</label>
+</div>
+<div class="flex flex-1 justify-end gap-4">
+<button class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<main class="flex flex-1 overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-80 flex flex-col border-r border-outline-variant bg-surface-container-low z-40 transition-all duration-300">
+<div class="p-4 border-b border-outline-variant">
+<h3 class="text-sm font-semibold text-on-surface mb-1">Standort-Suche</h3>
+<p class="text-xs text-outline">54 Liegenschaften aktiv</p>
+</div>
+<div class="flex-1 overflow-y-auto p-2 space-y-1" id="location-list">
+<!-- Filter Section -->
+<div class="px-2 py-2">
+<div class="flex items-center justify-between text-xs font-bold text-outline uppercase tracking-wider mb-2">
+<span>Liegenschaften</span>
+<span class="material-symbols-outlined text-sm">tune</span>
+</div>
+</div>
+<!-- Location Items -->
+<button class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-highest text-left group transition-all" onclick="zoomTo('Berlin')">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full bg-primary"></div>
+<div>
+<p class="text-sm font-medium text-on-surface">Berlin - Campus Nord</p>
+<p class="text-xs text-outline">12 Gebäude • 85% Belegt</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-highest text-left group transition-all" onclick="zoomTo('Hamburg')">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full bg-error"></div>
+<div>
+<p class="text-sm font-medium text-on-surface">Hamburg - City West</p>
+<p class="text-xs text-outline">4 Gebäude • 98% Belegt</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-highest text-left group transition-all" onclick="zoomTo('Munich')">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full bg-on-tertiary-container"></div>
+<div>
+<p class="text-sm font-medium text-on-surface">München - Isar Werk</p>
+<p class="text-xs text-outline">18 Gebäude • 62% Belegt</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-highest text-left group transition-all" onclick="zoomTo('Frankfurt')">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full bg-primary"></div>
+<div>
+<p class="text-sm font-medium text-on-surface">Frankfurt - Main-Hub</p>
+<p class="text-xs text-outline">9 Gebäude • 45% Belegt</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</button>
+<!-- More placeholder items -->
+<div class="px-2 py-4 space-y-4">
+<div class="h-4 bg-surface-container-highest rounded-full w-3/4 opacity-40"></div>
+<div class="h-4 bg-surface-container-highest rounded-full w-1/2 opacity-30"></div>
+<div class="h-4 bg-surface-container-highest rounded-full w-2/3 opacity-20"></div>
+</div>
+</div>
+<!-- Sidebar Footer Stats -->
+<div class="p-4 bg-surface-container border-t border-outline-variant">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary">data_exploration</span>
+<span class="text-xs font-bold text-on-surface-variant uppercase">Portfolio Status</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="p-2 rounded bg-surface-container-lowest border border-outline-variant">
+<p class="text-[10px] text-outline font-bold">FREI</p>
+<p class="text-sm font-bold text-on-tertiary-container">42.4k m²</p>
+</div>
+<div class="p-2 rounded bg-surface-container-lowest border border-outline-variant">
+<p class="text-[10px] text-outline font-bold">RESERVIERT</p>
+<p class="text-sm font-bold text-primary">12.8k m²</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Map Workspace -->
+<section class="relative flex-1 bg-surface-dim overflow-hidden flex flex-col">
+<!-- Breadcrumbs -->
+<div class="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-lowest/90 shadow-sm backdrop-blur-md border border-outline-variant">
+<button class="text-xs font-medium text-primary hover:underline">Deutschland</button>
+<span class="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+<span class="text-xs font-medium text-on-surface" id="breadcrumb-city">Alle Standorte</span>
+</div>
+<!-- Map Controls -->
+<div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
+<div class="flex flex-col rounded-lg bg-surface-container-lowest shadow-md overflow-hidden border border-outline-variant">
+<button class="p-2 hover:bg-surface-container-high transition-colors" title="Zoom In"><span class="material-symbols-outlined">add</span></button>
+<hr class="border-outline-variant"/>
+<button class="p-2 hover:bg-surface-container-high transition-colors" title="Zoom Out"><span class="material-symbols-outlined">remove</span></button>
+</div>
+<button class="p-2 rounded-lg bg-surface-container-lowest shadow-md hover:bg-surface-container-high transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-lowest shadow-md hover:bg-surface-container-high transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">layers</span>
+</button>
+</div>
+<!-- Map Viewport -->
+<div class="relative flex-1 cursor-grab active:cursor-grabbing drill-down-zoom" id="map-container">
+<!-- Germany Map Base -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="relative w-[500px] h-[700px] opacity-20">
+<!-- Simulated Map Pattern -->
+<div class="absolute inset-0 bg-secondary/10" style="clip-path: polygon(30% 0%, 70% 0%, 95% 20%, 100% 50%, 80% 90%, 50% 100%, 10% 90%, 0% 50%, 5% 20%);"></div>
+</div>
+</div>
+<!-- Animated Background Layer -->
+<webgl-shader class="absolute inset-0 pointer-events-none opacity-30" src="{{DATA:ANIMATION:ANIMATION_1}}"></webgl-shader>
+<!-- Markers: Clusters -->
+<!-- Berlin -->
+<div class="absolute top-[30%] left-[65%] group cursor-pointer transition-transform hover:scale-110 z-10" id="marker-berlin" onclick="zoomTo('Berlin')">
+<div class="relative">
+<div class="map-pulse absolute inset-0 bg-primary/40 rounded-full scale-150"></div>
+<div class="relative flex items-center justify-center size-10 rounded-full bg-primary text-on-primary shadow-lg border-2 border-surface-bright">
+<span class="text-xs font-bold">12</span>
+</div>
+<div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap bg-surface-container-lowest px-2 py-1 rounded text-[10px] font-bold shadow border border-outline-variant">BERLIN</div>
+</div>
+</div>
+<!-- Munich -->
+<div class="absolute top-[75%] left-[55%] group cursor-pointer transition-transform hover:scale-110 z-10" id="marker-munich" onclick="zoomTo('Munich')">
+<div class="relative">
+<div class="map-pulse absolute inset-0 bg-on-tertiary-container/40 rounded-full scale-150"></div>
+<div class="relative flex items-center justify-center size-12 rounded-full bg-on-tertiary-container text-on-tertiary shadow-lg border-2 border-surface-bright">
+<span class="text-xs font-bold">18</span>
+</div>
+<div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap bg-surface-container-lowest px-2 py-1 rounded text-[10px] font-bold shadow border border-outline-variant">MÜNCHEN</div>
+</div>
+</div>
+<!-- Frankfurt -->
+<div class="absolute top-[55%] left-[35%] group cursor-pointer transition-transform hover:scale-110 z-10" id="marker-frankfurt" onclick="zoomTo('Frankfurt')">
+<div class="relative">
+<div class="relative flex items-center justify-center size-8 rounded-full bg-primary text-on-primary shadow-lg border-2 border-surface-bright">
+<span class="text-[10px] font-bold">9</span>
+</div>
+<div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap bg-surface-container-lowest px-2 py-1 rounded text-[10px] font-bold shadow border border-outline-variant">FRANKFURT</div>
+</div>
+</div>
+<!-- Hamburg -->
+<div class="absolute top-[15%] left-[40%] group cursor-pointer transition-transform hover:scale-110 z-10" id="marker-hamburg" onclick="zoomTo('Hamburg')">
+<div class="relative">
+<div class="map-pulse absolute inset-0 bg-error/40 rounded-full scale-150"></div>
+<div class="relative flex items-center justify-center size-7 rounded-full bg-error text-on-primary shadow-lg border-2 border-surface-bright">
+<span class="text-[10px] font-bold">4</span>
+</div>
+<div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap bg-surface-container-lowest px-2 py-1 rounded text-[10px] font-bold shadow border border-outline-variant">HAMBURG</div>
+</div>
+</div>
+<!-- Scatter of Small Clusters -->
+<div class="absolute top-[45%] left-[60%] size-3 bg-secondary/60 rounded-full border border-white"></div>
+<div class="absolute top-[25%] left-[30%] size-4 bg-secondary/60 rounded-full border border-white"></div>
+<div class="absolute top-[65%] left-[25%] size-3 bg-secondary/60 rounded-full border border-white"></div>
+<div class="absolute top-[80%] left-[40%] size-5 bg-secondary/60 rounded-full border border-white"></div>
+<div class="absolute top-[50%] left-[75%] size-4 bg-secondary/60 rounded-full border border-white"></div>
+</div>
+<!-- Floating Search Bar for Map -->
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-full max-w-lg px-4">
+<div class="bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant p-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-outline ml-2">explore</span>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-sm" placeholder="Geben Sie eine Adresse oder ein Gebäude ein..." type="text"/>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-bold hover:bg-primary-fixed-dim transition-colors">Finden</button>
+</div>
+</div>
+<!-- Zoom Transition Overlays (Hidden by default) -->
+<div class="absolute inset-0 bg-surface-bright z-30 pointer-events-none opacity-0 transition-opacity duration-500" id="zoom-overlay">
+<div class="flex flex-col items-center justify-center h-full gap-4">
+<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+<p class="text-sm font-medium text-primary">Lade Campus-Struktur...</p>
+</div>
+</div>
+<!-- Detail Sidebar (Building View - Appears on Zoom) -->
+<div class="absolute top-0 right-0 h-full w-96 bg-surface-container-lowest shadow-2xl z-40 translate-x-full transition-transform duration-500 border-l border-outline-variant overflow-y-auto" id="building-sidebar">
+<div class="p-6">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-xl font-bold text-on-surface" id="detail-title">Campus Nord</h2>
+<button class="p-2 rounded-full hover:bg-surface-container transition-colors" onclick="resetMap()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="rounded-xl overflow-hidden mb-6 h-48 border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A clean, high-angle architectural visualization of a modern office campus building with glass facades and a minimalist green park area, under bright afternoon sunlight, in a crisp light-mode aesthetic with blue and white tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBjvSh_ZAm3g6-I1qjrqnhQ5xXzRZII9CFe7PobjJhl1dJJAi4drBuAenXJz6LKntNDbxbqHK872oE9ZOYbjzGvL0ZEa-1_RabjAa8yKntfsW0eVwAJvmBIhBh2XpGk_egv4S-gEKDiWpa8egyjrxN7ZFMLFPY6u0cG_V0mZgO91_YuEfmwS__MIUi__f1rv-KpNcHrqn0k4RAICKYi-r-C4l-sqZKRcNoZ6Mf6zT9NYD7hpj0KSEf"/>
+</div>
+<div class="space-y-6">
+<div>
+<p class="text-[10px] font-bold text-outline uppercase mb-2">Gebäudeauswahl</p>
+<div class="grid grid-cols-1 gap-2">
+<button class="flex items-center justify-between p-3 rounded-lg border border-primary bg-primary-fixed/30 group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">apartment</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Hauptgebäude A</p>
+<p class="text-xs text-outline">5 Etagen • 12 Slots frei</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary">login</span>
+</button>
+<button class="flex items-center justify-between p-3 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">apartment</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Modulhaus B</p>
+<p class="text-xs text-outline">3 Etagen • Voll belegt</p>
+</div>
+</div>
+</button>
+<button class="flex items-center justify-between p-3 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">apartment</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Technikzentrale</p>
+<p class="text-xs text-outline">2 Etagen • 1 Slot frei</p>
+</div>
+</div>
+</button>
+</div>
+</div>
+<div>
+<p class="text-[10px] font-bold text-outline uppercase mb-2">Live-Auslastung</p>
+<div class="bg-surface-container p-4 rounded-xl">
+<div class="flex justify-between items-center mb-1">
+<span class="text-xs font-medium text-on-surface-variant">Besucher/Mitarbeiter</span>
+<span class="text-xs font-bold text-primary">82%</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full" style="width: 82%"></div>
+</div>
+</div>
+</div>
+<button class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-on-primary-fixed-variant transition-colors shadow-lg">
+<span class="material-symbols-outlined">map</span>
+                            Grundriss öffnen
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<script>
+    const mapContainer = document.getElementById('map-container');
+    const zoomOverlay = document.getElementById('zoom-overlay');
+    const buildingSidebar = document.getElementById('building-sidebar');
+    const breadcrumbCity = document.getElementById('breadcrumb-city');
+    const detailTitle = document.getElementById('detail-title');
+
+    function zoomTo(city) {
+        // Mock Zoom Animation
+        let scale = 3;
+        let x = 0, y = 0;
+
+        if (city === 'Berlin') { x = -15; y = 20; }
+        else if (city === 'Munich') { x = -5; y = -25; }
+        else if (city === 'Hamburg') { x = 10; y = 35; }
+        else if (city === 'Frankfurt') { x = 15; y = -5; }
+
+        mapContainer.style.transform = `scale(${scale}) translate(${x}%, ${y}%)`;
+        mapContainer.style.opacity = '0.4';
+        
+        // Show Loading State
+        zoomOverlay.classList.remove('opacity-0');
+        zoomOverlay.classList.add('opacity-100');
+
+        setTimeout(() => {
+            zoomOverlay.classList.remove('opacity-100');
+            zoomOverlay.classList.add('opacity-0');
+            
+            breadcrumbCity.innerText = city;
+            detailTitle.innerText = city + ' - Campus';
+            buildingSidebar.classList.remove('translate-x-full');
+            buildingSidebar.classList.add('translate-x-0');
+        }, 800);
+    }
+
+    function resetMap() {
+        mapContainer.style.transform = 'scale(1) translate(0, 0)';
+        mapContainer.style.opacity = '1';
+        breadcrumbCity.innerText = 'Alle Standorte';
+        buildingSidebar.classList.remove('translate-x-0');
+        buildingSidebar.classList.add('translate-x-full');
+    }
+
+    // Interactive Drag simulation (visual only)
+    let isDragging = false;
+    let startX, startY;
+    let translateX = 0, translateY = 0;
+
+    mapContainer.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.pageX - translateX;
+        startY = e.pageY - translateY;
+    });
+
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    mapContainer.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        translateX = e.pageX - startX;
+        translateY = e.pageY - startY;
+        // Limit map movement for simulation
+        const currentScale = mapContainer.style.transform.includes('scale(3)') ? 3 : 1;
+        if(currentScale === 1) {
+            mapContainer.style.transform = `translate(${translateX/10}px, ${translateY/10}px)`;
+        }
+    });
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') resetMap();
+    });
+</script>
+</body></html>

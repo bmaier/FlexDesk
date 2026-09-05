@@ -1,0 +1,133 @@
+<!--
+  Governs: EXPERIENCE.md > Information Architecture (Benachrichtigungs-Panel row),
+  Component Patterns (Listen), State Patterns (Fremdstornierung/Sperrung,
+  Ausstehend), Accessibility Floor (Screenreader-Ankündigungen).
+  Content scope decided 2026-08-18: nur die zwei PRD-belegten Fälle
+  (FR-29 Fremdstornierung/Sperrung; Genehmigungsstatus-Änderung genehmigt/abgelehnt).
+  Ergänzt 2026-08-20: dritter Meldungstyp "Erinnerung" (FR-49, proaktive
+  Erinnerung vor Buchungsbeginn/Check-in-Frist), siehe EXPERIENCE.md.
+  Tokens from DESIGN.md frontmatter, applied literally (no build step).
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Benachrichtigungs-Panel — DeskSharing BAMF</title>
+<style>
+  :root {
+    --background: #f7f9fb;
+    --surface: #ffffff;
+    --surface-container-low: #f2f4f6;
+    --surface-container: #eceef0;
+    --surface-container-high: #e6e8ea;
+    --on-surface: #191c1e;
+    --on-surface-variant: #43474f;
+    --outline-variant: #c3c6d1;
+    --primary: #001e40;
+    --on-primary: #ffffff;
+    --primary-container: #003366;
+    --tertiary-fixed: #89f5e7;
+    --on-tertiary-fixed-variant: #005049;
+    --error-container: #ffdad6;
+    --on-error-container: #93000a;
+    --secondary-container: #d0e1fb;
+    --on-secondary-container: #54647a;
+    --focus-ring: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, -apple-system, sans-serif; background: var(--background); color: var(--on-surface); }
+  .browser-frame { max-width: 1280px; margin: 0 auto; min-height: 100vh; position: relative; }
+  .header { height: 64px; background: rgba(247,249,251,0.8); backdrop-filter: blur(8px); border-bottom: 1px solid var(--outline-variant); display: flex; align-items: center; justify-content: flex-end; padding: 0 24px; gap: 16px; }
+  .bell-btn { position: relative; width: 40px; height: 40px; border-radius: 9999px; border: none; background: var(--surface-container-low); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .bell-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .bell-dot { position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; border-radius: 9999px; background: var(--error-container); border: 1.5px solid #ba1a1a; }
+  .panel { position: absolute; top: 72px; right: 24px; width: 400px; background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 16px; box-shadow: 0px 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden; }
+  .panel-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--outline-variant); }
+  .panel-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .mark-read { font-size: 13px; color: var(--primary); background: none; border: none; cursor: pointer; font-weight: 500; }
+  .mark-read:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px; }
+  .list { list-style: none; margin: 0; padding: 0; max-height: 420px; overflow-y: auto; }
+  .item { display: flex; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--outline-variant); cursor: pointer; }
+  .item:hover, .item:focus-visible { background: var(--surface-container-low); }
+  .item:last-child { border-bottom: none; }
+  .item.unread { background: rgba(0,30,64,0.03); }
+  .icon { flex-shrink: 0; width: 36px; height: 36px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .icon.warn { background: var(--error-container); color: var(--on-error-container); }
+  .icon.approve { background: var(--tertiary-fixed); color: var(--on-tertiary-fixed-variant); }
+  .icon.reminder { background: var(--secondary-container); color: var(--on-secondary-container); }
+  .item-body { flex: 1; min-width: 0; }
+  .item-title { font-size: 14px; font-weight: 600; margin: 0 0 2px; }
+  .item-text { font-size: 13.5px; color: var(--on-surface-variant); margin: 0; line-height: 1.4; }
+  .item-time { font-size: 12px; color: var(--on-surface-variant); margin-top: 4px; display: block; }
+  .unread-dot { width: 8px; height: 8px; border-radius: 9999px; background: var(--primary); flex-shrink: 0; margin-top: 6px; }
+  .caption { max-width: 1280px; margin: 24px auto; padding: 0 24px; font-size: 13px; color: var(--on-surface-variant); }
+</style>
+</head>
+<body>
+  <div class="browser-frame">
+    <div class="header">
+      <button class="bell-btn" aria-label="Benachrichtigungen, 5 ungelesen" aria-haspopup="true" aria-expanded="true">
+        🔔
+        <span class="bell-dot" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div class="panel" role="region" aria-label="Benachrichtigungen">
+      <div class="panel-header">
+        <h2>Benachrichtigungen</h2>
+        <button class="mark-read">Alle als gelesen markieren</button>
+      </div>
+      <ul class="list">
+        <li class="item unread" tabindex="0">
+          <span class="icon warn" aria-hidden="true">⚠</span>
+          <div class="item-body">
+            <p class="item-title">Buchung storniert</p>
+            <p class="item-text">Ihre Buchung für Platz A.101 wurde storniert. Grund: Wasserschaden, Raum bis auf Weiteres nicht nutzbar.</p>
+            <span class="item-time">Vor 12 Minuten</span>
+          </div>
+          <span class="unread-dot" aria-hidden="true"></span>
+        </li>
+        <li class="item unread" tabindex="0">
+          <span class="icon approve" aria-hidden="true">✓</span>
+          <div class="item-body">
+            <p class="item-title">Anfrage genehmigt</p>
+            <p class="item-text">Ihre Anfrage für Konferenzraum Berlin (Mo, 24.08., 10:00–11:30) wurde von Frau Ostermann genehmigt.</p>
+            <span class="item-time">Vor 2 Stunden</span>
+          </div>
+          <span class="unread-dot" aria-hidden="true"></span>
+        </li>
+        <li class="item" tabindex="0">
+          <span class="icon warn" aria-hidden="true">✕</span>
+          <div class="item-body">
+            <p class="item-title">Anfrage abgelehnt</p>
+            <p class="item-text">Ihre Anfrage für Boardroom Wien wurde abgelehnt. Grund: Raum ist an diesem Tag wegen Reinigungsarbeiten gesperrt.</p>
+            <span class="item-time">Gestern, 16:42</span>
+          </div>
+        </li>
+        <li class="item unread" tabindex="0">
+          <span class="icon reminder" aria-hidden="true">⏰</span>
+          <div class="item-body">
+            <p class="item-title">Erinnerung</p>
+            <p class="item-text">Erinnerung: Ihre Buchung A.204 beginnt in 1 Stunde.</p>
+            <span class="item-time">Vor 3 Minuten</span>
+          </div>
+          <span class="unread-dot" aria-hidden="true"></span>
+        </li>
+        <li class="item unread" tabindex="0">
+          <span class="icon reminder" aria-hidden="true">⏰</span>
+          <div class="item-body">
+            <p class="item-title">Erinnerung</p>
+            <p class="item-text">Check-in-Frist für Platz B.12 endet in 15 Minuten.</p>
+            <span class="item-time">Vor 1 Minute</span>
+          </div>
+          <span class="unread-dot" aria-hidden="true"></span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="caption">
+      Zustand: geöffnetes Panel, 4 ungelesen + 1 gelesen. Icon warn (Rot, Error-Container) = Fremdeingriff/Ablehnung; Icon approve (Teal, Tertiary-Fixed) = Genehmigung; Icon reminder (Slate, Secondary-Container) = proaktive Erinnerung vor Buchungsbeginn/Check-in-Frist (FR-49). Leerer Zustand ("Keine neuen Benachrichtigungen") folgt dem Empty-States-Muster aus DESIGN.md.
+    </div>
+  </div>
+</body>
+</html>

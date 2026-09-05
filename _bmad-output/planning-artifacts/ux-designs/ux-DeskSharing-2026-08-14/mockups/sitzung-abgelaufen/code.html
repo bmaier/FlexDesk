@@ -1,0 +1,71 @@
+<!--
+  Governs: EXPERIENCE.md > State Patterns (Sitzung abgelaufen), Component Patterns
+  (Modals/Dialoge), DESIGN.md > Components > Modals/Dialoge (Ausnahme ohne
+  Sekundärbutton).
+  Content scope decided 2026-08-18: Keycloak-Token verfällt während aktiver Nutzung,
+  stiller Refresh schlägt fehl → blockierendes Modal, einzige Aktion "Erneut anmelden".
+  Background zeigt eine verblasste Schnellbuchung-Ansicht, um zu zeigen dass der
+  Scrim über einer laufenden Session liegt (kein Datenverlust-Eindruck).
+  Tokens from DESIGN.md frontmatter, applied literally (no build step).
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Sitzung abgelaufen — DeskSharing BAMF</title>
+<style>
+  :root {
+    --background: #f7f9fb;
+    --surface: #ffffff;
+    --surface-container-low: #f2f4f6;
+    --surface-container: #eceef0;
+    --on-surface: #191c1e;
+    --on-surface-variant: #43474f;
+    --outline-variant: #c3c6d1;
+    --primary: #001e40;
+    --on-primary: #ffffff;
+    --inverse-surface: #2d3133;
+    --focus-ring: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, -apple-system, sans-serif; background: var(--background); color: var(--on-surface); }
+  .page { max-width: 1280px; margin: 0 auto; padding: 32px 24px; filter: blur(2px); opacity: 0.6; pointer-events: none; }
+  .page h2 { font-size: 24px; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 12px; height: 120px; }
+  .scrim { position: fixed; inset: 0; background: rgba(45,49,51,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+  .modal { background: var(--surface); border-radius: 16px; box-shadow: 0px 20px 25px -5px rgba(0,0,0,0.1); width: 380px; overflow: hidden; }
+  .modal-header { background: var(--primary); color: var(--on-primary); padding: 20px 24px; display: flex; align-items: center; gap: 12px; }
+  .modal-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .modal-body { padding: 24px; }
+  .modal-body p { font-size: 14px; color: var(--on-surface-variant); line-height: 1.5; margin: 0; }
+  .modal-footer { padding: 16px 24px 24px; display: flex; justify-content: flex-end; }
+  .btn-primary { background: var(--primary); color: var(--on-primary); border: none; border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .caption { position: fixed; bottom: 16px; left: 16px; font-size: 12px; color: var(--on-surface-variant); background: var(--surface); padding: 6px 12px; border-radius: 8px; }
+</style>
+</head>
+<body>
+  <div class="page" aria-hidden="true">
+    <h2>Schnellbuchung</h2>
+    <div class="grid">
+      <div class="card"></div><div class="card"></div><div class="card"></div>
+    </div>
+  </div>
+  <div class="scrim">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <span aria-hidden="true">🔒</span>
+        <h2 id="modal-title">Sitzung abgelaufen</h2>
+      </div>
+      <div class="modal-body">
+        <p>Ihre Sitzung ist aus Sicherheitsgründen abgelaufen. Ihre bisherigen Eingaben bleiben erhalten — melden Sie sich erneut an, um fortzufahren.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary">Erneut anmelden</button>
+      </div>
+    </div>
+  </div>
+  <div class="caption">Kein Abbrechen-Button — Session ist bereits ungültig, kein Escape-Dismiss.</div>
+</body>
+</html>

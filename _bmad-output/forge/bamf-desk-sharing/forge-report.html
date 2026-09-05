@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Forge Report — Desk Sharing BAMF</title>
+<style>
+  :root{
+    --bg:#f6f5f2; --panel:#ffffff; --ink:#1c1b19; --muted:#5b5852;
+    --line:#e4e1da; --accent:#8a1f2b; --accent-ink:#fff;
+    --lock:#1f6f4a; --crack:#a5680f; --open:#a5330f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#17161a; --panel:#211f24; --ink:#eeece8; --muted:#a29d92;
+      --line:#37343a; --accent:#c94a55; --accent-ink:#1c1b19;
+      --lock:#3fae7f; --crack:#d99a3a; --open:#e2643a; }
+  }
+  :root[data-theme="dark"]{ --bg:#17161a; --panel:#211f24; --ink:#eeece8; --muted:#a29d92;
+      --line:#37343a; --accent:#c94a55; --accent-ink:#1c1b19;
+      --lock:#3fae7f; --crack:#d99a3a; --open:#e2643a; }
+  :root[data-theme="light"]{ --bg:#f6f5f2; --panel:#ffffff; --ink:#1c1b19; --muted:#5b5852;
+      --line:#e4e1da; --accent:#8a1f2b; --accent-ink:#fff;
+      --lock:#1f6f4a; --crack:#a5680f; --open:#a5330f; }
+
+  * { box-sizing: border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    line-height:1.55;
+  }
+  .wrap{ max-width: 860px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  header{ display:flex; align-items:center; justify-content:space-between; gap:1.5rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+  header .titles h1{ font-size:1.6rem; margin:0 0 .2rem; }
+  header .titles p{ margin:0; color:var(--muted); font-size:.95rem; }
+  .seal{ flex:0 0 auto; }
+
+  .meta{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:1rem 1.25rem; margin-bottom:1.75rem; font-size:.92rem; color:var(--muted);
+  }
+  .meta b{ color:var(--ink); }
+
+  section{ margin-bottom: 2rem; }
+  h2{
+    font-size:1.05rem; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--accent); border-bottom:1px solid var(--line); padding-bottom:.35rem;
+    margin-bottom:.85rem;
+  }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:1rem 1.25rem; margin-bottom:.7rem;
+  }
+  .card .tag{
+    display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.05em;
+    text-transform:uppercase; padding:.15rem .5rem; border-radius:5px; margin-bottom:.4rem;
+  }
+  .tag.lock{ background:color-mix(in srgb, var(--lock) 18%, transparent); color:var(--lock); }
+  .tag.crack{ background:color-mix(in srgb, var(--crack) 18%, transparent); color:var(--crack); }
+  .tag.open{ background:color-mix(in srgb, var(--open) 18%, transparent); color:var(--open); }
+  .card p{ margin:0; }
+  .card .why{ color:var(--muted); font-size:.88rem; margin-top:.35rem; }
+
+  .cast{ display:flex; flex-wrap:wrap; gap:.6rem; }
+  .cast .who{
+    display:flex; align-items:center; gap:.45rem; background:var(--panel);
+    border:1px solid var(--line); border-radius:999px; padding:.35rem .75rem .35rem .5rem;
+    font-size:.85rem;
+  }
+  .cast .who .icon{ font-size:1.1rem; }
+  .cast .who .role{ color:var(--muted); }
+
+  footer{ margin-top:2.5rem; text-align:center; color:var(--muted); font-size:.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="titles">
+      <h1>Forge Report</h1>
+      <p>Desk Sharing Anwendung für BAMF · Idea-Forge-Session</p>
+    </div>
+    <div class="seal">
+      <svg width="132" height="132" viewBox="0 0 132 132" role="img" aria-label="Ergebnis: gehärtet">
+        <defs>
+          <path id="circlepath" d="M 66,66 m -50,0 a 50,50 0 1,1 100,0 a 50,50 0 1,1 -100,0"/>
+        </defs>
+        <circle cx="66" cy="66" r="62" fill="none" stroke="var(--lock)" stroke-width="2.5" opacity="0.5"/>
+        <circle cx="66" cy="66" r="52" fill="none" stroke="var(--lock)" stroke-width="1.5" stroke-dasharray="2 4" opacity="0.6"/>
+        <circle cx="66" cy="66" r="44" fill="color-mix(in srgb, var(--lock) 12%, transparent)" stroke="var(--lock)" stroke-width="3"/>
+        <text font-family="Georgia, serif" font-size="15" font-weight="700" fill="var(--lock)" text-anchor="middle">
+          <textPath href="#circlepath" startOffset="25%">DESK SHARING BAMF</textPath>
+        </text>
+        <g transform="translate(66,60)" text-anchor="middle">
+          <text font-family="Georgia, serif" font-size="17" font-weight="800" fill="var(--lock)" letter-spacing="1">HARDENED</text>
+          <text y="18" font-family="Georgia, serif" font-size="11" fill="var(--lock)" letter-spacing="2">GEHÄRTET</text>
+        </g>
+        <path d="M 44,90 l 8,10 16,-16" fill="none" stroke="var(--lock)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </header>
+
+  <div class="meta">
+    <b>Ergebnis:</b> Gehärtet — 13 Entscheidungen gelockt, 1 Widerspruch aufgedeckt und aufgelöst, 1 Reframing für Architektur/PRD festgehalten.<br>
+    <b>Workspace:</b> <code>_bmad-output/forge/bamf-desk-sharing/</code> ·
+    <b>Handoff:</b> <code>forged-idea.md</code> als Input für <code>bmad-prd</code>
+  </div>
+
+  <section>
+    <h2>Aufgelöster Widerspruch</h2>
+    <div class="card">
+      <span class="tag crack">Crack → gelöst</span>
+      <p>Der Anspruch "wer sitzt wo nur über IDM-Kennung sichtbar" widersprach dem Workflow "Team-Assistenz/Manager bucht im Auftrag" — man kann nicht anonym für jemanden buchen, den man nicht identifiziert.</p>
+      <div class="why">Aufgelöst durch dreistufiges Sichtbarkeitsmodell: Vertreter sehen Klarnamen im Buchungskontext, alle anderen nur Pseudonym, Auflösung nur über bewussten IdM-Lookup.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Zentrale gelockte Entscheidungen</h2>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>Delegation:</b> Org-Sync (Linienvorgesetzter + Team-Assistenz) + Self-Service-Delegation. Kein Stornierungsgrund im System.</p>
+      <div class="why">Verworfen: Freitext-Stornogrund — Risiko der Verarbeitung besonderer Datenkategorien (Art. 9 DSGVO) bei Gründen wie "krank".</div>
+    </div>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>VS-NFD-Raumblockierung:</b> Pflicht-Begründung, aber rein dokumentarisch. Kein Freigabe-Workflow, keine Berechtigungsprüfung.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>Chat-KI:</b> ausdrücklich gewünscht (Tippfehler im Ursprungstext korrigiert). Frontend A2UI + AG-UI + CopilotKit, Backend zusätzlich Google Agent ADK.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>Semantic-Web-Schicht (RDF/SHACL/JSON-LD):</b> persönlicher Qualitätsanspruch, kein externes Mandat.</p>
+      <div class="why">Reframing für PRD/Architektur: Wert liegt in maschinenprüfbarer Konsistenz zwischen Frontend/Backend/KI-Tool-Calls — nicht darin, dass die KI Synonyme sonst nicht verstünde.</div>
+    </div>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>Buchungs-UX:</b> Schnellpfad (Standardstandort, ein Klick) + Explorationspfad (Karte mit Cluster-Zoom). Halbtags-Grenze pro Liegenschaft konfigurierbar.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>Sperrung mit Bestandsbuchungen:</b> automatische Stornierung + Benachrichtigung der Betroffenen.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>Serie mit Teilkonflikten:</b> Konfliktermine automatisch übersprungen, Lückenliste am Ende.</p>
+      <div class="why">Verworfen: Alles-oder-nichts-Ablehnung, Einzelentscheidung pro Konflikt.</div>
+    </div>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>Präferenzen:</b> Ranking, keine harte Filterung. <b>Kontingente:</b> keine — jeder Desk an jeder Liegenschaft für jeden buchbar.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag lock">Lock</span>
+      <p><b>Label-Governance:</b> FM vergibt Labels, Vorschlagstechnik gegen Dubletten, manuelle Korrektur möglich. <b>Meetingräume:</b> keine Warteliste, Doppelbuchung wird verhindert.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Offener Punkt, der die Härtung überlebt hat</h2>
+    <div class="card">
+      <span class="tag open">Offen</span>
+      <p>Benachrichtigungskanal bei Sperrung/Stornierung/Serienkonflikt ist als Bedarf bestätigt, aber das konkrete System (E-Mail? welches?) ist nicht entschieden — für die PRD zu klären.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Besetzung dieser Session</h2>
+    <div class="cast">
+      <span class="who"><span class="icon">📋</span> John <span class="role">— Product Manager</span></span>
+      <span class="who"><span class="icon">🔒</span> Dr. Vogel <span class="role">— Datenschutzbeauftragte (generiert)</span></span>
+      <span class="who"><span class="icon">🔒</span> Herr Krause <span class="role">— Geheimschutzbeauftragter (generiert)</span></span>
+      <span class="who"><span class="icon">📊</span> Mary <span class="role">— Business Analyst</span></span>
+      <span class="who"><span class="icon">🏗️</span> Winston <span class="role">— System Architect</span></span>
+      <span class="who"><span class="icon">💰</span> Frau Nguyen <span class="role">— IT-Budgetreferentin (generiert)</span></span>
+      <span class="who"><span class="icon">🧠</span> Dr. Baas <span class="role">— KI/NLU-Ingenieurin (generiert)</span></span>
+      <span class="who"><span class="icon">🎨</span> Sally <span class="role">— UX Designer</span></span>
+      <span class="who"><span class="icon">🙋</span> Herr Yilmaz <span class="role">— Sachbearbeiter (generiert)</span></span>
+      <span class="who"><span class="icon">🌶️</span> Boundary <span class="role">— Edge-Case Hunter</span></span>
+      <span class="who"><span class="icon">🙋</span> Frau Berger <span class="role">— Mitarbeiterin (generiert)</span></span>
+    </div>
+  </section>
+
+  <footer>BMad Forge Idea · bamf-desk-sharing · 2026-08-13</footer>
+</div>
+</body>
+</html>

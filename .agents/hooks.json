@@ -1,0 +1,11 @@
+{
+  "bmad-loop": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 /Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/.bmad-loop/bmad_loop_hook.py Stop",
+        "timeout": 60
+      }
+    ]
+  }
+}

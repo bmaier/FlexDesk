@@ -1,6 +1,18 @@
 import type { FloorDeskStatus, MeetingRoomOut } from "../api/types";
 
-export type FloorplanObjectType = "door" | "window" | "table" | "chair" | "cabinet" | "planter" | "whiteboard" | "blocked" | "desk" | "meeting_room";
+export type FloorplanObjectType =
+  | "door"
+  | "window"
+  | "table"
+  | "chair"
+  | "cabinet"
+  | "planter"
+  | "whiteboard"
+  | "blocked"
+  | "desk"
+  | "meeting_room"
+  | "room"
+  | "stairs";
 
 export interface FloorplanObject {
   id: string;
@@ -12,6 +24,7 @@ export interface FloorplanObject {
   label?: string;
   deskId?: number;
   roomId?: number;
+  roomType?: "meeting" | "desk_area";
 }
 
 export interface FloorplanLayout {
@@ -382,6 +395,180 @@ export function generateMeetingRoomLayout(
   return objects;
 }
 
+export function generateDeskAreaLayout(
+  desks: { id: number; desk_number: string }[],
+  canvasWidth = 860,
+  canvasHeight = 460
+): FloorplanObject[] {
+  const objects: FloorplanObject[] = [];
+  const cx = canvasWidth / 2;
+  const cy = canvasHeight / 2 + 10;
+  const count = desks.length;
+
+  // Eingangstür
+  objects.push({
+    id: crypto.randomUUID(),
+    type: "door",
+    x: 35,
+    y: 20,
+    width: 44,
+    height: 12,
+    label: "Eingangstür",
+  });
+
+  // Whiteboard
+  objects.push({
+    id: crypto.randomUUID(),
+    type: "whiteboard",
+    x: cx - 60,
+    y: 20,
+    width: 120,
+    height: 12,
+    label: "Team-Whiteboard",
+  });
+
+  // Schrank
+  objects.push({
+    id: crypto.randomUUID(),
+    type: "cabinet",
+    x: 35,
+    y: 120,
+    width: 28,
+    height: 80,
+    label: "Aktenschrank",
+  });
+
+  // Pflanze
+  objects.push({
+    id: crypto.randomUUID(),
+    type: "planter",
+    x: canvasWidth - 65,
+    y: 20,
+    width: 30,
+    height: 30,
+    label: "Pflanze",
+  });
+
+  if (count === 0) return objects;
+
+  const cols = Math.min(3, Math.max(1, Math.ceil(count / 4)));
+  const rows = Math.ceil(count / (cols * 2));
+  const podWidth = 140;
+  const podHeight = 100;
+  const gapX = 35;
+  const gapY = 45;
+  const totalW = cols * podWidth + (cols - 1) * gapX;
+  const totalH = rows * podHeight + (rows - 1) * gapY;
+  const startX = cx - totalW / 2;
+  const startY = Math.max(65, cy - totalH / 2);
+
+  let placed = 0;
+  for (let r = 0; r < rows && placed < count; r++) {
+    for (let c = 0; c < cols && placed < count; c++) {
+      const px = startX + c * (podWidth + gapX);
+      const py = startY + r * (podHeight + gapY);
+
+      // Desk 1
+      if (placed < count) {
+        const d = desks[placed++];
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "desk",
+          x: px,
+          y: py,
+          width: 58,
+          height: 36,
+          deskId: d.id,
+          label: d.desk_number,
+        });
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: px + 17,
+          y: py - 24,
+          width: 24,
+          height: 24,
+          label: `Stuhl ${d.desk_number}`,
+        });
+      }
+
+      // Desk 2 (gegenüber)
+      if (placed < count) {
+        const d = desks[placed++];
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "desk",
+          x: px,
+          y: py + 46,
+          width: 58,
+          height: 36,
+          deskId: d.id,
+          label: d.desk_number,
+        });
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: px + 17,
+          y: py + 46 + 40,
+          width: 24,
+          height: 24,
+          label: `Stuhl ${d.desk_number}`,
+        });
+      }
+
+      // Desk 3 (rechts)
+      if (placed < count) {
+        const d = desks[placed++];
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "desk",
+          x: px + 68,
+          y: py,
+          width: 58,
+          height: 36,
+          deskId: d.id,
+          label: d.desk_number,
+        });
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: px + 68 + 17,
+          y: py - 24,
+          width: 24,
+          height: 24,
+          label: `Stuhl ${d.desk_number}`,
+        });
+      }
+
+      // Desk 4 (rechts gegenüber)
+      if (placed < count) {
+        const d = desks[placed++];
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "desk",
+          x: px + 68,
+          y: py + 46,
+          width: 58,
+          height: 36,
+          deskId: d.id,
+          label: d.desk_number,
+        });
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: px + 68 + 17,
+          y: py + 46 + 40,
+          width: 24,
+          height: 24,
+          label: `Stuhl ${d.desk_number}`,
+        });
+      }
+    }
+  }
+
+  return objects;
+}
+
 const OBJECT_STYLE: Record<Exclude<FloorplanObjectType, "desk" | "meeting_room" | "chair">, { fill: string; stroke: string; label: string }> = {
   door: { fill: "#d8b878", stroke: "#8b6c36", label: "Tür" },
   window: { fill: "#9fd6ea", stroke: "#4189a4", label: "Fenster" },
@@ -390,6 +577,8 @@ const OBJECT_STYLE: Record<Exclude<FloorplanObjectType, "desk" | "meeting_room" 
   planter: { fill: "#699c59", stroke: "#3c6b3b", label: "Pflanztrog" },
   whiteboard: { fill: "#f8fafc", stroke: "#64748b", label: "Whiteboard" },
   blocked: { fill: "#d5d2cb", stroke: "#7b7368", label: "Nicht nutzbar" },
+  stairs: { fill: "#f1f5f9", stroke: "#64748b", label: "Treppenhaus / Aufzug" },
+  room: { fill: "#f8fafc", stroke: "#475569", label: "Raum" },
 };
 
 function FixedObject({ object }: { object: FloorplanObject }) {
@@ -400,6 +589,29 @@ function FixedObject({ object }: { object: FloorplanObject }) {
         <rect x={object.x + 2} y={object.y + 5} width={Math.max(10, object.width - 4)} height={Math.max(10, object.height - 7)} rx={3} fill="#e2e8f0" stroke="#475569" strokeWidth={1.5} />
         {/* Stuhl-Rückenlehne */}
         <rect x={object.x + 1} y={object.y} width={Math.max(12, object.width - 2)} height={4} rx={2} fill="#334155" stroke="#1e293b" strokeWidth={1} />
+      </g>
+    );
+  }
+
+  if (object.type === "stairs") {
+    return (
+      <g aria-label={object.label || "Treppenhaus / Aufzug"}>
+        <rect x={object.x} y={object.y} width={object.width} height={object.height} rx={2} fill="#f1f5f9" stroke="#64748b" strokeWidth={2} />
+        {Array.from({ length: Math.max(2, Math.floor(object.height / 10)) }).map((_, i) => (
+          <line
+            key={i}
+            x1={object.x}
+            y1={object.y + (i + 1) * 10}
+            x2={object.x + object.width}
+            y2={object.y + (i + 1) * 10}
+            stroke="#94a3b8"
+            strokeWidth={1}
+            strokeDasharray="2,2"
+          />
+        ))}
+        <text x={object.x + object.width / 2} y={object.y + object.height / 2 + 4} fontSize={10} fontWeight="bold" textAnchor="middle" fill="#475569">
+          🪜 {object.label || "Treppenhaus / Aufzug"}
+        </text>
       </g>
     );
   }

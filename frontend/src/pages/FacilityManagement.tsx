@@ -48,7 +48,7 @@ export default function FacilityManagement() {
       {/* Alle Tabs bleiben gemountet (nur per CSS ausgeblendet), damit die Auswahl
           (Liegenschaft/Raum/Desk, Zone-Formular etc.) beim Tab-Wechsel erhalten bleibt. */}
       <div className={tab === "struktur" ? "" : "hidden"}><StructureTab onStructureChanged={notifyStructureChanged} /></div>
-      <div className={tab === "grundriss" ? "" : "hidden"}><FloorplanDesigner /></div>
+      <div className={tab === "grundriss" ? "" : "hidden"}><FloorplanDesigner structureVersion={structureVersion} onStructureChanged={notifyStructureChanged} /></div>
       <div className={tab === "labels" ? "" : "hidden"}><LabelsTab /></div>
       <div className={tab === "zonen" ? "" : "hidden"}><ZonesTab structureVersion={structureVersion} /></div>
       <div className={tab === "auslastung" ? "" : "hidden"}><OccupancyTab /></div>
@@ -180,7 +180,27 @@ function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }
           level={formOpen.level}
           parentId={formOpen.parentId}
           onClose={() => setFormOpen(null)}
-          onCreated={() => { setFormOpen(null); loadProperties(); loadTree(); onStructureChanged(); setMessage("Angelegt."); }}
+          onCreated={(newId) => {
+            const lvl = formOpen.level;
+            const pid = formOpen.parentId;
+            setFormOpen(null);
+            if (lvl === "property" && newId) {
+              setPropertyId(newId);
+            }
+            if (lvl === "building" && newId) {
+              setExpanded((e) => ({ ...e, [`b${newId}`]: true }));
+            }
+            if (lvl === "floor" && pid) {
+              setExpanded((e) => ({ ...e, [`b${pid}`]: true, ...(newId ? { [`f${newId}`]: true } : {}) }));
+            }
+            if (lvl === "room" && pid) {
+              setExpanded((e) => ({ ...e, [`f${pid}`]: true }));
+            }
+            loadProperties();
+            loadTree();
+            onStructureChanged();
+            setMessage("Erfolgreich angelegt.");
+          }}
         />
       )}
 
@@ -196,7 +216,7 @@ function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }
 
 function CreateEntityModal({
   level, parentId, onClose, onCreated,
-}: { level: "property" | "building" | "floor" | "room" | "desk"; parentId: number | null; onClose: () => void; onCreated: () => void }) {
+}: { level: "property" | "building" | "floor" | "room" | "desk"; parentId: number | null; onClose: () => void; onCreated: (newId?: number) => void }) {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [lat, setLat] = useState("51.0");
@@ -214,12 +234,13 @@ function CreateEntityModal({
   async function submit() {
     setError(null);
     try {
-      if (level === "property") await api.post("/fm/properties", { name, address, lat: Number(lat), lon: Number(lon) });
-      if (level === "building") await api.post(`/fm/properties/${parentId}/buildings`, { name });
-      if (level === "floor") await api.post(`/fm/buildings/${parentId}/floors`, { name });
-      if (level === "room") await api.post(`/fm/floors/${parentId}/rooms`, { room_number: roomNumber, name, room_type: roomType, capacity: roomType === "meeting" ? Number(capacity) : null });
-      if (level === "desk") await api.post(`/fm/rooms/${parentId}/desks`, { desk_number: deskNumber });
-      onCreated();
+      let res: { id: number } | undefined;
+      if (level === "property") res = await api.post<{ id: number }>("/fm/properties", { name, address, lat: Number(lat), lon: Number(lon) });
+      if (level === "building") res = await api.post<{ id: number }>(`/fm/properties/${parentId}/buildings`, { name });
+      if (level === "floor") res = await api.post<{ id: number }>(`/fm/buildings/${parentId}/floors`, { name });
+      if (level === "room") res = await api.post<{ id: number }>(`/fm/floors/${parentId}/rooms`, { room_number: roomNumber, name, room_type: roomType, capacity: roomType === "meeting" ? Number(capacity) : null });
+      if (level === "desk") res = await api.post<{ id: number }>(`/fm/rooms/${parentId}/desks`, { desk_number: deskNumber });
+      onCreated(res?.id);
     } catch (e) {
       if (e instanceof ApiError) setError(e.message);
     }

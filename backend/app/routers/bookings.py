@@ -453,7 +453,7 @@ class CreateRoomBookingIn(BaseModel):
 def create_room_booking(payload: CreateRoomBookingIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     target = resolve_target_user(db, user, payload.for_user_id)
     room = db.get(Room, payload.room_id)
-    if room is None or room.room_type != "meeting":
+    if room is None:
         _err(404, "ROOM_NOT_FOUND", "Meetingraum nicht gefunden.")
 
     actor_roles = get_user_roles(user, db)

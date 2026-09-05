@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date as date_type
 from datetime import datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -185,6 +185,7 @@ class RoomBookingSlot(BaseModel):
 def room_bookings_for_date(room_id: int, target_date: str, db: Session = Depends(get_db)):
     """Mini-Timeline-Daten für einen Meetingraum an einem Tag (FR-56: Klarname statt Pseudonym)."""
     from app.models.bookings import Booking, RoomBooking
+    from app.models.locks import Lock, RoomLock
 
     day_start = datetime.fromisoformat(target_date)
     day_end = day_start.replace(hour=23, minute=59, second=59)
@@ -200,8 +201,29 @@ def room_bookings_for_date(room_id: int, target_date: str, db: Session = Depends
         person = b.booked_for
         out.append(RoomBookingSlot(
             booking_id=b.id, start_at=b.start_at, end_at=b.end_at, status=b.status,
-            booked_for_name=person.display_name, booked_for_department=person.department.name if person.department else None,
+            booked_for_name=person.display_name if person else "Unbekannt",
+            booked_for_department=person.department.name if person and person.department else None,
             remark=b.remark,
+        ))
+
+    # Auch aktive Sperren für diesen Raum an diesem Tag aufnehmen
+    locks = (
+        db.query(Lock)
+        .join(RoomLock, RoomLock.lock_id == Lock.id)
+        .filter(RoomLock.room_id == room_id, Lock.active.is_(True),
+                Lock.start_at <= day_end, (Lock.end_at.is_(None) | (Lock.end_at >= day_start)))
+        .all()
+    )
+    for l in locks:
+        l_end = l.end_at if l.end_at else day_end
+        out.append(RoomBookingSlot(
+            booking_id=-(l.id),
+            start_at=max(l.start_at, day_start),
+            end_at=min(l_end, day_end),
+            status="locked",
+            booked_for_name=l.reason or "Raum gesperrt",
+            booked_for_department="Facility Management",
+            remark=l.reason,
         ))
     return out
 
@@ -306,6 +328,36 @@ def meeting_rooms_for_floor(floor_id: int, db: Session = Depends(get_db)):
             seating_layout=r.seating_layout, floorplan_layout=r.floorplan_layout,
         ))
     return out
+
+
+@router.get("/rooms/{room_id}", response_model=MeetingRoomOut)
+def get_room_by_id(room_id: int, db: Session = Depends(get_db)):
+    from app.models.bookings import Booking, RoomBooking
+    from app.models.structure import RoomLabel
+
+    r = db.get(Room, room_id)
+    if not r:
+        raise HTTPException(status_code=404, detail={"code": "ROOM_NOT_FOUND", "message": "Raum nicht gefunden."})
+
+    now = datetime.utcnow()
+    occupied = (
+        db.query(Booking).join(RoomBooking, RoomBooking.booking_id == Booking.id)
+        .filter(RoomBooking.room_id == r.id, Booking.status == "confirmed",
+                Booking.start_at <= now, Booking.end_at >= now)
+        .first()
+        is not None
+    )
+    floor = db.get(Floor, r.floor_id) if r.floor_id else None
+    building = db.get(Building, floor.building_id) if floor and floor.building_id else None
+    return MeetingRoomOut(
+        id=r.id, floor_id=r.floor_id, floor_name=floor.name if floor else None,
+        building_id=building.id if building else None, building_name=building.name if building else None,
+        room_number=r.room_number, name=r.name, capacity=r.capacity,
+        approval_required=r.approval_required, restricted_role_code=r.restricted_role_code,
+        labels=_labels_for(db, RoomLabel, "room_id", r.id), is_occupied_now=occupied,
+        pos_x=r.pos_x, pos_y=r.pos_y, width=r.width, height=r.height,
+        seating_layout=r.seating_layout, floorplan_layout=r.floorplan_layout,
+    )
 
 
 @router.get("/rooms/{room_id}/floorplan-layout")

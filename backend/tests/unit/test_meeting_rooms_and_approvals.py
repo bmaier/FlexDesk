@@ -267,4 +267,29 @@ def test_department_crud_and_user_admin_cost_center(client, auth_headers):
     assert del_res.status_code == 200
 
 
+def test_catalog_get_room_by_id_and_timeline(client, auth_headers):
+    maria_headers = auth_headers(MARIA_SCHMIDT)
+    # 1. Zimmer abfragen
+    res = client.get("/api/catalog/rooms/3", headers=maria_headers)
+    assert res.status_code == 200
+    room_data = res.json()
+    assert room_data["id"] == 3
+    assert room_data["name"] == "Konferenzraum A"
+    assert room_data["room_number"] == "1.03"
+    assert room_data["capacity"] == 12
+    assert room_data["floor_id"] == 2
+
+    # 2. Nicht existierenden Raum abfragen -> 404
+    err_res = client.get("/api/catalog/rooms/99999", headers=maria_headers)
+    assert err_res.status_code == 404
+    assert err_res.json()["detail"]["code"] == "ROOM_NOT_FOUND"
+
+    # 3. Timeline für den Tag abrufen
+    target_date = datetime.utcnow().date().isoformat()
+    t_res = client.get(f"/api/catalog/rooms/3/bookings?target_date={target_date}", headers=maria_headers)
+    assert t_res.status_code == 200
+    assert isinstance(t_res.json(), list)
+
+
+
 

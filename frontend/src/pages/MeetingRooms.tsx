@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, ApiError } from "../api/client";
 import type {
   BookingOut,
@@ -18,6 +18,7 @@ import {
   generateMeetingRoomLayout,
   parseFloorplanLayout,
 } from "../components/FloorplanCanvas";
+import { MeetingRoomThumbnail } from "../components/MeetingRoomThumbnail";
 
 interface RoomBookingSlot {
   booking_id: number;
@@ -29,23 +30,42 @@ interface RoomBookingSlot {
   remark: string | null;
 }
 
-/** Flow 4 — Meetingraum-Buchung mit Genehmigungspflicht, Grundriss & Bestuhlung sowie Catering-Option. */
+const DAY_HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17] as const;
+
+/**
+ * Flow 4 — Intelligente & effiziente Meetingraum-Buchung:
+ * - Direkte Suche: "Ich suche einen Raum für Tag X zum Slot Y"
+ * - Tages-Zeitstrahl (08:00–18:00) aller Meetingräume auf einen Blick (Matrix)
+ * - Thumbnail-Grafik mit maßstäblicher Bestuhlung
+ * - Filter für "Nur freie Räume im gewünschten Zeitraum"
+ * - 1-Klick-Buchung aus freiem Slot
+ */
 export default function MeetingRooms() {
   const { user, hasRole, actingAsUserId } = useAuth();
   const [properties, setProperties] = useState<PropertyOut[]>([]);
   const [propertyId, setPropertyId] = useState<number | null>(null);
   const [tree, setTree] = useState<PropertyTree | null>(null);
   const [selectedFloorId, setSelectedFloorId] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<"plan" | "list">("plan");
+
+  // 3 Ansichtsmodi: "matrix" (Tages-Timeline), "cards" (Kacheln), "plan" (Grundriss)
+  const [viewMode, setViewMode] = useState<"matrix" | "cards" | "plan">("matrix");
+
+  // Tag X & Slot Y Filter
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [startHour, setStartHour] = useState(9);
+  const [endHour, setEndHour] = useState(10);
+  const [onlyFreeInSlot, setOnlyFreeInSlot] = useState(false);
+  const [minCapacity, setMinCapacity] = useState<number>(0);
+  const [selectedLabel, setSelectedLabel] = useState<string>("");
+
   const [rooms, setRooms] = useState<MeetingRoomOut[]>([]);
   const [departments, setDepartments] = useState<DepartmentOut[]>([]);
   const [timelines, setTimelines] = useState<Record<number, RoomBookingSlot[]>>({});
+
+  // Modal State
   const [activeRoom, setActiveRoom] = useState<MeetingRoomOut | null>(null);
   const [roomLayout, setRoomLayout] = useState<FloorplanLayout | null>(null);
   const [seating, setSeating] = useState<SeatingOptionOut[]>([]);
-
-  // Form State
   const [form, setForm] = useState({ startHour: 9, endHour: 10, seatingOptionId: "", remark: "" });
   const [hasCatering, setHasCatering] = useState(false);
   const [cateringNotes, setCateringNotes] = useState("");
@@ -58,6 +78,7 @@ export default function MeetingRooms() {
   const [error, setError] = useState<string | null>(null);
   const [doubleBooking, setDoubleBooking] = useState<DoubleBookingDetail | null>(null);
 
+  // 1. Initialisiere Stammdaten
   useEffect(() => {
     api.get<PropertyOut[]>("/catalog/properties").then((props) => {
       setProperties(props);
@@ -66,19 +87,20 @@ export default function MeetingRooms() {
     api.get<DepartmentOut[]>("/catalog/departments").then(setDepartments).catch(() => setDepartments([]));
   }, []);
 
+  // 2. Lade Gebäude & Etagen für Liegenschaft
   useEffect(() => {
     if (!propertyId) return;
     api.get<PropertyTree>(`/catalog/properties/${propertyId}/tree`).then((data) => {
       setTree(data);
       const allFloors = data.buildings.flatMap((b) => b.floors);
-      // Finde bevorzugt eine Etage mit hinterlegtem Grundriss und Meetingräumen
       const floorWithLayout = allFloors.find(
-        (f) => !!f.floorplan_layout && f.rooms.some((r) => r.room_type === "meeting"),
+        (f) => !!f.floorplan_layout && f.rooms.some((r) => r.room_type === "meeting")
       );
       setSelectedFloorId(floorWithLayout ? floorWithLayout.id : allFloors[0]?.id ?? null);
     });
   }, [propertyId]);
 
+  // 3. Lade Meetingräume und deren Belegungs-Timelines für das gewählte Datum
   function loadRooms() {
     if (!propertyId) return;
     api.get<MeetingRoomOut[]>(`/catalog/properties/${propertyId}/meeting-rooms`).then(async (rs) => {
@@ -88,8 +110,8 @@ export default function MeetingRooms() {
           api
             .get<RoomBookingSlot[]>(`/catalog/rooms/${r.id}/bookings?target_date=${date}`)
             .then((slots) => [r.id, slots] as const)
-            .catch(() => [r.id, []] as const),
-        ),
+            .catch(() => [r.id, []] as const)
+        )
       );
       setTimelines(Object.fromEntries(entries));
     });
@@ -101,17 +123,86 @@ export default function MeetingRooms() {
   const currentFloor = floors.find((f) => f.id === selectedFloorId) as (FloorNode & { buildingName: string }) | undefined;
   const digitalLayout = parseFloorplanLayout(currentFloor?.floorplan_layout);
 
-  const displayedRooms = selectedFloorId
-    ? rooms.filter((r) => r.floor_id === selectedFloorId || (currentFloor?.rooms.some((cr) => cr.id === r.id)))
-    : rooms;
+  // Schnelle Datums-Navigation
+  function adjustDate(daysDelta: number) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + daysDelta);
+    setDate(d.toISOString().slice(0, 10));
+  }
 
-  const showPlan = viewMode === "plan" && !!digitalLayout;
+  function setDatePreset(offsetDays: number) {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    setDate(d.toISOString().slice(0, 10));
+  }
 
-  function openRoom(room: MeetingRoomOut) {
+  // Preset für Slot Y setzen
+  function applySlotPreset(start: number, end: number) {
+    setStartHour(start);
+    setEndHour(end);
+  }
+
+  // Berechne Belegungs-Status pro Stunde & Raum
+  function getSlotStatus(roomId: number, hour: number) {
+    const slots = timelines[roomId] || [];
+    const targetStart = `${date}T${String(hour).padStart(2, "0")}:00:00`;
+    const targetEnd = `${date}T${String(hour + 1).padStart(2, "0")}:00:00`;
+
+    const match = slots.find((s) => {
+      // Überlappung prüfen: s.start_at < targetEnd && s.end_at > targetStart
+      return s.start_at < targetEnd && s.end_at > targetStart;
+    });
+
+    if (!match) return { isAvailable: true, slot: null };
+    if (match.status === "locked") return { isAvailable: false, isLocked: true, slot: match };
+    return { isAvailable: false, isLocked: false, slot: match };
+  }
+
+  // Prüft, ob ein Raum im gesamten gesuchten Slot Y (startHour bis endHour) komplett frei ist
+  function isRoomFreeInSlot(roomId: number, startH: number, endH: number) {
+    for (let h = startH; h < endH; h++) {
+      const status = getSlotStatus(roomId, h);
+      if (!status.isAvailable) return false;
+    }
+    return true;
+  }
+
+  // Alle verfügbaren Labels zur Filterung sammeln
+  const allLabels = useMemo(() => {
+    const set = new Set<string>();
+    rooms.forEach((r) => r.labels.forEach((l) => set.add(l)));
+    return Array.from(set);
+  }, [rooms]);
+
+  // Gefilterte Räume nach Liegenschaft, Etage, Kapazität, Labels und "Nur Freie"
+  const filteredRooms = useMemo(() => {
+    return rooms.filter((r) => {
+      if (selectedFloorId && r.floor_id !== selectedFloorId) {
+        // Fallback: prüfe ob Raum zur aktuellen Etage gehört
+        if (!currentFloor?.rooms.some((cr) => cr.id === r.id)) return false;
+      }
+      if (minCapacity > 0 && (r.capacity ?? 0) < minCapacity) return false;
+      if (selectedLabel && !r.labels.includes(selectedLabel)) return false;
+      if (onlyFreeInSlot && !isRoomFreeInSlot(r.id, startHour, endHour)) return false;
+      return true;
+    });
+  }, [rooms, selectedFloorId, currentFloor, minCapacity, selectedLabel, onlyFreeInSlot, startHour, endHour, timelines]);
+
+  const freeRoomsCountInSlot = useMemo(() => {
+    return rooms.filter((r) => isRoomFreeInSlot(r.id, startHour, endHour)).length;
+  }, [rooms, startHour, endHour, timelines]);
+
+  // Modal öffnen & Bestuhlung/Grundriss laden
+  function openRoom(room: MeetingRoomOut, initialStart = startHour, initialEnd = endHour) {
     setActiveRoom(room);
     setState("idle");
     setError(null);
-    setForm({ startHour: 9, endHour: 10, seatingOptionId: "", remark: "" });
+    setForm({
+      startHour: initialStart,
+      endHour: initialEnd > initialStart ? initialEnd : initialStart + 1,
+      seatingOptionId: "",
+      remark: "",
+    });
     setHasCatering(false);
     setCateringNotes("");
     setBillingMode("own");
@@ -121,7 +212,6 @@ export default function MeetingRooms() {
 
     api.get<SeatingOptionOut[]>(`/fm/rooms/${room.id}/seating-options`).then(setSeating).catch(() => setSeating([]));
 
-    // Lade individuellen Grundriss des Meetingraums (oder generiere automatische Bestuhlung)
     api
       .get<{ layout: string | null; seating_layout: string | null }>(`/catalog/rooms/${room.id}/floorplan-layout`)
       .then((res) => {
@@ -140,6 +230,7 @@ export default function MeetingRooms() {
       });
   }
 
+  // Buchung abschicken
   async function submitBooking(override = false, reason?: string) {
     if (!activeRoom) return;
 
@@ -203,23 +294,201 @@ export default function MeetingRooms() {
   const ownCostCenter = user?.cost_center || userDept?.cost_center || "Standard-KST";
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-1">Meetingräume</h1>
-      <p className="text-on-surface-variant mb-4">
-        Räume interaktiv über den Grundriss oder per Liste buchen bzw. anfragen. Inklusive Raumgrundriss, automatischer Bestuhlung und Catering-Option.
-      </p>
+    <div className="space-y-6">
+      {/* Kopfbereich mit Titel & Erklärung */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight mb-1">Meetingräume</h1>
+        <p className="text-sm text-on-surface-variant">
+          Sofortige Übersicht aller Räume mit <strong>Live-Tages-Matrix (08–18 Uhr)</strong>, Grundriss-Thumbnails,
+          gezielter Slot-Suche und 1-Klick-Reservierung.
+        </p>
+      </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="text-xs font-medium">
-            Liegenschaft
+      {/* INTELLIGENTE SUCHE: "Ich suche einen Meetingraum für Tag X zum Slot Y" */}
+      <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-sm space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/30 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🎯</span>
+            <span className="font-bold text-sm text-on-surface uppercase tracking-wider">
+              Zielgerichtete Meetingraum-Suche: Tag X · Slot Y
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-on-surface-variant">Ansicht:</span>
+            <div className="flex gap-1 bg-surface-container-low rounded-lg p-1 border border-outline-variant/30">
+              <button
+                onClick={() => setViewMode("matrix")}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
+                  viewMode === "matrix"
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "text-on-surface-variant hover:bg-surface-container"
+                }`}
+              >
+                <span>📊</span> Tages-Matrix
+              </button>
+              <button
+                onClick={() => setViewMode("cards")}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
+                  viewMode === "cards"
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "text-on-surface-variant hover:bg-surface-container"
+                }`}
+              >
+                <span>🗂️</span> Kacheln
+              </button>
+              {digitalLayout && (
+                <button
+                  onClick={() => setViewMode("plan")}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
+                    viewMode === "plan"
+                      ? "bg-primary text-on-primary shadow-sm"
+                      : "text-on-surface-variant hover:bg-surface-container"
+                  }`}
+                >
+                  <span>🗺️</span> Etagen-Grundriss
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Filter-Zeile: Datum, Zeitslot, Presets & Freifilter */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 1. Tag X (mit Schnellwahltasten) */}
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant mb-1">
+              Datum (Tag X)
+            </label>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => adjustDate(-1)}
+                className="p-2 text-xs rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-bold"
+                title="Vorheriger Tag"
+              >
+                ◀
+              </button>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="flex-1 bg-surface-container-low rounded px-2.5 py-1.5 text-sm font-semibold border border-outline-variant/40"
+              />
+              <button
+                onClick={() => adjustDate(1)}
+                className="p-2 text-xs rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-bold"
+                title="Nächster Tag"
+              >
+                ▶
+              </button>
+            </div>
+            <div className="flex gap-1.5 mt-1.5">
+              <button
+                onClick={() => setDatePreset(0)}
+                className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface"
+              >
+                Heute
+              </button>
+              <button
+                onClick={() => setDatePreset(1)}
+                className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface"
+              >
+                Morgen
+              </button>
+              <button
+                onClick={() => setDatePreset(2)}
+                className="text-[11px] px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface"
+              >
+                Übermorgen
+              </button>
+            </div>
+          </div>
+
+          {/* 2. Zeitslot Y */}
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant mb-1">
+              Gesuchter Slot Y (Uhrzeit)
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <select
+                  value={startHour}
+                  onChange={(e) => {
+                    const s = Number(e.target.value);
+                    setStartHour(s);
+                    if (endHour <= s) setEndHour(s + 1);
+                  }}
+                  className="w-full bg-surface-container-low rounded px-2 py-1.5 text-sm font-semibold border border-outline-variant/40"
+                >
+                  {DAY_HOURS.map((h) => (
+                    <option key={h} value={h}>
+                      ab {h}:00 Uhr
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <select
+                  value={endHour}
+                  onChange={(e) => setEndHour(Number(e.target.value))}
+                  className="w-full bg-surface-container-low rounded px-2 py-1.5 text-sm font-semibold border border-outline-variant/40"
+                >
+                  {Array.from({ length: 11 }, (_, i) => i + 8).map((h) => (
+                    <option key={h} value={h} disabled={h <= startHour}>
+                      bis {h}:00 Uhr
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              <button
+                onClick={() => applySlotPreset(9, 10)}
+                className={`text-[10px] px-1.5 py-0.5 rounded ${
+                  startHour === 9 && endHour === 10 ? "bg-primary text-on-primary font-bold" : "bg-surface-container hover:bg-surface-container-high"
+                }`}
+              >
+                1h (09-10)
+              </button>
+              <button
+                onClick={() => applySlotPreset(10, 12)}
+                className={`text-[10px] px-1.5 py-0.5 rounded ${
+                  startHour === 10 && endHour === 12 ? "bg-primary text-on-primary font-bold" : "bg-surface-container hover:bg-surface-container-high"
+                }`}
+              >
+                2h (10-12)
+              </button>
+              <button
+                onClick={() => applySlotPreset(9, 12)}
+                className={`text-[10px] px-1.5 py-0.5 rounded ${
+                  startHour === 9 && endHour === 12 ? "bg-primary text-on-primary font-bold" : "bg-surface-container hover:bg-surface-container-high"
+                }`}
+              >
+                Vormittag
+              </button>
+              <button
+                onClick={() => applySlotPreset(13, 16)}
+                className={`text-[10px] px-1.5 py-0.5 rounded ${
+                  startHour === 13 && endHour === 16 ? "bg-primary text-on-primary font-bold" : "bg-surface-container hover:bg-surface-container-high"
+                }`}
+              >
+                Nachmittag
+              </button>
+            </div>
+          </div>
+
+          {/* 3. Liegenschaft & Etage */}
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant mb-1">
+              Standort / Liegenschaft
+            </label>
             <select
               value={propertyId ?? ""}
               onChange={(e) => {
                 setPropertyId(Number(e.target.value));
                 setSelectedFloorId(null);
               }}
-              className="block mt-1 bg-surface-container-low rounded px-3 py-2 text-sm border border-outline-variant/30"
+              className="w-full bg-surface-container-low rounded px-2.5 py-1.5 text-xs font-medium border border-outline-variant/40 mb-1"
             >
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -227,149 +496,475 @@ export default function MeetingRooms() {
                 </option>
               ))}
             </select>
-          </label>
-
-          {floors.length > 0 && (
-            <label className="text-xs font-medium">
-              Gebäude / Etage
+            {floors.length > 0 && (
               <select
                 value={selectedFloorId ?? ""}
                 onChange={(e) => setSelectedFloorId(e.target.value ? Number(e.target.value) : null)}
-                className="block mt-1 bg-surface-container-low rounded px-3 py-2 text-sm border border-outline-variant/30"
+                className="w-full bg-surface-container-low rounded px-2 py-1 text-xs border border-outline-variant/40"
               >
-                <option value="">Alle Etagen</option>
+                <option value="">Alle Gebäude & Etagen</option>
                 {floors.map((f) => (
                   <option key={f.id} value={f.id}>
-                    {f.buildingName} / {f.name} {f.floorplan_layout ? "🗺️" : ""}
+                    {f.buildingName} · {f.name}
                   </option>
                 ))}
               </select>
-            </label>
-          )}
+            )}
+          </div>
 
-          <label className="text-xs font-medium">
-            Datum
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="block mt-1 bg-surface-container-low rounded px-3 py-2 text-sm border border-outline-variant/30"
-            />
-          </label>
+          {/* 4. Kapazität & Live-Filter Checkbox */}
+          <div className="flex flex-col justify-between">
+            <div>
+              <label className="block text-xs font-bold text-on-surface-variant mb-1">
+                Mindest-Kapazität
+              </label>
+              <select
+                value={minCapacity}
+                onChange={(e) => setMinCapacity(Number(e.target.value))}
+                className="w-full bg-surface-container-low rounded px-2 py-1.5 text-xs font-medium border border-outline-variant/40 mb-2"
+              >
+                <option value={0}>Beliebige Personenzahl</option>
+                <option value={4}>Ab 4 Personen</option>
+                <option value={8}>Ab 8 Personen</option>
+                <option value={12}>Ab 12 Personen</option>
+                <option value={16}>Ab 16 Personen</option>
+              </select>
+            </div>
+
+            {/* Der zentrale Effizienz-Filter: "Nur freie Räume anzeigen" */}
+            <label className="flex items-center gap-2 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/50 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={onlyFreeInSlot}
+                onChange={(e) => setOnlyFreeInSlot(e.target.checked)}
+                className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
+                Nur freie Räume im Slot {startHour}:00–{endHour}:00 Uhr anzeigen
+              </span>
+            </label>
+          </div>
         </div>
 
-        {digitalLayout && (
-          <div className="flex gap-1 bg-surface-container-low rounded p-1 border border-outline-variant/30">
-            <button
-              onClick={() => setViewMode("plan")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded ${
-                viewMode === "plan" ? "bg-primary text-on-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-container"
-              }`}
-            >
-              🗺️ Grundriss
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded ${
-                viewMode === "list" ? "bg-primary text-on-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-container"
-              }`}
-            >
-              📋 Liste
-            </button>
+        {/* Statuszeile mit Treffern */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-outline-variant/20 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-on-surface font-semibold">
+              {freeRoomsCountInSlot} von {rooms.length} Meetingräumen frei
+            </span>
+            <span className="text-on-surface-variant">
+              am {date} von {startHour}:00 bis {endHour}:00 Uhr.
+            </span>
           </div>
-        )}
+
+          {/* Quick-Filter nach Ausstattung */}
+          {allLabels.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-on-surface-variant text-[11px]">Ausstattung:</span>
+              <button
+                onClick={() => setSelectedLabel("")}
+                className={`px-2 py-0.5 rounded-full text-[11px] ${
+                  !selectedLabel ? "bg-primary text-on-primary font-bold" : "bg-surface-container text-on-surface-variant"
+                }`}
+              >
+                Alle
+              </button>
+              {allLabels.map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setSelectedLabel(selectedLabel === l ? "" : l)}
+                  className={`px-2 py-0.5 rounded-full text-[11px] transition-colors ${
+                    selectedLabel === l ? "bg-primary text-on-primary font-bold" : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {showPlan ? (
+      {/* HAUPTANSICHT 1: DIE TAGES-MATRIX (Timeline 08:00 - 18:00) */}
+      {viewMode === "matrix" && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-on-surface-variant bg-surface-container-low p-2.5 rounded-md border border-outline-variant/30">
+          <div className="flex items-center justify-between text-xs text-on-surface-variant bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/30">
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-on-surface">Tages-Zeitstrahl ({date}):</span>
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400 inline-block" /> Frei (Klick
+                zum Buchen)
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-3 rounded bg-slate-300 border border-slate-400 inline-block" /> Belegt
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-3 rounded bg-red-200 border border-red-400 inline-block" /> Gesperrt
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-3 rounded bg-sky-200 border-2 border-sky-500 inline-block" /> Gesuchter Slot Y
+              </span>
+            </div>
+            <span>💡 Klicke auf ein beliebiges freies Stundenfeld, um direkt dafür zu buchen.</span>
+          </div>
+
+          <div className="bg-surface rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-surface-container-low border-b border-outline-variant/40">
+                    <th className="p-3 font-bold text-on-surface min-w-[280px]">
+                      Meetingraum & Ausstattung
+                    </th>
+                    {DAY_HOURS.map((h) => {
+                      const isTarget = h >= startHour && h < endHour;
+                      return (
+                        <th
+                          key={h}
+                          className={`p-2 text-center border-l border-outline-variant/30 font-bold min-w-[62px] transition-colors ${
+                            isTarget ? "bg-sky-100 dark:bg-sky-950/60 text-sky-900 dark:text-sky-200 border-b-2 border-sky-500" : "text-on-surface-variant"
+                          }`}
+                        >
+                          <div>{h}:00</div>
+                          <div className="text-[10px] font-normal opacity-75">bis {h + 1}</div>
+                        </th>
+                      );
+                    })}
+                    <th className="p-3 text-right font-bold text-on-surface min-w-[150px]">
+                      Aktion für Slot Y
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant/20">
+                  {filteredRooms.length === 0 ? (
+                    <tr>
+                      <td colSpan={12} className="p-8 text-center text-on-surface-variant">
+                        Keine Meetingräume gefunden, die den gewählten Suchkriterien entsprechen.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredRooms.map((r) => {
+                      const isFreeInTarget = isRoomFreeInSlot(r.id, startHour, endHour);
+                      const notAuthorized = r.restricted_role_code && !hasRole(r.restricted_role_code, "fm");
+
+                      return (
+                        <tr
+                          key={r.id}
+                          className={`hover:bg-surface-container-lowest transition-colors ${
+                            isFreeInTarget ? "bg-emerald-50/20" : ""
+                          }`}
+                        >
+                          {/* Raum-Details & Thumbnail */}
+                          <td className="p-3">
+                            <div className="flex items-start gap-3">
+                              {/* SVG-Grundriss Thumbnail */}
+                              <div className="w-28 flex-shrink-0 border border-outline-variant/40 rounded-lg overflow-hidden bg-white shadow-2xs">
+                                <MeetingRoomThumbnail room={r} width="100%" height={68} isAvailable={isFreeInTarget} />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <div className="font-bold text-sm text-on-surface flex items-center gap-1.5 truncate">
+                                  <span>🏛️</span>
+                                  <span className="truncate">{r.name}</span>
+                                </div>
+                                <div className="text-[11px] text-on-surface-variant mt-0.5">
+                                  Raum {r.room_number} · max. <strong>{r.capacity ?? "—"} P.</strong>
+                                  {r.floor_name && ` · ${r.floor_name}`}
+                                </div>
+
+                                {r.labels.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {r.labels.map((l) => (
+                                      <span
+                                        key={l}
+                                        className="text-[10px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant"
+                                      >
+                                        {l}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {r.approval_required && (
+                                  <div className="mt-1">
+                                    <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                                      ⚠️ Genehmigung erforderlich
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* 10 Stunden-Slots */}
+                          {DAY_HOURS.map((h) => {
+                            const status = getSlotStatus(r.id, h);
+                            const isTarget = h >= startHour && h < endHour;
+
+                            if (status.isAvailable) {
+                              return (
+                                <td
+                                  key={h}
+                                  onClick={() => !notAuthorized && openRoom(r, h, h + 1)}
+                                  className={`p-1 text-center border-l border-outline-variant/30 cursor-pointer transition-all hover:brightness-95 group ${
+                                    isTarget
+                                      ? "bg-emerald-100/90 hover:bg-emerald-200 border-sky-300 font-bold"
+                                      : "bg-emerald-50/70 hover:bg-emerald-100"
+                                  }`}
+                                  title={`${r.name} um ${h}:00–${h + 1}:00 Uhr ist frei. Klicken zum Buchen!`}
+                                >
+                                  <div className="h-12 flex flex-col items-center justify-center rounded border border-emerald-300/50 group-hover:border-emerald-500 group-hover:shadow-xs">
+                                    <span className="text-[11px] font-bold text-emerald-800">Frei</span>
+                                    <span className="text-[9px] text-emerald-600 opacity-70 group-hover:opacity-100">
+                                      + Buchen
+                                    </span>
+                                  </div>
+                                </td>
+                              );
+                            }
+
+                            if (status.isLocked) {
+                              return (
+                                <td
+                                  key={h}
+                                  className="p-1 text-center border-l border-outline-variant/30 bg-red-100/80 cursor-not-allowed"
+                                  title={`Gesperrt: ${status.slot?.remark || "Wartung / Facility Management"}`}
+                                >
+                                  <div className="h-12 flex flex-col items-center justify-center rounded border border-red-300/60 bg-red-50/50 text-red-800">
+                                    <span className="text-xs">🔒</span>
+                                    <span className="text-[9px] font-bold truncate max-w-[55px]">Gesperrt</span>
+                                  </div>
+                                </td>
+                              );
+                            }
+
+                            // Belegt
+                            return (
+                              <td
+                                key={h}
+                                className="p-1 text-center border-l border-outline-variant/30 bg-slate-100/90"
+                                title={`Belegt von: ${status.slot?.booked_for_name || "Unbekannt"} (${
+                                  status.slot?.booked_for_department || "BAMF"
+                                })`}
+                              >
+                                <div className="h-12 flex flex-col items-center justify-center rounded border border-slate-300/70 bg-white/60 text-slate-700 px-0.5">
+                                  <span className="text-[10px] font-semibold truncate max-w-[55px]">
+                                    {status.slot?.booked_for_name || "Belegt"}
+                                  </span>
+                                  <span className="text-[9px] text-slate-500 truncate max-w-[55px]">
+                                    {status.slot?.booked_for_department || "Reserviert"}
+                                  </span>
+                                </div>
+                              </td>
+                            );
+                          })}
+
+                          {/* Rechte Aktions-Spalte für den gesuchten Slot Y */}
+                          <td className="p-3 text-right">
+                            {notAuthorized ? (
+                              <span className="text-xs text-on-surface-variant font-medium">Nicht berechtigt</span>
+                            ) : isFreeInTarget ? (
+                              <Button
+                                variant="accent"
+                                className="w-full text-xs font-bold shadow-sm"
+                                onClick={() => openRoom(r, startHour, endHour)}
+                              >
+                                📅 Slot buchen
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="secondary"
+                                className="w-full text-xs"
+                                onClick={() => openRoom(r)}
+                              >
+                                Anderen Slot
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HAUPTANSICHT 2: KACHEL-ANSICHT (Cards mit Thumbnail & Slot-Badge) */}
+      {viewMode === "cards" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredRooms.map((r) => {
+            const isFreeInTarget = isRoomFreeInSlot(r.id, startHour, endHour);
+            const notAuthorized = r.restricted_role_code && !hasRole(r.restricted_role_code, "fm");
+
+            return (
+              <Card
+                key={r.id}
+                data-testid={`meeting-room-${r.id}`}
+                className="overflow-hidden p-0 border border-outline-variant/40 hover:shadow-md transition-shadow flex flex-col justify-between"
+              >
+                {/* SVG-Grundriss Thumbnail groß oben */}
+                <div className="relative bg-surface-container-low border-b border-outline-variant/30 p-2">
+                  <MeetingRoomThumbnail room={r} width="100%" height={125} isAvailable={isFreeInTarget} />
+                  <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
+                    <span
+                      className={`text-xs px-2.5 py-0.5 rounded-full font-bold shadow-xs ${
+                        isFreeInTarget
+                          ? "bg-emerald-500 text-white"
+                          : "bg-slate-200 text-slate-800"
+                      }`}
+                    >
+                      {isFreeInTarget ? `Frei: ${startHour}–${endHour} Uhr` : "Im Slot belegt"}
+                    </span>
+                    {r.approval_required && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
+                        Freigabe Req.
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="font-bold text-base text-on-surface">{r.name}</div>
+                    <div className="text-xs text-on-surface-variant mt-0.5">
+                      Raum {r.room_number} · max. {r.capacity ?? "—"} Personen
+                      {r.floor_name && ` · ${r.floor_name}`}
+                    </div>
+
+                    {r.labels.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2.5">
+                        {r.labels.map((l) => (
+                          <span
+                            key={l}
+                            className="text-[11px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant"
+                          >
+                            {l}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mini-Timeline-Leiste */}
+                  <div>
+                    <div className="flex justify-between items-center text-[10px] text-on-surface-variant mb-1 font-medium">
+                      <span>08:00</span>
+                      <span>13:00</span>
+                      <span>18:00</span>
+                    </div>
+                    <div className="h-3 rounded-full bg-surface-container-highest overflow-hidden flex gap-0.5 p-0.5">
+                      {DAY_HOURS.map((h) => {
+                        const status = getSlotStatus(r.id, h);
+                        return (
+                          <div
+                            key={h}
+                            title={`${h}:00–${h + 1}:00: ${status.isAvailable ? "Frei" : "Belegt"}`}
+                            className={`flex-1 rounded-sm ${
+                              status.isAvailable
+                                ? "bg-emerald-400"
+                                : status.isLocked
+                                ? "bg-red-400"
+                                : "bg-slate-400"
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <Button
+                    variant={isFreeInTarget ? "accent" : "secondary"}
+                    className="w-full text-xs font-bold"
+                    disabled={!!notAuthorized}
+                    onClick={() => openRoom(r, startHour, endHour)}
+                  >
+                    {notAuthorized
+                      ? "Nicht berechtigt"
+                      : isFreeInTarget
+                      ? `Jetzt für ${startHour}:00–${endHour}:00 Uhr buchen`
+                      : "Anderen Zeitraum wählen"}
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* HAUPTANSICHT 3: ETAGEN-GRUNDRISS */}
+      {viewMode === "plan" && digitalLayout && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-on-surface-variant bg-surface-container-low p-2.5 rounded-lg border border-outline-variant/30">
             <div className="flex items-center gap-4">
-              <span className="font-semibold text-on-surface">Etage: {currentFloor?.buildingName} / {currentFloor?.name}</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#e0f2fe] border border-[#0284c7] inline-block" /> Frei</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#fef9c3] border border-[#ca8a04] inline-block" /> Freigabe erforderlich</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#e2e8f0] border border-[#64748b] inline-block" /> Besetzt</span>
+              <span className="font-semibold text-on-surface">
+                Etage: {currentFloor?.buildingName} / {currentFloor?.name}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded bg-[#e0f2fe] border border-[#0284c7] inline-block" /> Frei
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded bg-[#fef9c3] border border-[#ca8a04] inline-block" /> Freigabe erforderlich
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded bg-[#e2e8f0] border border-[#64748b] inline-block" /> Besetzt
+              </span>
             </div>
             <span>Klick auf einen Meetingraum im Grundriss öffnet das Buchungsformular.</span>
           </div>
 
           <FloorplanCanvas
-            layout={digitalLayout!}
-            meetingRooms={displayedRooms}
-            onMeetingRoomClick={(room) => openRoom(room)}
+            layout={digitalLayout}
+            meetingRooms={filteredRooms}
+            onMeetingRoomClick={(room) => openRoom(room, startHour, endHour)}
           />
-        </div>
-      ) : (
-        <div>
-          {selectedFloorId && !digitalLayout && (
-            <div className="text-sm text-on-surface-variant mb-4 p-2.5 rounded bg-surface-container-low border border-outline-variant/30 flex items-center gap-2">
-              <span>ℹ️</span> Für diese Etage liegt noch kein digitalisierter Grundriss vor — Anzeige als Liste.
-            </div>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayedRooms.map((r) => {
-              const notAuthorized = r.restricted_role_code && !hasRole(r.restricted_role_code, "fm");
-              return (
-                <Card key={r.id} data-testid={`meeting-room-${r.id}`} data-room-name={r.name} className={r.is_occupied_now ? "opacity-70" : ""}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-semibold">{r.name}</div>
-                      <div className="text-sm text-on-surface-variant">
-                        Raum {r.room_number} · max. {r.capacity ?? "—"} Personen
-                        {r.floor_name && ` · ${r.floor_name}`}
-                      </div>
-                    </div>
-                    {r.approval_required && <Badge tone="negative">Freigabe Req.</Badge>}
-                  </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {r.labels.map((l) => (
-                      <span key={l} className="text-xs px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">{l}</span>
-                    ))}
-                  </div>
-                  <div className="mt-3 h-2 rounded-full bg-surface-container-highest overflow-hidden flex">
-                    {(timelines[r.id] ?? []).map((slot) => (
-                      <div key={slot.booking_id} title={`${slot.start_at}–${slot.end_at} (${slot.booked_for_name})`} className="h-full bg-outline-variant" style={{ width: "20%" }} />
-                    ))}
-                  </div>
-                  <Button
-                    variant="accent"
-                    className="mt-4 w-full"
-                    disabled={!!notAuthorized || r.is_occupied_now}
-                    onClick={() => openRoom(r)}
-                  >
-                    {notAuthorized ? "Nicht berechtigt" : r.is_occupied_now ? "Besetzt" : r.approval_required ? "Anfragen" : "Buchen"}
-                  </Button>
-                </Card>
-              );
-            })}
-          </div>
         </div>
       )}
 
-      {/* Raum-Buchungs-Modal */}
+      {/* BUCHUNGS-MODAL */}
       {activeRoom && (
-        <Modal title={`🏛 ${activeRoom.name} (Raum ${activeRoom.room_number})`} onClose={() => setActiveRoom(null)}>
+        <Modal
+          title={`🏛 ${activeRoom.name} (Raum ${activeRoom.room_number})`}
+          onClose={() => setActiveRoom(null)}
+        >
           {state === "done" ? (
-            <div className="p-4 rounded bg-tertiary-fixed/40 text-on-tertiary-fixed-variant text-sm space-y-2">
-              <div className="font-semibold">
-                {activeRoom.approval_required ? "Buchungsanfrage erfolgreich eingereicht!" : "Meetingraum erfolgreich gebucht!"}
+            <div className="p-4 rounded-xl bg-tertiary-fixed/40 text-on-tertiary-fixed-variant text-sm space-y-2">
+              <div className="font-semibold text-base">
+                {activeRoom.approval_required
+                  ? "Buchungsanfrage erfolgreich eingereicht!"
+                  : "Meetingraum erfolgreich gebucht!"}
               </div>
               <p className="text-xs">
                 {activeRoom.approval_required
-                  ? "Der Raum erfordert eine Genehmigung. Ihre Anfrage steht unter „Meine Buchungen“ auf dem Status „Ausstehend“."
-                  : "Ihre Buchungsbestätigung wurde erfasst."}
-                {hasCatering && " Die Catering-Bestellung wurde an den Wirtschaftsdienst übermittelt."}
+                  ? "Der Raum erfordert eine Freigabe durch den zuständigen Raumverantwortlichen. Der Status steht auf „Ausstehend“."
+                  : "Ihre Reservierung wurde verbindlich bestätigt."}
+                {hasCatering && " Das Catering wurde an den Bewirtschaftungsdienst weitergeleitet."}
               </p>
+              <div className="pt-3">
+                <Button variant="secondary" onClick={() => setActiveRoom(null)}>
+                  Schließen
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-1 text-sm">
-              {error && <div className="p-2.5 rounded bg-error-container text-on-error-container text-xs" role="alert">{error}</div>}
+              {error && (
+                <div className="p-2.5 rounded bg-error-container text-on-error-container text-xs font-medium" role="alert">
+                  {error}
+                </div>
+              )}
 
               {/* Grundriss & Bestuhlungs-Vorschau */}
               {roomLayout && (
-                <div className="border border-outline-variant/30 rounded-md p-2 bg-surface-container-low space-y-1">
+                <div className="border border-outline-variant/30 rounded-lg p-2.5 bg-surface-container-low space-y-1">
                   <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium">
                     <span>Raum-Grundriss & Bestuhlung ({activeRoom.capacity ?? "—"} Plätze)</span>
-                    <span className="text-[11px] text-primary">🏛 {activeRoom.seating_layout || "Konferenztisch"}</span>
+                    <span className="text-[11px] font-semibold text-primary">
+                      🏛 {activeRoom.seating_layout || "Konferenztisch"}
+                    </span>
                   </div>
                   <div className="w-full h-40 bg-surface rounded border border-outline-variant/20 overflow-hidden">
                     <FloorplanCanvas layout={roomLayout} />
@@ -377,51 +972,61 @@ export default function MeetingRooms() {
                 </div>
               )}
 
+              {/* Zeitslot-Auswahl */}
               <div className="grid grid-cols-2 gap-3">
-                <label className="block text-xs font-medium">
-                  Von
+                <label className="block text-xs font-semibold text-on-surface-variant">
+                  Von (Uhrzeit)
                   <select
                     value={form.startHour}
                     onChange={(e) => setForm((f) => ({ ...f, startHour: Number(e.target.value) }))}
-                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/40 text-sm font-medium"
                   >
-                    {Array.from({ length: 11 }, (_, i) => i + 8).map((h) => (
-                      <option key={h} value={h}>{h}:00 Uhr</option>
+                    {DAY_HOURS.map((h) => (
+                      <option key={h} value={h}>
+                        {h}:00 Uhr
+                      </option>
                     ))}
                   </select>
                 </label>
-                <label className="block text-xs font-medium">
-                  Bis
+                <label className="block text-xs font-semibold text-on-surface-variant">
+                  Bis (Uhrzeit)
                   <select
                     value={form.endHour}
                     onChange={(e) => setForm((f) => ({ ...f, endHour: Number(e.target.value) }))}
-                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/40 text-sm font-medium"
                   >
-                    {Array.from({ length: 11 }, (_, i) => i + 9).map((h) => (
-                      <option key={h} value={h}>{h}:00 Uhr</option>
+                    {Array.from({ length: 11 }, (_, i) => i + 8).map((h) => (
+                      <option key={h} value={h} disabled={h <= form.startHour}>
+                        {h}:00 Uhr
+                      </option>
                     ))}
                   </select>
                 </label>
               </div>
 
+              {/* Bestuhlungsoptionen */}
               {seating.length > 0 && (
-                <label className="block text-xs font-medium">
+                <label className="block text-xs font-semibold text-on-surface-variant">
                   Alternative Bestuhlung anfragen
                   <select
                     value={form.seatingOptionId}
                     onChange={(e) => setForm((f) => ({ ...f, seatingOptionId: e.target.value }))}
-                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/40 text-sm font-medium"
                   >
                     <option value="">Standard-Bestuhlung beibehalten</option>
-                    {seating.filter((s) => !s.is_standard).map((s) => (
-                      <option key={s.id} value={s.id}>{s.name} (+{s.changeover_days} Umbautag/e)</option>
-                    ))}
+                    {seating
+                      .filter((s) => !s.is_standard)
+                      .map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} (+{s.changeover_days} Umbautag/e)
+                        </option>
+                      ))}
                   </select>
                 </label>
               )}
 
               {/* Catering-Option */}
-              <div className="p-3 rounded-md bg-surface-container-low border border-outline-variant/30 space-y-2.5">
+              <div className="p-3 rounded-lg bg-surface-container-low border border-outline-variant/30 space-y-2.5">
                 <label className="flex items-center gap-2 font-medium text-xs cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -521,7 +1126,7 @@ export default function MeetingRooms() {
               </div>
 
               {hasRole("vm") && (
-                <label className="block text-xs font-medium">
+                <label className="block text-xs font-semibold text-on-surface-variant">
                   Bemerkung (nur für VM sichtbar)
                   <input
                     value={form.remark}
@@ -531,7 +1136,12 @@ export default function MeetingRooms() {
                 </label>
               )}
 
-              <Button variant="accent" className="w-full mt-2" loading={state === "loading"} onClick={() => submitBooking()}>
+              <Button
+                variant="accent"
+                className="w-full mt-2"
+                loading={state === "loading"}
+                onClick={() => submitBooking()}
+              >
                 {activeRoom.approval_required ? "Buchungsanfrage einreichen" : "Jetzt verbindlich buchen"}
               </Button>
             </div>
@@ -539,6 +1149,7 @@ export default function MeetingRooms() {
         </Modal>
       )}
 
+      {/* Doppelbuchungs-Warnung */}
       {doubleBooking && (
         <DoubleBookingModal
           detail={doubleBooking}

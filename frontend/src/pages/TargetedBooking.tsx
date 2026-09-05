@@ -276,7 +276,9 @@ export default function TargetedBooking() {
   const currentBuilding = tree.buildings.find((b) => b.floors.some((f) => f.id === selectedFloor?.id));
   const floorLayout = parseFloorplanLayout(selectedFloor?.floorplan_layout || (selectedFloor as any)?.layout);
   const isRoomActive = !!selectedRoom;
-  const activeLayout = isRoomActive && selectedRoom.room_type === "desk_area" ? roomInteriorLayout : floorLayout;
+  const activeLayout = isRoomActive && selectedRoom.room_type === "desk_area"
+    ? (roomInteriorLayout || { objects: generateDeskAreaLayout(selectedRoom.desks) })
+    : floorLayout;
   const hasLayout = !!(activeLayout && activeLayout.objects && activeLayout.objects.length > 0);
   const showPlan = viewMode === "plan" && hasLayout;
 
@@ -294,21 +296,50 @@ export default function TargetedBooking() {
 
   function handleRoomClick(roomId: number, roomType: "meeting" | "desk_area") {
     if (roomType === "meeting") {
-      const mr = meetingRooms.find((m) => m.id === roomId) || {
-        id: roomId,
-        room_number: "",
-        name: "Meetingraum",
-        capacity: 10,
-        approval_required: false,
-        restricted_role_code: null,
-        labels: [],
-        is_occupied_now: false,
-      };
-      openMeetingRoom(mr);
+      let mr = meetingRooms.find((m) => m.id === roomId);
+      if (!mr && selectedFloor) {
+        const fr = selectedFloor.rooms.find((r) => r.id === roomId);
+        if (fr) {
+          mr = {
+            id: fr.id,
+            room_number: fr.room_number,
+            name: fr.name,
+            capacity: fr.capacity,
+            approval_required: fr.approval_required,
+            restricted_role_code: fr.restricted_role_code,
+            labels: fr.labels,
+            is_occupied_now: false,
+          };
+        }
+      }
+      if (mr) {
+        openMeetingRoom(mr);
+      } else {
+        api
+          .get<MeetingRoomOut>(`/catalog/rooms/${roomId}`)
+          .then((fetched) => openMeetingRoom(fetched))
+          .catch(() => {});
+      }
     } else {
-      const rn = selectedFloor?.rooms.find((r) => r.id === roomId);
+      let rn = selectedFloor?.rooms.find((r) => r.id === roomId);
+      if (!rn && tree) {
+        for (const b of tree.buildings) {
+          for (const f of b.floors) {
+            const found = f.rooms.find((r) => r.id === roomId);
+            if (found) {
+              rn = found;
+              setSelectedFloor(f);
+              break;
+            }
+          }
+          if (rn) break;
+        }
+      }
       if (rn) {
         setSelectedRoom(rn);
+        setViewMode("plan");
+        // Sofort Layout bereitstellen, damit kein Flackern auf Listenmodus entsteht
+        setRoomInteriorLayout({ objects: generateDeskAreaLayout(rn.desks) });
       }
     }
   }
@@ -605,6 +636,44 @@ export default function TargetedBooking() {
           {/* Anzeige-Weiche: Plan vs Liste */}
           {showPlan ? (
             <div>
+              {selectedRoom && (
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3 mb-3 rounded-xl bg-primary/10 border border-primary/20 text-sm">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedRoom(null)}
+                      className="font-bold text-primary hover:bg-primary/20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-primary/30 shadow-sm transition-all text-xs sm:text-sm"
+                    >
+                      ← Zurück zum Etagen-Grundriss ({selectedFloor?.name})
+                    </button>
+                    <span className="font-semibold text-on-surface flex items-center gap-1">
+                      {selectedRoom.room_type === "meeting" ? "🏛️" : "💼"} {selectedRoom.name} ({selectedRoom.room_number})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-on-surface-variant">Raum wechseln:</span>
+                    <select
+                      value={selectedRoom.id}
+                      onChange={(e) => {
+                        const targetId = Number(e.target.value);
+                        const nextRoom = selectedFloor?.rooms.find((r) => r.id === targetId);
+                        if (nextRoom) {
+                          setSelectedRoom(nextRoom);
+                          if (nextRoom.room_type === "desk_area") {
+                            setRoomInteriorLayout({ objects: generateDeskAreaLayout(nextRoom.desks) });
+                          }
+                        }
+                      }}
+                      className="bg-surface rounded px-2.5 py-1 text-xs border border-outline-variant/40 font-medium text-on-surface"
+                    >
+                      {selectedFloor?.rooms.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.room_type === "meeting" ? "🏛️" : "💼"} {r.name} ({r.room_number})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
               <FloorplanCanvas
                 layout={activeLayout!}
                 desks={roomDesks}
@@ -612,6 +681,7 @@ export default function TargetedBooking() {
                 onDeskClick={handleDeskClick}
                 onRoomClick={handleRoomClick}
                 onMeetingRoomClick={handleMeetingRoomClick}
+                onBackToFloor={selectedRoom ? () => setSelectedRoom(null) : undefined}
                 renderFallbackDesks={!selectedFloor?.floorplan_layout && !selectedRoom}
               />
               {!selectedRoom && (

@@ -581,7 +581,40 @@ const OBJECT_STYLE: Record<Exclude<FloorplanObjectType, "desk" | "meeting_room" 
   room: { fill: "#f8fafc", stroke: "#475569", label: "Raum" },
 };
 
-function FixedObject({ object }: { object: FloorplanObject }) {
+function FixedObject({ object, onExitRoom }: { object: FloorplanObject; onExitRoom?: () => void }) {
+  if (object.type === "door" && onExitRoom) {
+    return (
+      <g
+        className="cursor-pointer group select-none"
+        onClick={onExitRoom}
+        aria-label="Zurück zum Etagen-Grundriss"
+      >
+        <rect
+          x={object.x}
+          y={object.y}
+          width={object.width}
+          height={object.height}
+          rx={2}
+          fill="#d8b878"
+          stroke="#8b6c36"
+          strokeWidth={2}
+          className="group-hover:fill-amber-300 group-hover:stroke-amber-800 transition-all"
+        />
+        <text
+          x={object.x + object.width / 2}
+          y={object.y + object.height + 13}
+          fontSize={9.5}
+          fontWeight="bold"
+          textAnchor="middle"
+          fill="#1d4ed8"
+          className="group-hover:underline"
+        >
+          🚪 Zurück zur Etage ↗
+        </text>
+      </g>
+    );
+  }
+
   if (object.type === "chair") {
     return (
       <g aria-label={object.label || "Stuhl"} className="select-none pointer-events-none">
@@ -643,6 +676,7 @@ export interface FloorplanCanvasProps {
   meetingRooms?: MeetingRoomOut[];
   onMeetingRoomClick?: (room: MeetingRoomOut) => void;
   onRoomClick?: (roomId: number, roomType: "meeting" | "desk_area") => void;
+  onBackToFloor?: () => void;
   renderFallbackDesks?: boolean;
 }
 
@@ -653,6 +687,7 @@ export function FloorplanCanvas({
   meetingRooms = [],
   onMeetingRoomClick,
   onRoomClick,
+  onBackToFloor,
   renderFallbackDesks = false,
 }: FloorplanCanvasProps) {
   const layoutDeskIds = new Set(layout.objects.filter((o) => o.type === "desk" && o.deskId).map((o) => o.deskId));
@@ -672,14 +707,38 @@ export function FloorplanCanvas({
     <svg viewBox="0 0 900 500" className="w-full bg-surface rounded-md border border-outline-variant/30 select-none" role="img" aria-label="Interaktiver digitaler Grundriss">
       <rect x={10} y={10} width={880} height={480} fill="#fbfaf6" stroke="#4f514c" strokeWidth={4} rx={6} />
 
+      {/* Button zurück zur Etage direkt auf der Zeichenfläche einblenden wenn im Raumplan */}
+      {onBackToFloor && (
+        <g
+          className="cursor-pointer group select-none"
+          onClick={onBackToFloor}
+          aria-label="Zurück zum Etagen-Grundriss"
+        >
+          <rect
+            x={18}
+            y={18}
+            width={160}
+            height={30}
+            rx={6}
+            fill="#ffffff"
+            stroke="#2563eb"
+            strokeWidth={1.5}
+            className="shadow-sm group-hover:fill-blue-50 group-hover:stroke-blue-700 transition-all"
+          />
+          <text x={98} y={38} fontSize={11} fontWeight="bold" textAnchor="middle" fill="#1d4ed8">
+            ← Zurück zur Etage
+          </text>
+        </g>
+      )}
+
       {/* Feste Architekturobjekte (Türen, Fenster, Schränke, Treppenhaus, etc. – AUSSER Räume und Desks) */}
       {layout.objects.filter((o) => o.type !== "desk" && o.type !== "meeting_room" && o.type !== "room").map((object) => (
-        <FixedObject key={object.id} object={object} />
+        <FixedObject key={object.id} object={object} onExitRoom={onBackToFloor} />
       ))}
 
       {/* RÄUME AUF DEM GRUNDRISS (Sowohl Meetingräume als auch Büroräume / Desk-Bereiche) */}
       {layout.objects.filter((o) => o.type === "room" || o.type === "meeting_room").map((object) => {
-        const isMeeting = object.type === "meeting_room" || object.roomType === "meeting";
+        const isMeeting = object.type === "meeting_room" || object.roomType === "meeting" || (object.roomId ? roomById.has(object.roomId) : false);
         const meetingRoom = object.roomId ? roomById.get(object.roomId) : undefined;
 
         // Berechne Desk-Verfügbarkeit für Büroräume
@@ -749,6 +808,17 @@ export function FloorplanCanvas({
               onMeetingRoomClick(meetingRoom);
             } else if (object.roomId && onRoomClick) {
               onRoomClick(object.roomId, "meeting");
+            } else if (object.roomId && onMeetingRoomClick) {
+              onMeetingRoomClick({
+                id: object.roomId,
+                room_number: object.label || "",
+                name: object.label || "Meetingraum",
+                capacity: 10,
+                approval_required: false,
+                restricted_role_code: null,
+                labels: [],
+                is_occupied_now: false,
+              });
             }
           } else {
             if (object.roomId && onRoomClick) {

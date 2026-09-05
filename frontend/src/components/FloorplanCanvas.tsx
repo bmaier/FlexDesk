@@ -1,6 +1,6 @@
 import type { FloorDeskStatus, MeetingRoomOut } from "../api/types";
 
-export type FloorplanObjectType = "door" | "window" | "table" | "cabinet" | "planter" | "whiteboard" | "blocked" | "desk" | "meeting_room";
+export type FloorplanObjectType = "door" | "window" | "table" | "chair" | "cabinet" | "planter" | "whiteboard" | "blocked" | "desk" | "meeting_room";
 
 export interface FloorplanObject {
   id: string;
@@ -28,7 +28,361 @@ export function parseFloorplanLayout(value: string | null | undefined): Floorpla
   }
 }
 
-const OBJECT_STYLE: Record<Exclude<FloorplanObjectType, "desk" | "meeting_room">, { fill: string; stroke: string; label: string }> = {
+export type SeatingPreset = "boardroom" | "u_shape" | "cinema" | "classroom" | "banquet";
+
+export function generateMeetingRoomLayout(
+  capacity: number,
+  seatingPreset: SeatingPreset | string = "boardroom",
+  canvasWidth = 860,
+  canvasHeight = 460
+): FloorplanObject[] {
+  const objects: FloorplanObject[] = [];
+  const cx = canvasWidth / 2;
+  const cy = canvasHeight / 2 + 15;
+  const count = Math.max(2, capacity);
+
+  // Wandelemente: Whiteboard / Präsentationswand oben
+  objects.push({
+    id: crypto.randomUUID(),
+    type: "whiteboard",
+    x: cx - 80,
+    y: 20,
+    width: 160,
+    height: 12,
+    label: "Präsentationswand / 85\" Screen",
+  });
+
+  // Raumtür
+  objects.push({
+    id: crypto.randomUUID(),
+    type: "door",
+    x: 35,
+    y: 20,
+    width: 44,
+    height: 12,
+    label: "Eingangstür",
+  });
+
+  if (seatingPreset === "boardroom" || seatingPreset === "conference") {
+    // Zentraler Konferenztisch mit Stühlen rundherum
+    const sideChairs = Math.max(1, Math.floor((count - 2) / 2));
+    const tableW = Math.min(640, Math.max(180, sideChairs * 48 + 50));
+    const tableH = 110;
+    const tx = cx - tableW / 2;
+    const ty = cy - tableH / 2;
+
+    objects.push({
+      id: crypto.randomUUID(),
+      type: "table",
+      x: tx,
+      y: ty,
+      width: tableW,
+      height: tableH,
+      label: "Konferenztisch",
+    });
+
+    let placed = 0;
+    // Oben
+    const stepTop = tableW / (sideChairs + 1);
+    for (let i = 1; i <= sideChairs && placed < count; i++) {
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "chair",
+        x: tx + i * stepTop - 12,
+        y: ty - 26,
+        width: 24,
+        height: 24,
+        label: `Sitz ${placed + 1}`,
+      });
+      placed++;
+    }
+    // Unten
+    const stepBottom = tableW / (sideChairs + 1);
+    for (let i = 1; i <= sideChairs && placed < count; i++) {
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "chair",
+        x: tx + i * stepBottom - 12,
+        y: ty + tableH + 4,
+        width: 24,
+        height: 24,
+        label: `Sitz ${placed + 1}`,
+      });
+      placed++;
+    }
+    // Stirnseite links
+    if (placed < count) {
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "chair",
+        x: tx - 28,
+        y: cy - 12,
+        width: 24,
+        height: 24,
+        label: `Sitz ${placed + 1}`,
+      });
+      placed++;
+    }
+    // Stirnseite rechts
+    if (placed < count) {
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "chair",
+        x: tx + tableW + 4,
+        y: cy - 12,
+        width: 24,
+        height: 24,
+        label: `Sitz ${placed + 1}`,
+      });
+      placed++;
+    }
+    // Eventuelle Restplätze
+    while (placed < count) {
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "chair",
+        x: tx + ((placed % sideChairs) + 1) * stepTop - 12,
+        y: ty - 26,
+        width: 24,
+        height: 24,
+        label: `Sitz ${placed + 1}`,
+      });
+      placed++;
+    }
+  } else if (seatingPreset === "u_shape") {
+    const legLen = 220;
+    const baseLen = 380;
+    const uLeft = cx - baseLen / 2;
+    const uTop = 85;
+
+    // Tisch links
+    objects.push({
+      id: crypto.randomUUID(),
+      type: "table",
+      x: uLeft,
+      y: uTop,
+      width: 55,
+      height: legLen,
+      label: "Tisch links",
+    });
+    // Tisch mitte/unten
+    objects.push({
+      id: crypto.randomUUID(),
+      type: "table",
+      x: uLeft,
+      y: uTop + legLen,
+      width: baseLen,
+      height: 55,
+      label: "Tisch mitte",
+    });
+    // Tisch rechts
+    objects.push({
+      id: crypto.randomUUID(),
+      type: "table",
+      x: uLeft + baseLen - 55,
+      y: uTop,
+      width: 55,
+      height: legLen,
+      label: "Tisch rechts",
+    });
+
+    const sideCount = Math.max(1, Math.floor(count / 3));
+    let placed = 0;
+    // Stühle links außen
+    for (let i = 0; i < sideCount && placed < count; i++) {
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "chair",
+        x: uLeft - 28,
+        y: uTop + 15 + i * (legLen / Math.max(1, sideCount)),
+        width: 24,
+        height: 24,
+        label: `Sitz ${placed + 1}`,
+      });
+      placed++;
+    }
+    // Stühle unten außen
+    const bottomCount = Math.max(1, count - sideCount * 2);
+    for (let i = 0; i < bottomCount && placed < count; i++) {
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "chair",
+        x: uLeft + 35 + i * ((baseLen - 70) / Math.max(1, bottomCount)),
+        y: uTop + legLen + 59,
+        width: 24,
+        height: 24,
+        label: `Sitz ${placed + 1}`,
+      });
+      placed++;
+    }
+    // Stühle rechts außen
+    while (placed < count) {
+      const idx = placed - sideCount - bottomCount;
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "chair",
+        x: uLeft + baseLen + 4,
+        y: uTop + 15 + idx * (legLen / Math.max(1, sideCount)),
+        width: 24,
+        height: 24,
+        label: `Sitz ${placed + 1}`,
+      });
+      placed++;
+    }
+  } else if (seatingPreset === "cinema" || seatingPreset === "theater") {
+    // Kino: Nur Stuhlreihen mit Mittelgang
+    const chairsPerRow = Math.min(10, Math.max(4, Math.ceil(Math.sqrt(count * 1.5))));
+    const perSide = Math.ceil(chairsPerRow / 2);
+    const aisleWidth = 55;
+    const startY = 85;
+    const chairGapX = 32;
+    const chairGapY = 36;
+
+    let placed = 0;
+    let row = 0;
+    while (placed < count) {
+      // Links
+      for (let col = 0; col < perSide && placed < count; col++) {
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: cx - aisleWidth / 2 - (perSide - col) * chairGapX,
+          y: startY + row * chairGapY,
+          width: 24,
+          height: 24,
+          label: `R${row + 1}-P${placed + 1}`,
+        });
+        placed++;
+      }
+      // Rechts
+      for (let col = 0; col < perSide && placed < count; col++) {
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: cx + aisleWidth / 2 + col * chairGapX,
+          y: startY + row * chairGapY,
+          width: 24,
+          height: 24,
+          label: `R${row + 1}-P${placed + 1}`,
+        });
+        placed++;
+      }
+      row++;
+    }
+  } else if (seatingPreset === "classroom" || seatingPreset === "parliament") {
+    // Schulung: Tische mit Stühlen dahinter
+    const tablesPerRow = 2;
+    const chairsPerTable = 2;
+    const chairsPerRow = tablesPerRow * chairsPerTable;
+    const rows = Math.ceil(count / chairsPerRow);
+    const aisleW = 60;
+    const tableW = 145;
+    const tableH = 45;
+    const rowGap = 75;
+    const startY = 85;
+
+    let placed = 0;
+    for (let r = 0; r < rows && placed < count; r++) {
+      const curY = startY + r * rowGap;
+      // Tisch links
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "table",
+        x: cx - aisleW / 2 - tableW,
+        y: curY,
+        width: tableW,
+        height: tableH,
+        label: `Tisch ${r + 1}L`,
+      });
+      for (let c = 0; c < chairsPerTable && placed < count; c++) {
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: cx - aisleW / 2 - tableW + 20 + c * 55,
+          y: curY + tableH + 4,
+          width: 24,
+          height: 24,
+          label: `Sitz ${placed + 1}`,
+        });
+        placed++;
+      }
+
+      // Tisch rechts
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "table",
+        x: cx + aisleW / 2,
+        y: curY,
+        width: tableW,
+        height: tableH,
+        label: `Tisch ${r + 1}R`,
+      });
+      for (let c = 0; c < chairsPerTable && placed < count; c++) {
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: cx + aisleW / 2 + 20 + c * 55,
+          y: curY + tableH + 4,
+          width: 24,
+          height: 24,
+          label: `Sitz ${placed + 1}`,
+        });
+        placed++;
+      }
+    }
+  } else {
+    // Gruppentische (Banquet)
+    const tableCount = Math.max(2, Math.ceil(count / 5));
+    const cols = Math.min(3, tableCount);
+    const rows = Math.ceil(tableCount / cols);
+    const cellW = (canvasWidth - 100) / cols;
+    const cellH = (canvasHeight - 120) / rows;
+    let placed = 0;
+
+    for (let t = 0; t < tableCount; t++) {
+      const c = t % cols;
+      const r = Math.floor(t / cols);
+      const tcx = 70 + c * cellW + cellW / 2;
+      const tcy = 80 + r * cellH + cellH / 2;
+      const podW = 95;
+      const podH = 65;
+
+      objects.push({
+        id: crypto.randomUUID(),
+        type: "table",
+        x: tcx - podW / 2,
+        y: tcy - podH / 2,
+        width: podW,
+        height: podH,
+        label: `Insel ${t + 1}`,
+      });
+
+      const remainingTables = tableCount - t;
+      const remainingChairs = count - placed;
+      const chairsForPod = Math.min(remainingChairs, Math.ceil(remainingChairs / remainingTables));
+
+      for (let ch = 0; ch < chairsForPod; ch++) {
+        const angle = (ch / chairsForPod) * 2 * Math.PI - Math.PI / 2;
+        const radX = podW / 2 + 18;
+        const radY = podH / 2 + 18;
+        objects.push({
+          id: crypto.randomUUID(),
+          type: "chair",
+          x: tcx + Math.cos(angle) * radX - 12,
+          y: tcy + Math.sin(angle) * radY - 12,
+          width: 24,
+          height: 24,
+          label: `Sitz ${placed + 1}`,
+        });
+        placed++;
+      }
+    }
+  }
+
+  return objects;
+}
+
+const OBJECT_STYLE: Record<Exclude<FloorplanObjectType, "desk" | "meeting_room" | "chair">, { fill: string; stroke: string; label: string }> = {
   door: { fill: "#d8b878", stroke: "#8b6c36", label: "Tür" },
   window: { fill: "#9fd6ea", stroke: "#4189a4", label: "Fenster" },
   table: { fill: "#cbb99d", stroke: "#715d43", label: "Tisch" },
@@ -39,7 +393,18 @@ const OBJECT_STYLE: Record<Exclude<FloorplanObjectType, "desk" | "meeting_room">
 };
 
 function FixedObject({ object }: { object: FloorplanObject }) {
-  const style = OBJECT_STYLE[object.type as Exclude<FloorplanObjectType, "desk" | "meeting_room">];
+  if (object.type === "chair") {
+    return (
+      <g aria-label={object.label || "Stuhl"} className="select-none pointer-events-none">
+        {/* Stuhl-Sitzfläche */}
+        <rect x={object.x + 2} y={object.y + 5} width={Math.max(10, object.width - 4)} height={Math.max(10, object.height - 7)} rx={3} fill="#e2e8f0" stroke="#475569" strokeWidth={1.5} />
+        {/* Stuhl-Rückenlehne */}
+        <rect x={object.x + 1} y={object.y} width={Math.max(12, object.width - 2)} height={4} rx={2} fill="#334155" stroke="#1e293b" strokeWidth={1} />
+      </g>
+    );
+  }
+
+  const style = OBJECT_STYLE[object.type as Exclude<FloorplanObjectType, "desk" | "meeting_room" | "chair">];
   if (!style) return null;
   return (
     <g aria-label={object.label || style.label}>

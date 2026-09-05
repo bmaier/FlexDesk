@@ -31,6 +31,7 @@ class Department(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String(20), unique=True)
     name: Mapped[str] = mapped_column(String(150))
+    cost_center: Mapped[str] = mapped_column(String(50), default="KST-1000")
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"), nullable=True)
 
     parent = relationship("Department", remote_side=[id])
@@ -59,6 +60,7 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(String(150))
     email: Mapped[str] = mapped_column(String(200))
     department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    cost_center: Mapped[str | None] = mapped_column(String(50), nullable=True)
     home_property_id: Mapped[int | None] = mapped_column(ForeignKey("properties.id"), nullable=True)
     home_desk_id: Mapped[int | None] = mapped_column(ForeignKey("desks.id"), nullable=True)
     klarname_opt_in: Mapped[bool] = mapped_column(Boolean, default=False)  # FR-21

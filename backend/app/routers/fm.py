@@ -196,6 +196,33 @@ def save_floorplan_layout(floor_id: int, payload: FloorplanLayoutIn, user: User 
     return {"ok": True}
 
 
+class RoomFloorplanLayoutIn(BaseModel):
+    layout: str
+    seating_layout: str | None = None
+
+
+@router.get("/rooms/{room_id}/floorplan-layout")
+def get_room_floorplan_layout_fm(room_id: int, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    room = db.get(Room, room_id)
+    if room is None:
+        _err(404, "ROOM_NOT_FOUND", "Raum nicht gefunden.")
+    return {"layout": room.floorplan_layout, "seating_layout": room.seating_layout}
+
+
+@router.put("/rooms/{room_id}/floorplan-layout")
+def save_room_floorplan_layout(room_id: int, payload: RoomFloorplanLayoutIn, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    room = db.get(Room, room_id)
+    if room is None:
+        _err(404, "ROOM_NOT_FOUND", "Raum nicht gefunden.")
+    if len(payload.layout) > 20000:
+        _err(400, "FLOORPLAN_TOO_LARGE", "Der Grundriss ist zu groß.")
+    room.floorplan_layout = payload.layout
+    if payload.seating_layout:
+        room.seating_layout = payload.seating_layout
+    db.commit()
+    return {"ok": True}
+
+
 class CreateRoomIn(BaseModel):
     room_number: str
     name: str
@@ -262,7 +289,9 @@ class UpdateRoomIn(BaseModel):
     restricted_role_code: str | None = None
     name: str | None = None
     room_number: str | None = None
+    room_type: str | None = None
     capacity: int | None = None
+    seating_layout: str | None = None
     checkin_required: bool | None = None
 
 
@@ -279,8 +308,12 @@ def update_room(room_id: int, payload: UpdateRoomIn, user: User = Depends(requir
         room.name = payload.name
     if payload.room_number is not None:
         room.room_number = payload.room_number
+    if payload.room_type is not None:
+        room.room_type = payload.room_type
     if payload.capacity is not None:
         room.capacity = payload.capacity
+    if payload.seating_layout is not None:
+        room.seating_layout = payload.seating_layout
     if payload.checkin_required is not None:
         room.checkin_required = payload.checkin_required
     db.commit()
@@ -927,12 +960,75 @@ class DepartmentOut(BaseModel):
     code: str
     name: str
     parent_id: int | None
+    cost_center: str
+
+
+class CreateDepartmentIn(BaseModel):
+    code: str
+    name: str
+    cost_center: str | None = None
+    parent_id: int | None = None
+
+
+class UpdateDepartmentIn(BaseModel):
+    code: str | None = None
+    name: str | None = None
+    cost_center: str | None = None
+    parent_id: int | None = None
 
 
 @router.get("/departments", response_model=list[DepartmentOut])
 def list_departments(db: Session = Depends(get_db)):
-    """Flache Liste mit parent_id — das Frontend baut daraus den Org-Baum (BAMF-Hierarchie)."""
-    return [DepartmentOut(id=d.id, code=d.code, name=d.name, parent_id=d.parent_id) for d in db.query(Department).order_by(Department.code).all()]
+    """Flache Liste mit parent_id und Kostenstelle — das Frontend baut daraus den Org-Baum."""
+    return [
+        DepartmentOut(id=d.id, code=d.code, name=d.name, parent_id=d.parent_id, cost_center=d.cost_center)
+        for d in db.query(Department).order_by(Department.code).all()
+    ]
+
+
+@router.post("/departments", response_model=DepartmentOut)
+def create_department(payload: CreateDepartmentIn, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    existing = db.query(Department).filter(Department.code == payload.code.strip()).first()
+    if existing:
+        _err(409, "DEPARTMENT_EXISTS", f"Organisationseinheit mit Code {payload.code} existiert bereits.")
+    cc = payload.cost_center.strip() if payload.cost_center and payload.cost_center.strip() else f"KST-{payload.code.replace('.', '')}"
+    parent_id = payload.parent_id if payload.parent_id and payload.parent_id > 0 else None
+    dept = Department(code=payload.code.strip(), name=payload.name.strip(), cost_center=cc, parent_id=parent_id)
+    db.add(dept)
+    db.commit()
+    db.refresh(dept)
+    return DepartmentOut(id=dept.id, code=dept.code, name=dept.name, parent_id=dept.parent_id, cost_center=dept.cost_center)
+
+
+@router.patch("/departments/{department_id}", response_model=DepartmentOut)
+def update_department(department_id: int, payload: UpdateDepartmentIn, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    dept = db.get(Department, department_id)
+    if not dept:
+        _err(404, "DEPARTMENT_NOT_FOUND", "Organisationseinheit nicht gefunden.")
+    if payload.code is not None and payload.code.strip():
+        dept.code = payload.code.strip()
+    if payload.name is not None and payload.name.strip():
+        dept.name = payload.name.strip()
+    if payload.cost_center is not None and payload.cost_center.strip():
+        dept.cost_center = payload.cost_center.strip()
+    if payload.parent_id is not None:
+        dept.parent_id = payload.parent_id if payload.parent_id > 0 else None
+    db.commit()
+    db.refresh(dept)
+    return DepartmentOut(id=dept.id, code=dept.code, name=dept.name, parent_id=dept.parent_id, cost_center=dept.cost_center)
+
+
+@router.delete("/departments/{department_id}")
+def delete_department(department_id: int, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    dept = db.get(Department, department_id)
+    if not dept:
+        _err(404, "DEPARTMENT_NOT_FOUND", "Organisationseinheit nicht gefunden.")
+    users_count = db.query(User).filter(User.department_id == department_id).count()
+    if users_count > 0:
+        _err(400, "DEPARTMENT_IN_USE", f"Organisationseinheit kann nicht gelöscht werden: {users_count} Personen sind zugeordnet.")
+    db.delete(dept)
+    db.commit()
+    return {"ok": True}
 
 
 class RoleOut(BaseModel):
@@ -944,6 +1040,97 @@ class RoleOut(BaseModel):
 @router.get("/roles", response_model=list[RoleOut])
 def list_roles(db: Session = Depends(get_db)):
     return [RoleOut(id=r.id, code=r.code, name=r.name) for r in db.query(Role).order_by(Role.name).all()]
+
+
+class UserAdminOut(BaseModel):
+    id: int
+    idm_code: str
+    display_name: str
+    email: str
+    department_id: int | None
+    department_name: str | None
+    cost_center: str | None
+    effective_cost_center: str | None
+    home_property_id: int | None
+    home_property_name: str | None
+    roles: list[str]
+
+
+class UpdateUserIn(BaseModel):
+    display_name: str | None = None
+    department_id: int | None = None
+    clear_department: bool = False
+    cost_center: str | None = None
+    home_property_id: int | None = None
+    roles: list[str] | None = None
+
+
+@router.get("/users", response_model=list[UserAdminOut])
+def list_admin_users(user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    from app.auth import get_user_roles
+    users = db.query(User).order_by(User.id).all()
+    out = []
+    for u in users:
+        roles = sorted(get_user_roles(u, db))
+        prop = db.get(Property, u.home_property_id) if u.home_property_id else None
+        eff_cc = u.cost_center or (u.department.cost_center if u.department else None)
+        out.append(UserAdminOut(
+            id=u.id,
+            idm_code=u.idm_code,
+            display_name=u.display_name,
+            email=u.email,
+            department_id=u.department_id,
+            department_name=u.department.name if u.department else None,
+            cost_center=u.cost_center,
+            effective_cost_center=eff_cc,
+            home_property_id=u.home_property_id,
+            home_property_name=prop.name if prop else None,
+            roles=roles,
+        ))
+    return out
+
+
+@router.patch("/users/{user_id}", response_model=UserAdminOut)
+def update_admin_user(user_id: int, payload: UpdateUserIn, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    from app.auth import get_user_roles
+    from app.models.reference import UserRole, Role
+    u = db.get(User, user_id)
+    if not u:
+        _err(404, "USER_NOT_FOUND", "Benutzer nicht gefunden.")
+    if payload.display_name is not None and payload.display_name.strip():
+        u.display_name = payload.display_name.strip()
+    if payload.clear_department:
+        u.department_id = None
+    elif payload.department_id is not None:
+        u.department_id = payload.department_id if payload.department_id > 0 else None
+    if payload.cost_center is not None:
+        u.cost_center = payload.cost_center.strip() if payload.cost_center.strip() else None
+    if payload.home_property_id is not None:
+        u.home_property_id = payload.home_property_id if payload.home_property_id > 0 else None
+    if payload.roles is not None:
+        db.query(UserRole).filter(UserRole.user_id == u.id).delete()
+        for r_code in payload.roles:
+            role = db.query(Role).filter(Role.code == r_code).first()
+            if role:
+                db.add(UserRole(user_id=u.id, role_id=role.id))
+    db.commit()
+    db.refresh(u)
+    roles = sorted(get_user_roles(u, db))
+    prop = db.get(Property, u.home_property_id) if u.home_property_id else None
+    eff_cc = u.cost_center or (u.department.cost_center if u.department else None)
+    return UserAdminOut(
+        id=u.id,
+        idm_code=u.idm_code,
+        display_name=u.display_name,
+        email=u.email,
+        department_id=u.department_id,
+        department_name=u.department.name if u.department else None,
+        cost_center=u.cost_center,
+        effective_cost_center=eff_cc,
+        home_property_id=u.home_property_id,
+        home_property_name=prop.name if prop else None,
+        roles=roles,
+    )
 
 
 # --------------------------------------------------------------------------

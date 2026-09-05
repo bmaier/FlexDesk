@@ -54,9 +54,11 @@ development_status:
   4-1-meetingraum-katalog-und-buchung-mit-genehmigungspflicht: backlog
   4-2-vertrauliche-raumblockierung: backlog
   4-3-meetingraum-grundriss-im-fm-designer-und-interaktive-grundri: done
+  4-4-meetingraum-grundriss-bestuhlung-catering: done
   epic-4-retrospective: optional
 
-  epic-5: backlog
+  epic-5: in-progress
   5-1-stammdatenpflege-und-etagen-grundriss-designer: backlog
   5-2-referatsbezogene-zonen-und-raumkontingente: backlog
+  5-3-zentrale-stammdatenverwaltung-kostenstellen: done
   epic-5-retrospective: optional

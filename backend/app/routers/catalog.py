@@ -223,6 +223,23 @@ class MeetingRoomOut(BaseModel):
     pos_y: float | None = None
     width: float | None = None
     height: float | None = None
+    seating_layout: str | None = None
+    floorplan_layout: str | None = None
+
+
+class DepartmentCatalogOut(BaseModel):
+    id: int
+    code: str
+    name: str
+    parent_id: int | None
+    cost_center: str
+
+
+@router.get("/departments", response_model=list[DepartmentCatalogOut])
+def list_departments(db: Session = Depends(get_db)):
+    from app.models.reference import Department
+    depts = db.query(Department).order_by(Department.code).all()
+    return [DepartmentCatalogOut(id=d.id, code=d.code, name=d.name, parent_id=d.parent_id, cost_center=d.cost_center) for d in depts]
 
 
 @router.get("/properties/{property_id}/meeting-rooms", response_model=list[MeetingRoomOut])
@@ -254,6 +271,7 @@ def meeting_rooms_for_property(property_id: int, db: Session = Depends(get_db)):
             approval_required=r.approval_required, restricted_role_code=r.restricted_role_code,
             labels=_labels_for(db, RoomLabel, "room_id", r.id), is_occupied_now=occupied,
             pos_x=r.pos_x, pos_y=r.pos_y, width=r.width, height=r.height,
+            seating_layout=r.seating_layout, floorplan_layout=r.floorplan_layout,
         ))
     return out
 
@@ -285,6 +303,15 @@ def meeting_rooms_for_floor(floor_id: int, db: Session = Depends(get_db)):
             approval_required=r.approval_required, restricted_role_code=r.restricted_role_code,
             labels=_labels_for(db, RoomLabel, "room_id", r.id), is_occupied_now=occupied,
             pos_x=r.pos_x, pos_y=r.pos_y, width=r.width, height=r.height,
+            seating_layout=r.seating_layout, floorplan_layout=r.floorplan_layout,
         ))
     return out
+
+
+@router.get("/rooms/{room_id}/floorplan-layout")
+def get_room_floorplan_layout(room_id: int, db: Session = Depends(get_db)):
+    room = db.get(Room, room_id)
+    if not room:
+        return {"layout": None, "seating_layout": None}
+    return {"layout": room.floorplan_layout, "seating_layout": room.seating_layout}
 

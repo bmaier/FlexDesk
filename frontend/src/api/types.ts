@@ -3,6 +3,8 @@ export interface DemoUser {
   idm_code: string;
   display_name: string;
   department: string | null;
+  department_id?: number | null;
+  cost_center?: string | null;
   roles: string[];
 }
 
@@ -88,6 +90,8 @@ export interface MeetingRoomOut {
   pos_y?: number | null;
   width?: number | null;
   height?: number | null;
+  seating_layout?: string | null;
+  floorplan_layout?: string | null;
 }
 
 
@@ -149,6 +153,33 @@ export interface BookingOut {
   double_booking_reason: string | null;
   checkin_status: string | null;
   checkin_deadline: string | null;
+  has_catering?: boolean;
+  catering_notes?: string | null;
+  cost_center?: string | null;
+  billing_department_id?: number | null;
+  billing_department_name?: string | null;
+}
+
+export interface DepartmentOut {
+  id: number;
+  code: string;
+  name: string;
+  parent_id: number | null;
+  cost_center: string;
+}
+
+export interface UserAdminOut {
+  id: number;
+  idm_code: string;
+  display_name: string;
+  email: string;
+  department_id: number | null;
+  department_name: string | null;
+  cost_center: string | null;
+  effective_cost_center: string | null;
+  home_property_id: number | null;
+  home_property_name: string | null;
+  roles: string[];
 }
 
 export interface SeriesOccurrencePreview {

@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../api/client";
-import type { BookingOut, FloorNode, MeetingRoomOut, PropertyOut, PropertyTree, SeatingOptionOut } from "../api/types";
+import type {
+  BookingOut,
+  DepartmentOut,
+  FloorNode,
+  MeetingRoomOut,
+  PropertyOut,
+  PropertyTree,
+  SeatingOptionOut,
+} from "../api/types";
 import { Badge, Button, Card, Modal } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import { DoubleBookingModal, type DoubleBookingDetail } from "../components/DoubleBookingModal";
-import { FloorplanCanvas, parseFloorplanLayout } from "../components/FloorplanCanvas";
+import {
+  FloorplanCanvas,
+  type FloorplanLayout,
+  generateMeetingRoomLayout,
+  parseFloorplanLayout,
+} from "../components/FloorplanCanvas";
 
 interface RoomBookingSlot {
   booking_id: number;
@@ -16,9 +29,9 @@ interface RoomBookingSlot {
   remark: string | null;
 }
 
-/** Flow 4 — Meetingraum-Buchung mit Genehmigungspflicht und Grundriss-Ansicht. */
+/** Flow 4 — Meetingraum-Buchung mit Genehmigungspflicht, Grundriss & Bestuhlung sowie Catering-Option. */
 export default function MeetingRooms() {
-  const { hasRole, actingAsUserId } = useAuth();
+  const { user, hasRole, actingAsUserId } = useAuth();
   const [properties, setProperties] = useState<PropertyOut[]>([]);
   const [propertyId, setPropertyId] = useState<number | null>(null);
   const [tree, setTree] = useState<PropertyTree | null>(null);
@@ -26,10 +39,21 @@ export default function MeetingRooms() {
   const [viewMode, setViewMode] = useState<"plan" | "list">("plan");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [rooms, setRooms] = useState<MeetingRoomOut[]>([]);
+  const [departments, setDepartments] = useState<DepartmentOut[]>([]);
   const [timelines, setTimelines] = useState<Record<number, RoomBookingSlot[]>>({});
   const [activeRoom, setActiveRoom] = useState<MeetingRoomOut | null>(null);
+  const [roomLayout, setRoomLayout] = useState<FloorplanLayout | null>(null);
   const [seating, setSeating] = useState<SeatingOptionOut[]>([]);
+
+  // Form State
   const [form, setForm] = useState({ startHour: 9, endHour: 10, seatingOptionId: "", remark: "" });
+  const [hasCatering, setHasCatering] = useState(false);
+  const [cateringNotes, setCateringNotes] = useState("");
+  const [billingMode, setBillingMode] = useState<"own" | "foreign">("own");
+  const [foreignDeptId, setForeignDeptId] = useState<number | "">("");
+  const [foreignCostCenter, setForeignCostCenter] = useState("");
+  const [costCenterWarningAcknowledged, setCostCenterWarningAcknowledged] = useState(false);
+
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [doubleBooking, setDoubleBooking] = useState<DoubleBookingDetail | null>(null);
@@ -39,6 +63,7 @@ export default function MeetingRooms() {
       setProperties(props);
       if (props.length) setPropertyId((current) => current ?? props[0].id);
     });
+    api.get<DepartmentOut[]>("/catalog/departments").then(setDepartments).catch(() => setDepartments([]));
   }, []);
 
   useEffect(() => {
@@ -87,15 +112,55 @@ export default function MeetingRooms() {
     setState("idle");
     setError(null);
     setForm({ startHour: 9, endHour: 10, seatingOptionId: "", remark: "" });
+    setHasCatering(false);
+    setCateringNotes("");
+    setBillingMode("own");
+    setForeignDeptId("");
+    setForeignCostCenter("");
+    setCostCenterWarningAcknowledged(false);
+
     api.get<SeatingOptionOut[]>(`/fm/rooms/${room.id}/seating-options`).then(setSeating).catch(() => setSeating([]));
+
+    // Lade individuellen Grundriss des Meetingraums (oder generiere automatische Bestuhlung)
+    api
+      .get<{ layout: string | null; seating_layout: string | null }>(`/catalog/rooms/${room.id}/floorplan-layout`)
+      .then((res) => {
+        const parsed = parseFloorplanLayout(res.layout);
+        if (parsed && parsed.objects.length > 0) {
+          setRoomLayout(parsed);
+        } else {
+          const cap = room.capacity || 10;
+          const preset = res.seating_layout || room.seating_layout || "boardroom";
+          setRoomLayout({ objects: generateMeetingRoomLayout(cap, preset) });
+        }
+      })
+      .catch(() => {
+        const cap = room.capacity || 10;
+        setRoomLayout({ objects: generateMeetingRoomLayout(cap, room.seating_layout || "boardroom") });
+      });
   }
 
   async function submitBooking(override = false, reason?: string) {
     if (!activeRoom) return;
+
+    if (hasCatering && billingMode === "foreign") {
+      if (!foreignDeptId) {
+        setError("Bitte wählen Sie die zu belastende fremde Organisationseinheit aus.");
+        return;
+      }
+      if (!costCenterWarningAcknowledged) {
+        setError("Bitte bestätigen Sie die Kostenübernahme durch die fremde Organisationseinheit.");
+        return;
+      }
+    }
+
     setState("loading");
     setError(null);
     const start_at = `${date}T${String(form.startHour).padStart(2, "0")}:00:00`;
     const end_at = `${date}T${String(form.endHour).padStart(2, "0")}:00:00`;
+
+    const selectedForeignDept = departments.find((d) => d.id === Number(foreignDeptId));
+
     try {
       await api.post<BookingOut>("/bookings/rooms", {
         room_id: activeRoom.id,
@@ -106,6 +171,19 @@ export default function MeetingRooms() {
         for_user_id: actingAsUserId ?? undefined,
         override_double_booking: override,
         double_booking_reason: reason,
+        has_catering: hasCatering,
+        catering_notes: hasCatering ? cateringNotes || null : null,
+        billing_department_id:
+          hasCatering && billingMode === "foreign" && foreignDeptId
+            ? Number(foreignDeptId)
+            : (user?.department_id ?? null),
+        cost_center: hasCatering
+          ? billingMode === "foreign"
+            ? foreignCostCenter || selectedForeignDept?.cost_center || null
+            : (user?.cost_center ?? null)
+          : null,
+        cost_center_warning_acknowledged:
+          hasCatering && billingMode === "foreign" ? costCenterWarningAcknowledged : false,
       });
       setState("done");
       setDoubleBooking(null);
@@ -121,10 +199,15 @@ export default function MeetingRooms() {
     }
   }
 
+  const userDept = departments.find((d) => d.id === user?.department_id);
+  const ownCostCenter = user?.cost_center || userDept?.cost_center || "Standard-KST";
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-1">Meetingräume</h1>
-      <p className="text-on-surface-variant mb-4">Räume interaktiv über den Grundriss oder per Liste buchen bzw. anfragen.</p>
+      <p className="text-on-surface-variant mb-4">
+        Räume interaktiv über den Grundriss oder per Liste buchen bzw. anfragen. Inklusive Raumgrundriss, automatischer Bestuhlung und Catering-Option.
+      </p>
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex flex-wrap items-center gap-3">
@@ -262,51 +345,194 @@ export default function MeetingRooms() {
         </div>
       )}
 
-
+      {/* Raum-Buchungs-Modal */}
       {activeRoom && (
-        <Modal title={activeRoom.name} onClose={() => setActiveRoom(null)}>
+        <Modal title={`🏛 ${activeRoom.name} (Raum ${activeRoom.room_number})`} onClose={() => setActiveRoom(null)}>
           {state === "done" ? (
-            <div className="p-3 rounded bg-tertiary-fixed/40 text-on-tertiary-fixed-variant text-sm">
-              {activeRoom.approval_required ? "Anfrage gesendet — Status „Ausstehend“ in Meine Buchungen." : "Gebucht."}
+            <div className="p-4 rounded bg-tertiary-fixed/40 text-on-tertiary-fixed-variant text-sm space-y-2">
+              <div className="font-semibold">
+                {activeRoom.approval_required ? "Buchungsanfrage erfolgreich eingereicht!" : "Meetingraum erfolgreich gebucht!"}
+              </div>
+              <p className="text-xs">
+                {activeRoom.approval_required
+                  ? "Der Raum erfordert eine Genehmigung. Ihre Anfrage steht unter „Meine Buchungen“ auf dem Status „Ausstehend“."
+                  : "Ihre Buchungsbestätigung wurde erfasst."}
+                {hasCatering && " Die Catering-Bestellung wurde an den Wirtschaftsdienst übermittelt."}
+              </p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {error && <div className="p-2 rounded bg-error-container text-on-error-container text-sm" role="alert">{error}</div>}
-              <label className="block text-sm">
-                Von
-                <select value={form.startHour} onChange={(e) => setForm((f) => ({ ...f, startHour: Number(e.target.value) }))} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2">
-                  {Array.from({ length: 11 }, (_, i) => i + 8).map((h) => (
-                    <option key={h} value={h}>{h}:00</option>
-                  ))}
-                </select>
-              </label>
-              <label className="block text-sm">
-                Bis
-                <select value={form.endHour} onChange={(e) => setForm((f) => ({ ...f, endHour: Number(e.target.value) }))} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2">
-                  {Array.from({ length: 11 }, (_, i) => i + 9).map((h) => (
-                    <option key={h} value={h}>{h}:00</option>
-                  ))}
-                </select>
-              </label>
+            <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-1 text-sm">
+              {error && <div className="p-2.5 rounded bg-error-container text-on-error-container text-xs" role="alert">{error}</div>}
+
+              {/* Grundriss & Bestuhlungs-Vorschau */}
+              {roomLayout && (
+                <div className="border border-outline-variant/30 rounded-md p-2 bg-surface-container-low space-y-1">
+                  <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium">
+                    <span>Raum-Grundriss & Bestuhlung ({activeRoom.capacity ?? "—"} Plätze)</span>
+                    <span className="text-[11px] text-primary">🏛 {activeRoom.seating_layout || "Konferenztisch"}</span>
+                  </div>
+                  <div className="w-full h-40 bg-surface rounded border border-outline-variant/20 overflow-hidden">
+                    <FloorplanCanvas layout={roomLayout} />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block text-xs font-medium">
+                  Von
+                  <select
+                    value={form.startHour}
+                    onChange={(e) => setForm((f) => ({ ...f, startHour: Number(e.target.value) }))}
+                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+                  >
+                    {Array.from({ length: 11 }, (_, i) => i + 8).map((h) => (
+                      <option key={h} value={h}>{h}:00 Uhr</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-xs font-medium">
+                  Bis
+                  <select
+                    value={form.endHour}
+                    onChange={(e) => setForm((f) => ({ ...f, endHour: Number(e.target.value) }))}
+                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+                  >
+                    {Array.from({ length: 11 }, (_, i) => i + 9).map((h) => (
+                      <option key={h} value={h}>{h}:00 Uhr</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
               {seating.length > 0 && (
-                <label className="block text-sm">
-                  Bestuhlung
-                  <select value={form.seatingOptionId} onChange={(e) => setForm((f) => ({ ...f, seatingOptionId: e.target.value }))} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2">
-                    <option value="">Standard</option>
+                <label className="block text-xs font-medium">
+                  Alternative Bestuhlung anfragen
+                  <select
+                    value={form.seatingOptionId}
+                    onChange={(e) => setForm((f) => ({ ...f, seatingOptionId: e.target.value }))}
+                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+                  >
+                    <option value="">Standard-Bestuhlung beibehalten</option>
                     {seating.filter((s) => !s.is_standard).map((s) => (
                       <option key={s.id} value={s.id}>{s.name} (+{s.changeover_days} Umbautag/e)</option>
                     ))}
                   </select>
                 </label>
               )}
+
+              {/* Catering-Option */}
+              <div className="p-3 rounded-md bg-surface-container-low border border-outline-variant/30 space-y-2.5">
+                <label className="flex items-center gap-2 font-medium text-xs cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={hasCatering}
+                    onChange={(e) => setHasCatering(e.target.checked)}
+                    className="w-4 h-4 rounded text-primary"
+                  />
+                  <span>🍽️ Catering als Option hinzubuchen</span>
+                </label>
+
+                {hasCatering && (
+                  <div className="space-y-2.5 pt-2 border-t border-outline-variant/30 text-xs">
+                    <label className="block">
+                      Catering-Details / Wünsche (Kaffee, Snacks, Getränke)
+                      <textarea
+                        rows={2}
+                        value={cateringNotes}
+                        onChange={(e) => setCateringNotes(e.target.value)}
+                        placeholder="z.B. Kaffee & Tee für 10 Personen, Mineralwasser, Brezeln..."
+                        className="w-full mt-1 bg-surface rounded px-2.5 py-1.5 border border-outline-variant/30 text-xs"
+                      />
+                    </label>
+
+                    <div className="space-y-1.5">
+                      <div className="font-semibold">Kostenstellen-Zuordnung:</div>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="billingMode"
+                          checked={billingMode === "own"}
+                          onChange={() => {
+                            setBillingMode("own");
+                            setCostCenterWarningAcknowledged(false);
+                          }}
+                        />
+                        <span>Eigenes Kostenstellenkonto ({ownCostCenter})</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="billingMode"
+                          checked={billingMode === "foreign"}
+                          onChange={() => setBillingMode("foreign")}
+                        />
+                        <span>Fremde Organisationseinheit / Kostenstelle belasten</span>
+                      </label>
+                    </div>
+
+                    {billingMode === "foreign" && (
+                      <div className="space-y-2 p-2.5 rounded bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700/50">
+                        <label className="block font-medium text-amber-900 dark:text-amber-200">
+                          Abweichende Organisationseinheit auswählen:
+                          <select
+                            value={foreignDeptId}
+                            onChange={(e) => {
+                              const val = e.target.value ? Number(e.target.value) : "";
+                              setForeignDeptId(val);
+                              const found = departments.find((d) => d.id === val);
+                              if (found) setForeignCostCenter(found.cost_center || "");
+                            }}
+                            className="w-full mt-1 bg-surface rounded px-2.5 py-1.5 border border-amber-400 text-xs text-on-surface"
+                          >
+                            <option value="">Organisationseinheit wählen…</option>
+                            {departments.map((d) => (
+                              <option key={d.id} value={d.id}>
+                                {d.code} · {d.name} {d.cost_center ? `(${d.cost_center})` : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        {foreignCostCenter && (
+                          <div className="text-[11px] text-amber-800 dark:text-amber-300">
+                            Zugeordnete Kostenstelle: <span className="font-semibold">{foreignCostCenter}</span>
+                          </div>
+                        )}
+
+                        <div className="p-2 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 text-[11px] leading-relaxed">
+                          ⚠️ <b>Achtung Budgetfreigabe:</b> Sie belasten eine fremde Organisationseinheit. Die Kostenübernahme muss vorab mit der Kostenstellenleitung abgestimmt worden sein.
+                        </div>
+
+                        <label className="flex items-start gap-2 text-xs text-amber-950 dark:text-amber-200 font-medium cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={costCenterWarningAcknowledged}
+                            onChange={(e) => setCostCenterWarningAcknowledged(e.target.checked)}
+                            className="mt-0.5 w-4 h-4 rounded text-amber-600"
+                          />
+                          <span>
+                            Ich bestätige, dass die Kostenübernahme für das Catering mit der zuständigen Leitung der gewählten Organisationseinheit verbindlich vorab abgestimmt wurde.
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {hasRole("vm") && (
-                <label className="block text-sm">
+                <label className="block text-xs font-medium">
                   Bemerkung (nur für VM sichtbar)
-                  <input value={form.remark} onChange={(e) => setForm((f) => ({ ...f, remark: e.target.value }))} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2" />
+                  <input
+                    value={form.remark}
+                    onChange={(e) => setForm((f) => ({ ...f, remark: e.target.value }))}
+                    className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+                  />
                 </label>
               )}
-              <Button variant="accent" className="w-full" loading={state === "loading"} onClick={() => submitBooking()}>
-                {activeRoom.approval_required ? "Anfrage senden" : "Buchen"}
+
+              <Button variant="accent" className="w-full mt-2" loading={state === "loading"} onClick={() => submitBooking()}>
+                {activeRoom.approval_required ? "Buchungsanfrage einreichen" : "Jetzt verbindlich buchen"}
               </Button>
             </div>
           )}

@@ -133,10 +133,25 @@ def seed(db: Session) -> None:
     db.flush()
 
     # ---- BAMF-Orgstruktur (Abteilungen/Referate, hierarchisch) -------------
+    COST_CENTERS: dict[str, str] = {
+        "P": "KST-100-LEITUNG", "P.GZ": "KST-110-GZ", "P.PR": "KST-120-PRESSE",
+        "1": "KST-1000-ZD", "1.1": "KST-1100-PERS", "1.2": "KST-1200-LIEG", "1.2.1": "KST-1210-FM", "1.2.2": "KST-1220-BAU", "1.3": "KST-1300-HH",
+        "2": "KST-2000-IT", "2.1": "KST-2100-OPS", "2.2": "KST-2200-INNO",
+        "3": "KST-3000-ASY", "3.1": "KST-3100-GRUND", "3.2": "KST-3200-DUB",
+        "4": "KST-4000-NW", "4.1": "KST-4100-NORD", "4.2": "KST-4200-WEST",
+        "5": "KST-5000-OSS", "5.1": "KST-5100-OST", "5.2": "KST-5200-SUED",
+        "6": "KST-6000-QS", "6.1": "KST-6100-GRUND", "6.2": "KST-6200-IZAM", "6.2.1": "KST-6210-PROZ",
+        "7": "KST-7000-SI", "7.1": "KST-7100-SI", "7.2": "KST-7200-RUECK",
+        "8": "KST-8000-INT", "8.1": "KST-8100-PROG", "8.2": "KST-8200-ZUS",
+        "9": "KST-9000-EU", "9.1": "KST-9100-INT", "9.2": "KST-9200-FONDS",
+        "FZ": "KST-9900-FZ",
+    }
+
     departments: dict[str, Department] = {}
     for code, name, parent_code in ORG_UNITS:
         parent = departments[parent_code] if parent_code else None
-        dept = Department(code=code, name=name, parent=parent)
+        cc = COST_CENTERS.get(code, f"KST-{code.replace('.', '')}")
+        dept = Department(code=code, name=name, parent=parent, cost_center=cc)
         departments[code] = dept
         db.add(dept)
         db.flush()  # damit parent.id für die nächste Iteration gesetzt ist

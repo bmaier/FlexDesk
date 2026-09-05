@@ -16,6 +16,8 @@ class DemoUserOut(BaseModel):
     idm_code: str
     display_name: str
     department: str | None
+    department_id: int | None = None
+    cost_center: str | None = None
     roles: list[str]
 
     class Config:
@@ -33,11 +35,14 @@ class LoginResponse(BaseModel):
 
 def _to_demo_user(user: User, db: Session) -> DemoUserOut:
     roles = sorted(get_user_roles(user, db))
+    dept_cc = user.cost_center or (user.department.cost_center if user.department else None)
     return DemoUserOut(
         id=user.id,
         idm_code=user.idm_code,
         display_name=user.display_name,
         department=user.department.name if user.department else None,
+        department_id=user.department_id,
+        cost_center=dept_cc,
         roles=roles,
     )
 

@@ -296,6 +296,11 @@ class BookingOut(BaseModel):
     double_booking_reason: str | None = None
     checkin_status: str | None = None
     checkin_deadline: datetime | None = None
+    has_catering: bool = False
+    catering_notes: str | None = None
+    cost_center: str | None = None
+    billing_department_id: int | None = None
+    billing_department_name: str | None = None
 
 
 def _booking_to_out(db: Session, b: Booking) -> BookingOut:
@@ -329,6 +334,10 @@ def _booking_to_out(db: Session, b: Booking) -> BookingOut:
         room_id = room.id
         labels = [db.get(Label, rl.label_id).name for rl in db.query(RoomLabel).filter(RoomLabel.room_id == room.id)]
     checkin = db.query(CheckIn).filter(CheckIn.booking_id == b.id).first()
+    billing_dept_name = None
+    if b.billing_department_id:
+        dept = db.get(Department, b.billing_department_id)
+        billing_dept_name = dept.name if dept else None
     return BookingOut(
         id=b.id, kind=b.kind, status=b.status, start_at=b.start_at, end_at=b.end_at,
         booked_for_user_id=b.booked_for_user_id, booked_for_name=b.booked_for.display_name,
@@ -338,6 +347,9 @@ def _booking_to_out(db: Session, b: Booking) -> BookingOut:
         cancel_reason=b.cancel_reason,
         remark=b.remark, checkin_status=checkin.status if checkin else None,
         checkin_deadline=checkin.deadline_at if checkin else None, double_booking_reason=b.double_booking_reason,
+        has_catering=b.has_catering, catering_notes=b.catering_notes,
+        cost_center=b.cost_center, billing_department_id=b.billing_department_id,
+        billing_department_name=billing_dept_name,
     )
 
 
@@ -430,6 +442,11 @@ class CreateRoomBookingIn(BaseModel):
     for_user_id: int | None = None
     override_double_booking: bool = False
     double_booking_reason: str | None = None
+    has_catering: bool = False
+    catering_notes: str | None = None
+    cost_center: str | None = None
+    billing_department_id: int | None = None
+    cost_center_warning_acknowledged: bool = False
 
 
 @router.post("/rooms", response_model=BookingOut)
@@ -456,6 +473,27 @@ def create_room_booking(payload: CreateRoomBookingIn, user: User = Depends(get_c
 
     _check_double_booking(db, target.id, payload.start_at, payload.end_at, payload.override_double_booking, payload.double_booking_reason, kind="room")
 
+    booking_cost_center = None
+    booking_billing_dept_id = None
+    if payload.has_catering:
+        target_dept_id = target.department_id
+        chosen_dept_id = payload.billing_department_id or target_dept_id
+        booking_billing_dept_id = chosen_dept_id
+
+        # Fremde Organisationseinheit prüfen
+        is_foreign = chosen_dept_id is not None and target_dept_id is not None and chosen_dept_id != target_dept_id
+        if is_foreign and not payload.cost_center_warning_acknowledged:
+            _err(400, "FOREIGN_COST_CENTER_NOT_ACKNOWLEDGED",
+                 "Für die Abrechnung über eine abweichende Organisationseinheit/Kostenstelle ist eine Bestätigung der vorliegenden Genehmigung erforderlich.")
+
+        if payload.cost_center and payload.cost_center.strip():
+            booking_cost_center = payload.cost_center.strip()
+        elif chosen_dept_id:
+            dept = db.get(Department, chosen_dept_id)
+            booking_cost_center = dept.cost_center if dept else "KST-1000"
+        else:
+            booking_cost_center = target.cost_center or (target.department.cost_center if target.department else "KST-1000")
+
     changeover_bookings: list[tuple[datetime, datetime]] = []
     if payload.seating_option_id:
         seating = db.get(SeatingOption, payload.seating_option_id)
@@ -469,11 +507,22 @@ def create_room_booking(payload: CreateRoomBookingIn, user: User = Depends(get_c
                 changeover_bookings.append((day_start, day_end))
 
     approval_needed = room.approval_required
-    booking = Booking(kind="room", status="pending_approval" if approval_needed else "confirmed",
-                       booked_for_user_id=target.id, booked_by_user_id=user.id,
-                       start_at=payload.start_at, end_at=payload.end_at,
-                       seating_option_id=payload.seating_option_id, remark=payload.remark,
-                       double_booking_reason=payload.double_booking_reason if payload.override_double_booking else None)
+    booking = Booking(
+        kind="room",
+        status="pending_approval" if approval_needed else "confirmed",
+        booked_for_user_id=target.id,
+        booked_by_user_id=user.id,
+        start_at=payload.start_at,
+        end_at=payload.end_at,
+        seating_option_id=payload.seating_option_id,
+        remark=payload.remark,
+        double_booking_reason=payload.double_booking_reason if payload.override_double_booking else None,
+        has_catering=payload.has_catering,
+        catering_notes=payload.catering_notes if payload.has_catering else None,
+        cost_center=booking_cost_center,
+        billing_department_id=booking_billing_dept_id,
+        cost_center_warning_acknowledged=payload.cost_center_warning_acknowledged,
+    )
     db.add(booking)
     db.flush()
     db.add(RoomBooking(booking_id=booking.id, room_id=room.id))

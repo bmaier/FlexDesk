@@ -50,6 +50,11 @@ class Booking(Base):
     remark: Mapped[str | None] = mapped_column(String(500), nullable=True)  # FR-57, VM-only field
     double_booking_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
     # Pflichtbegruendung, wenn bewusst trotz ueberlappender Eigenbuchung fortgefahren wurde
+    has_catering: Mapped[bool] = mapped_column(Boolean, default=False)
+    catering_notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    cost_center: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    billing_department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    cost_center_warning_acknowledged: Mapped[bool] = mapped_column(Boolean, default=False)
     cancel_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
     cancelled_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     cancel_kind: Mapped[str | None] = mapped_column(String(30), nullable=True)
@@ -58,6 +63,7 @@ class Booking(Base):
 
     booked_for = relationship("User", foreign_keys=[booked_for_user_id])
     booked_by = relationship("User", foreign_keys=[booked_by_user_id])
+    billing_department = relationship("Department", foreign_keys=[billing_department_id])
 
 
 class DeskBooking(Base):

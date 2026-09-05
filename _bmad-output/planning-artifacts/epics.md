@@ -35,6 +35,9 @@ Als Mitarbeiter mit vertraulichen Aufgaben (VS-NFD) möchte ich Räume exklusiv 
 ### Story 4.3: Meetingraum-Grundriss im FM Designer und interaktive Grundriss-Buchung
 Als Facility Manager möchte ich Meetingräume im Grundriss-Designer auf dem Etagenplan einzeichnen und mit realen Meetingräumen verknüpfen, und als Mitarbeiter möchte ich Meetingräume direkt im interaktiven Grundriss sehen und per Klick buchen oder anfragen.
 
+### Story 4.4: Detaillierter Meetingraum-Grundriss mit automatischer Bestuhlung, Drag & Drop und Catering-Option mit Kostenstellen-Abrechnung & Genehmigungswarnung
+Als Facility Manager und buchender Mitarbeiter möchte ich Meetingräume als echte Räume mit automatischer Bestuhlungsanordnung (Konferenztisch, U-Form, Kino, Schulung, etc.) und allen Stühlen gemäß Raumkapazität planen und per Drag & Drop flexibel nachbearbeiten können; bei der Buchung soll zudem Catering ausgewählt werden können, welches standardmäßig über die Kostenstelle der eigenen Organisationseinheit abgerechnet wird oder bei abweichender Org-Einheit/Kostenstelle eine explizite Genehmigungswarnung mit Bestätigungspflicht verlangt.
+
 ## Epic 5: Facility Management und Raumkontingente
 
 ### Story 5.1: Stammdatenpflege und Etagen-Grundriss-Designer
@@ -42,3 +45,6 @@ Als Facility Manager möchte ich Liegenschaften, Gebäude, Räume und Schreibtis
 
 ### Story 5.2: Referatsbezogene Zonen und Raumkontingente
 Als Facility Manager möchte ich Zonen für Abteilungen definieren, um exklusive Kontingente zu steuern.
+
+### Story 5.3: Zentrale Stammdatenverwaltung (Orgeinheiten, Kostenstellen, Benutzer, Liegenschaften, Räume) & Kostenstellen-Zuordnung
+Als Administrator und Facility Manager möchte ich über einen separaten Menüpunkt alle Stammdaten (Organisationseinheiten mit Kostenstellen, Benutzerzuordnungen mit Kostenstellen, Liegenschaften, Gebäude, Etagen, Räume und Ausstattungsmerkmale) an zentraler Stelle einsehen und bearbeiten können.

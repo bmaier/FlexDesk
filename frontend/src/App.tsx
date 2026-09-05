@@ -11,6 +11,7 @@ import MyBookings from "./pages/MyBookings";
 import WhoSitsWhere from "./pages/WhoSitsWhere";
 import Approvals from "./pages/Approvals";
 import FacilityManagement from "./pages/FacilityManagement";
+import MasterData from "./pages/MasterData";
 import ConfidentialBlock from "./pages/ConfidentialBlock";
 import BookFor from "./pages/BookFor";
 import Preferences from "./pages/Preferences";
@@ -72,6 +73,22 @@ export default function App() {
               element={
                 <RequireRole roles={["fm"]}>
                   <FacilityManagement />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="stammdaten"
+              element={
+                <RequireRole roles={["fm"]}>
+                  <MasterData />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="master-data"
+              element={
+                <RequireRole roles={["fm"]}>
+                  <MasterData />
                 </RequireRole>
               }
             />

@@ -91,6 +91,7 @@ export default function Layout() {
               <div className="space-y-1">
                 {canApprove && <NavItem to="/genehmigungscenter" label="Genehmigungscenter" />}
                 {canManageFM && <NavItem to="/facility-management" label="Facility-Management" />}
+                {canManageFM && <NavItem to="/stammdaten" label="Stammdaten & Kostenstellen" />}
                 {canBlockConfidential && <NavItem to="/vertrauliche-raumblockierung" label="Vertrauliche Raumblockierung" />}
               </div>
             </>

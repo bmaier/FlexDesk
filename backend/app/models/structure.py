@@ -84,6 +84,8 @@ class Room(Base):
     pos_y: Mapped[float | None] = mapped_column(nullable=True)
     width: Mapped[float | None] = mapped_column(nullable=True)
     height: Mapped[float | None] = mapped_column(nullable=True)
+    floorplan_layout: Mapped[str | None] = mapped_column(String(20000), nullable=True)
+    seating_layout: Mapped[str | None] = mapped_column(String(50), nullable=True, default="boardroom")
 
     floor = relationship("Floor", back_populates="rooms")
     desks: Mapped[list["Desk"]] = relationship(back_populates="room", cascade="all, delete-orphan")

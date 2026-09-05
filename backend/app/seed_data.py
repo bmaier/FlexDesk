@@ -5,6 +5,8 @@ when the DB file does not yet exist).
 """
 from __future__ import annotations
 
+import json
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -121,8 +123,148 @@ def _assign_labels_round_robin(db: Session, desks: list[Desk], label_ids: list[l
             db.add(DeskLabel(desk_id=desk.id, label_id=label_id))
 
 
-def seed(db: Session) -> None:
-    if db.query(Role).first():
+def _make_floor_layout(rooms: list[dict], extra_objects: list[dict] | None = None) -> str:
+    """Erzeugt ein valides JSON-Layout für einen Etagen-Grundriss (Platzierung von Räumen & Infrastruktur)."""
+    objects = []
+    for r in rooms:
+        is_meeting = r.get("room_type") == "meeting"
+        objects.append({
+            "id": f"room-{r['id']}",
+            "type": "meeting_room" if is_meeting else "room",
+            "x": r["x"],
+            "y": r["y"],
+            "width": r["width"],
+            "height": r["height"],
+            "label": f"{r['number']} {r['name']}",
+            "roomId": r["id"],
+            "roomType": "meeting" if is_meeting else "desk_area",
+        })
+    if extra_objects:
+        objects.extend(extra_objects)
+    return json.dumps({"objects": objects})
+
+
+def _make_room_desk_area_layout(desks: list[Desk], room_name: str, width: int = 860, height: int = 460) -> str:
+    """Erzeugt ein valides JSON-Innenlayout für einen Büroraum mit Desks, Stühlen, Fenstern und Schränken."""
+    objects = [
+        {"id": "door-1", "type": "door", "x": 35, "y": 20, "width": 44, "height": 12, "label": "Zimmertür"},
+        {"id": "win-1", "type": "window", "x": 180, "y": 20, "width": 80, "height": 10, "label": "Fenster"},
+        {"id": "win-2", "type": "window", "x": 420, "y": 20, "width": 80, "height": 10, "label": "Fenster"},
+        {"id": "cab-1", "type": "cabinet", "x": width - 110, "y": 40, "width": 80, "height": 36, "label": "Aktenschrank"},
+        {"id": "plant-1", "type": "planter", "x": width - 60, "y": height - 60, "width": 30, "height": 30, "label": "Büropflanze"},
+        {"id": "wb-1", "type": "whiteboard", "x": width - 130, "y": height // 2 - 30, "width": 10, "height": 80, "label": "Whiteboard"},
+    ]
+    for idx, d in enumerate(desks):
+        col = idx % 4
+        row = idx // 4
+        dx = 60 + col * 180
+        dy = 80 + row * 150
+        objects.append({
+            "id": f"desk-{d.id}",
+            "type": "desk",
+            "x": dx,
+            "y": dy,
+            "width": 110,
+            "height": 55,
+            "label": d.desk_number,
+            "deskId": d.id,
+        })
+        objects.append({
+            "id": f"chair-{d.id}",
+            "type": "chair",
+            "x": dx + 42,
+            "y": dy + 62,
+            "width": 26,
+            "height": 26,
+            "label": "Bürostuhl",
+        })
+    return json.dumps({"objects": objects})
+
+
+def _make_meeting_room_layout(capacity: int, seating: str = "boardroom", width: int = 860, height: int = 460) -> str:
+    """Erzeugt ein valides JSON-Innenlayout für einen Meetingraum mit passender Bestuhlung."""
+    objects = [
+        {"id": "door-1", "type": "door", "x": 35, "y": 20, "width": 44, "height": 12, "label": "Eingangstür"},
+        {"id": "wb-1", "type": "whiteboard", "x": width // 2 - 90, "y": 20, "width": 180, "height": 12, "label": "85\" Konferenz-Screen & Whiteboard"},
+        {"id": "plant-1", "type": "planter", "x": width - 60, "y": 40, "width": 30, "height": 30, "label": "Akustik-Begrünung"},
+    ]
+    cx = width // 2
+    cy = height // 2 + 15
+    if seating in ("boardroom", "conference"):
+        tbl_w = min(480, max(260, (capacity // 2) * 60))
+        tbl_h = 130
+        objects.append({
+            "id": "tbl-main",
+            "type": "table",
+            "x": cx - tbl_w // 2,
+            "y": cy - tbl_h // 2,
+            "width": tbl_w,
+            "height": tbl_h,
+            "label": f"Konferenztisch ({capacity} Pers.)",
+        })
+        side_count = max(1, capacity // 2)
+        step = tbl_w / side_count
+        for i in range(side_count):
+            ox = cx - tbl_w // 2 + int((i + 0.5) * step) - 12
+            objects.append({"id": f"chair-top-{i}", "type": "chair", "x": ox, "y": cy - tbl_h // 2 - 32, "width": 24, "height": 24, "label": "Konferenzstuhl"})
+            objects.append({"id": f"chair-bot-{i}", "type": "chair", "x": ox, "y": cy + tbl_h // 2 + 8, "width": 24, "height": 24, "label": "Konferenzstuhl"})
+    elif seating == "u_shape":
+        objects.append({"id": "tbl-u1", "type": "table", "x": cx - 180, "y": cy - 100, "width": 45, "height": 200, "label": "Flügel Links"})
+        objects.append({"id": "tbl-u2", "type": "table", "x": cx - 135, "y": cy - 100, "width": 270, "height": 45, "label": "Kopftisch"})
+        objects.append({"id": "tbl-u3", "type": "table", "x": cx + 135, "y": cy - 100, "width": 45, "height": 200, "label": "Flügel Rechts"})
+        for i in range(capacity):
+            objects.append({"id": f"chair-u-{i}", "type": "chair", "x": cx - 160 + (i % 6) * 55, "y": cy - 40 + (i // 6) * 60, "width": 24, "height": 24, "label": "Stuhl"})
+    else:
+        objects.append({"id": "tbl-gen", "type": "table", "x": cx - 130, "y": cy - 50, "width": 260, "height": 100, "label": "Besprechungstisch"})
+        for i in range(capacity):
+            objects.append({"id": f"chair-gen-{i}", "type": "chair", "x": cx - 120 + (i % 6) * 45, "y": cy + 60 + (i // 6) * 35, "width": 22, "height": 22, "label": "Stuhl"})
+    return json.dumps({"objects": objects})
+
+
+def _enrich_existing_data(db: Session) -> None:
+    """Aktualisiert bestehende DB-Bestände additiv um Grundrisse, Bestuhlungen und Kostenstellen."""
+    f_1og = db.query(Floor).filter(Floor.name == "1. OG").first()
+    if f_1og and not f_1og.floorplan_layout:
+        rooms_1og = db.query(Room).filter(Room.floor_id == f_1og.id).all()
+        room_data = []
+        for r in rooms_1og:
+            room_data.append({
+                "id": r.id,
+                "number": r.room_number,
+                "name": r.name,
+                "room_type": r.room_type,
+                "x": r.pos_x or 40,
+                "y": r.pos_y or 40,
+                "width": r.width or 200,
+                "height": r.height or 150,
+            })
+            desks = db.query(Desk).filter(Desk.room_id == r.id).order_by(Desk.id).all()
+            if r.room_type == "desk_area" and desks and not r.floorplan_layout:
+                r.floorplan_layout = _make_room_desk_area_layout(desks, r.name)
+            elif r.room_type == "meeting" and not r.floorplan_layout:
+                r.floorplan_layout = _make_meeting_room_layout(r.capacity or 10, r.seating_layout or "boardroom")
+
+        extra_infra = [
+            {"id": "stairs-fl1", "type": "stairs", "x": 350, "y": 270, "width": 140, "height": 100, "label": "Treppenhaus / Aufzug"},
+            {"id": "door-fl1", "type": "door", "x": 220, "y": 240, "width": 45, "height": 12, "label": "Zugang Nord"},
+            {"id": "door-fl2", "type": "door", "x": 520, "y": 240, "width": 45, "height": 12, "label": "Zugang Flex"},
+            {"id": "door-fl3", "type": "door", "x": 730, "y": 240, "width": 45, "height": 12, "label": "Zugang Konferenz A"},
+        ]
+        f_1og.floorplan_layout = _make_floor_layout(room_data, extra_infra)
+
+    users = db.query(User).all()
+    for u in users:
+        if not u.cost_center and u.department_id:
+            dept = db.query(Department).filter(Department.id == u.department_id).first()
+            if dept and dept.cost_center:
+                u.cost_center = dept.cost_center
+
+    db.commit()
+
+
+def seed(db: Session, force: bool = False) -> None:
+    if not force and db.query(Role).first():
+        _enrich_existing_data(db)
         return  # already seeded
 
     roles = {code: Role(code=code, name=name) for code, name in ROLES}
@@ -285,7 +427,40 @@ def seed(db: Session) -> None:
     seating_std = SeatingOption(room_id=room_meeting_a101.id, name="Standard (Konferenz)", is_standard=True, changeover_days=0)
     seating_u = SeatingOption(room_id=room_meeting_a101.id, name="U-Form", is_standard=False, changeover_days=1)
     seating_block = SeatingOption(room_id=room_meeting_a101.id, name="Blockbestuhlung", is_standard=False, changeover_days=1)
-    db.add_all([seating_std, seating_u, seating_block])
+    seating_theater = SeatingOption(room_id=room_meeting_a101.id, name="Theater / Kino", is_standard=False, changeover_days=2)
+    seating_parl = SeatingOption(room_id=room_meeting_a101.id, name="Parlamentarisch", is_standard=False, changeover_days=1)
+    seating_circle = SeatingOption(room_id=room_meeting_a101.id, name="Stuhlkreis", is_standard=False, changeover_days=0)
+    db.add_all([seating_std, seating_u, seating_block, seating_theater, seating_parl, seating_circle])
+
+    # ---- Raum-Innenlayouts (Möblierung, Desks, Stühle, etc.) Haus A / 1. OG ----
+    room_team_nord.floorplan_layout = _make_room_desk_area_layout(desks_nord, "Team Nord")
+    room_flex.floorplan_layout = _make_room_desk_area_layout(desks_flex, "Flex")
+    room_ruhezone.floorplan_layout = _make_room_desk_area_layout(desks_ruhe, "Ruhezone")
+    room_team_sued.floorplan_layout = _make_room_desk_area_layout(desks_sued, "Team Süd")
+    room_a12.floorplan_layout = _make_room_desk_area_layout(desks_a12, "Projektbüro A-12")
+    room_a13.floorplan_layout = _make_room_desk_area_layout(desks_a13, "Projektbüro A-13")
+    room_qs62.floorplan_layout = _make_room_desk_area_layout(desks_qs62, "Referatsbüro Qualitätssicherung")
+    room_meeting_a101.floorplan_layout = _make_meeting_room_layout(12, "boardroom")
+    room_meeting_a101.seating_layout = "boardroom"
+
+    # ---- Etagen-Grundriss Haus A / 1. OG (Räume, Treppenhaus, Türen) --------
+    floor_1og.floorplan_layout = _make_floor_layout([
+        {"id": room_team_nord.id, "number": room_team_nord.room_number, "name": room_team_nord.name, "room_type": "desk_area", "x": 40, "y": 40, "width": 380, "height": 200},
+        {"id": room_flex.id, "number": room_flex.room_number, "name": room_flex.name, "room_type": "desk_area", "x": 440, "y": 40, "width": 200, "height": 200},
+        {"id": room_meeting_a101.id, "number": room_meeting_a101.room_number, "name": room_meeting_a101.name, "room_type": "meeting", "x": 660, "y": 40, "width": 200, "height": 200},
+        {"id": room_ruhezone.id, "number": room_ruhezone.room_number, "name": room_ruhezone.name, "room_type": "desk_area", "x": 40, "y": 280, "width": 260, "height": 170},
+        {"id": room_team_sued.id, "number": room_team_sued.room_number, "name": room_team_sued.name, "room_type": "desk_area", "x": 660, "y": 280, "width": 200, "height": 170},
+        {"id": room_a12.id, "number": room_a12.room_number, "name": room_a12.name, "room_type": "desk_area", "x": 40, "y": 470, "width": 200, "height": 140},
+        {"id": room_a13.id, "number": room_a13.room_number, "name": room_a13.name, "room_type": "desk_area", "x": 260, "y": 470, "width": 200, "height": 140},
+        {"id": room_qs62.id, "number": room_qs62.room_number, "name": room_qs62.name, "room_type": "desk_area", "x": 480, "y": 470, "width": 200, "height": 140},
+    ], [
+        {"id": "stairs-fl1", "type": "stairs", "x": 340, "y": 280, "width": 140, "height": 110, "label": "Treppenhaus / Aufzug"},
+        {"id": "door-fl1", "type": "door", "x": 220, "y": 240, "width": 45, "height": 12, "label": "Tür Flur Nord"},
+        {"id": "door-fl2", "type": "door", "x": 520, "y": 240, "width": 45, "height": 12, "label": "Tür Flex"},
+        {"id": "door-fl3", "type": "door", "x": 730, "y": 240, "width": 45, "height": 12, "label": "Tür Konferenz A"},
+        {"id": "door-fl4", "type": "door", "x": 160, "y": 450, "width": 45, "height": 12, "label": "Tür Flur A12"},
+        {"id": "door-fl5", "type": "door", "x": 330, "y": 450, "width": 45, "height": 12, "label": "Tür Flur A13"},
+    ])
 
     # ---- weitere Etagen Haus A (für Navigator, ohne Grundriss -> Listenansicht) --
     room_2og_a = Room(floor_id=floor_2og.id, room_number="2.01", name="Projektraum C", room_type="desk_area")
@@ -302,17 +477,26 @@ def seed(db: Session) -> None:
     db.flush()
     _assign_labels_round_robin(db, desks_eg, label_combos)
 
-    # ---- Haus B: Meetingräume ohne UND mit Genehmigungspflicht -------------
+    # ---- Haus B: Meetingräume + Bürobereich mit Grundriss -------------
     room_videostudio = Room(floor_id=haus_b_eg.id, room_number="B.01", name="Videostudio B", room_type="meeting",
-                             capacity=4, approval_required=False)
+                             capacity=4, approval_required=False, pos_x=40, pos_y=40, width=240, height=200)
     room_kleiner_sitzungsraum = Room(floor_id=haus_b_eg.id, room_number="B.02", name="Kleiner Sitzungsraum",
-                                      room_type="meeting", capacity=6, approval_required=False)
+                                      room_type="meeting", capacity=6, approval_required=False, pos_x=310, pos_y=40, width=240, height=200)
     room_muenchen_konferenz = Room(  # zugriffsbeschränkt Beispiel (Rolle statt Org-Einheit)
         floor_id=haus_b_eg.id, room_number="B.03", name="Boardroom Wien", room_type="meeting", capacity=8,
-        restricted_role_code="vm",
+        restricted_role_code="vm", pos_x=580, pos_y=40, width=260, height=200,
     )
-    db.add_all([room_videostudio, room_kleiner_sitzungsraum, room_muenchen_konferenz])
+    room_haus_b_team = Room(
+        floor_id=haus_b_eg.id, room_number="B.04", name="Projektteam B-04", room_type="desk_area",
+        pos_x=40, pos_y=270, width=380, height=190,
+    )
+    db.add_all([room_videostudio, room_kleiner_sitzungsraum, room_muenchen_konferenz, room_haus_b_team])
     db.flush()
+
+    desks_haus_b = add_desks(room_haus_b_team, 4, 70, 310, "B")
+    db.flush()
+    _assign_labels_round_robin(db, desks_haus_b, label_combos)
+
     db.add_all([
         RoomLabel(room_id=room_videostudio.id, label_id=labels["Videokonferenz"].id),
         RoomLabel(room_id=room_videostudio.id, label_id=labels["85\" Screen"].id),
@@ -321,31 +505,102 @@ def seed(db: Session) -> None:
         RoomLabel(room_id=room_muenchen_konferenz.id, label_id=labels["85\" Screen"].id),
     ])
 
+    db.add_all([
+        SeatingOption(room_id=room_videostudio.id, name="Studio-Setup", is_standard=True, changeover_days=0),
+        SeatingOption(room_id=room_videostudio.id, name="Talkrunde / Podcast", is_standard=False, changeover_days=0),
+        SeatingOption(room_id=room_kleiner_sitzungsraum.id, name="Standard (Besprechung)", is_standard=True, changeover_days=0),
+        SeatingOption(room_id=room_kleiner_sitzungsraum.id, name="Blockbestuhlung", is_standard=False, changeover_days=1),
+        SeatingOption(room_id=room_muenchen_konferenz.id, name="Executive Boardroom", is_standard=True, changeover_days=0),
+        SeatingOption(room_id=room_muenchen_konferenz.id, name="U-Form", is_standard=False, changeover_days=1),
+    ])
+
+    room_videostudio.floorplan_layout = _make_meeting_room_layout(4, "boardroom")
+    room_kleiner_sitzungsraum.floorplan_layout = _make_meeting_room_layout(6, "boardroom")
+    room_muenchen_konferenz.floorplan_layout = _make_meeting_room_layout(8, "boardroom")
+    room_haus_b_team.floorplan_layout = _make_room_desk_area_layout(desks_haus_b, "Projektteam B-04")
+
+    haus_b_eg.floorplan_layout = _make_floor_layout([
+        {"id": room_videostudio.id, "number": room_videostudio.room_number, "name": room_videostudio.name, "room_type": "meeting", "x": 40, "y": 40, "width": 240, "height": 200},
+        {"id": room_kleiner_sitzungsraum.id, "number": room_kleiner_sitzungsraum.room_number, "name": room_kleiner_sitzungsraum.name, "room_type": "meeting", "x": 310, "y": 40, "width": 240, "height": 200},
+        {"id": room_muenchen_konferenz.id, "number": room_muenchen_konferenz.room_number, "name": room_muenchen_konferenz.name, "room_type": "meeting", "x": 580, "y": 40, "width": 260, "height": 200},
+        {"id": room_haus_b_team.id, "number": room_haus_b_team.room_number, "name": room_haus_b_team.name, "room_type": "desk_area", "x": 40, "y": 270, "width": 380, "height": 190},
+    ], [
+        {"id": "hb-stairs", "type": "stairs", "x": 500, "y": 280, "width": 120, "height": 100, "label": "Treppenhaus"},
+        {"id": "hb-door1", "type": "door", "x": 150, "y": 240, "width": 45, "height": 12, "label": "Tür Studio"},
+        {"id": "hb-door2", "type": "door", "x": 420, "y": 240, "width": 45, "height": 12, "label": "Tür Sitzungsraum"},
+        {"id": "hb-door3", "type": "door", "x": 690, "y": 240, "width": 45, "height": 12, "label": "Tür Boardroom"},
+    ])
+
     # ---- Berlin Außenstelle: 1 Etage mit Desks + Meetingraum ---------------
-    room_berlin_team = Room(floor_id=berlin_1og.id, room_number="1.01", name="Team Berlin", room_type="desk_area", pos_x=40, pos_y=40, width=380, height=200)
-    room_berlin_meeting = Room(floor_id=berlin_1og.id, room_number="1.02", name="Meetingraum Berlin", room_type="meeting", capacity=12, approval_required=False, pos_x=460, pos_y=40, width=200, height=200)
+    room_berlin_team = Room(floor_id=berlin_1og.id, room_number="1.01", name="Team Berlin", room_type="desk_area", pos_x=40, pos_y=40, width=380, height=220)
+    room_berlin_meeting = Room(floor_id=berlin_1og.id, room_number="1.02", name="Meetingraum Berlin", room_type="meeting", capacity=12, approval_required=False, pos_x=460, pos_y=40, width=360, height=220)
     db.add_all([room_berlin_team, room_berlin_meeting])
     db.flush()
     berlin_desks = add_desks(room_berlin_team, 8, 70, 90, "BE")
     db.flush()
     _assign_labels_round_robin(db, berlin_desks, label_combos)
     db.add(RoomLabel(room_id=room_berlin_meeting.id, label_id=labels["Videokonferenz"].id))
+    db.add(RoomLabel(room_id=room_berlin_meeting.id, label_id=labels["Whiteboard"].id))
+    db.add_all([
+        SeatingOption(room_id=room_berlin_meeting.id, name="Standard (Konferenz)", is_standard=True, changeover_days=0),
+        SeatingOption(room_id=room_berlin_meeting.id, name="U-Form", is_standard=False, changeover_days=1),
+        SeatingOption(room_id=room_berlin_meeting.id, name="Stuhlkreis", is_standard=False, changeover_days=0),
+    ])
 
-    # ---- München West: nahezu ausgebucht (4 frei) --------------------------
-    room_muc_team = Room(floor_id=muenchen_1og.id, room_number="1.01", name="Team München", room_type="desk_area", pos_x=40, pos_y=40, width=500, height=260)
-    db.add(room_muc_team)
+    room_berlin_team.floorplan_layout = _make_room_desk_area_layout(berlin_desks, "Team Berlin")
+    room_berlin_meeting.floorplan_layout = _make_meeting_room_layout(12, "boardroom")
+    room_berlin_meeting.seating_layout = "boardroom"
+
+    berlin_1og.floorplan_layout = _make_floor_layout([
+        {"id": room_berlin_team.id, "number": room_berlin_team.room_number, "name": room_berlin_team.name, "room_type": "desk_area", "x": 40, "y": 40, "width": 380, "height": 220},
+        {"id": room_berlin_meeting.id, "number": room_berlin_meeting.room_number, "name": room_berlin_meeting.name, "room_type": "meeting", "x": 460, "y": 40, "width": 360, "height": 220},
+    ], [
+        {"id": "b-stairs", "type": "stairs", "x": 370, "y": 290, "width": 120, "height": 100, "label": "Treppenhaus"},
+        {"id": "b-door1", "type": "door", "x": 210, "y": 260, "width": 45, "height": 12, "label": "Tür Büro"},
+        {"id": "b-door2", "type": "door", "x": 620, "y": 260, "width": 45, "height": 12, "label": "Tür Meeting"},
+    ])
+
+    # ---- München West: nahezu ausgebucht (4 frei) + Meetingraum -------------
+    room_muc_team = Room(floor_id=muenchen_1og.id, room_number="1.01", name="Team München", room_type="desk_area", pos_x=40, pos_y=40, width=480, height=260)
+    room_muc_meeting = Room(floor_id=muenchen_1og.id, room_number="1.02", name="Konferenzraum Isar", room_type="meeting", capacity=10, approval_required=False, pos_x=560, pos_y=40, width=280, height=260)
+    db.add_all([room_muc_team, room_muc_meeting])
     db.flush()
     muc_desks = add_desks(room_muc_team, 20, 70, 90, "M")
     db.flush()
     _assign_labels_round_robin(db, muc_desks, label_combos)
+    db.add_all([
+        RoomLabel(room_id=room_muc_meeting.id, label_id=labels["Videokonferenz"].id),
+        RoomLabel(room_id=room_muc_meeting.id, label_id=labels["Whiteboard"].id),
+        SeatingOption(room_id=room_muc_meeting.id, name="Standard (Konferenz)", is_standard=True, changeover_days=0),
+        SeatingOption(room_id=room_muc_meeting.id, name="U-Form", is_standard=False, changeover_days=1),
+    ])
+    room_muc_team.floorplan_layout = _make_room_desk_area_layout(muc_desks, "Team München")
+    room_muc_meeting.floorplan_layout = _make_meeting_room_layout(10, "boardroom")
+    muenchen_1og.floorplan_layout = _make_floor_layout([
+        {"id": room_muc_team.id, "number": room_muc_team.room_number, "name": room_muc_team.name, "room_type": "desk_area", "x": 40, "y": 40, "width": 480, "height": 260},
+        {"id": room_muc_meeting.id, "number": room_muc_meeting.room_number, "name": room_muc_meeting.name, "room_type": "meeting", "x": 560, "y": 40, "width": 280, "height": 260},
+    ], [{"id": "muc-door", "type": "door", "x": 260, "y": 300, "width": 50, "height": 12, "label": "Tür Flur"}])
 
-    # ---- Hamburg City: komplett ausgebucht (0 frei), zeigt "keine Treffer" ---
-    room_hh_team = Room(floor_id=hamburg_1og.id, room_number="1.01", name="Team Hamburg", room_type="desk_area", pos_x=40, pos_y=40, width=300, height=160)
-    db.add(room_hh_team)
+    # ---- Hamburg City: komplett ausgebucht (0 frei) + Meetingraum ----------
+    room_hh_team = Room(floor_id=hamburg_1og.id, room_number="1.01", name="Team Hamburg", room_type="desk_area", pos_x=40, pos_y=40, width=310, height=220)
+    room_hh_meeting = Room(floor_id=hamburg_1og.id, room_number="1.02", name="Besprechungsraum Alster", room_type="meeting", capacity=8, approval_required=False, pos_x=380, pos_y=40, width=280, height=220)
+    db.add_all([room_hh_team, room_hh_meeting])
     db.flush()
     hh_desks = add_desks(room_hh_team, 6, 70, 90, "H")
     db.flush()
     _assign_labels_round_robin(db, hh_desks, label_combos)
+    db.add_all([
+        RoomLabel(room_id=room_hh_meeting.id, label_id=labels["Beamer"].id),
+        RoomLabel(room_id=room_hh_meeting.id, label_id=labels["Whiteboard"].id),
+        SeatingOption(room_id=room_hh_meeting.id, name="Standard (Konferenz)", is_standard=True, changeover_days=0),
+        SeatingOption(room_id=room_hh_meeting.id, name="Blockbestuhlung", is_standard=False, changeover_days=1),
+    ])
+    room_hh_team.floorplan_layout = _make_room_desk_area_layout(hh_desks, "Team Hamburg")
+    room_hh_meeting.floorplan_layout = _make_meeting_room_layout(8, "boardroom")
+    hamburg_1og.floorplan_layout = _make_floor_layout([
+        {"id": room_hh_team.id, "number": room_hh_team.room_number, "name": room_hh_team.name, "room_type": "desk_area", "x": 40, "y": 40, "width": 310, "height": 220},
+        {"id": room_hh_meeting.id, "number": room_hh_meeting.room_number, "name": room_hh_meeting.name, "room_type": "meeting", "x": 380, "y": 40, "width": 280, "height": 220},
+    ], [{"id": "hh-door", "type": "door", "x": 180, "y": 260, "width": 50, "height": 12, "label": "Tür Flur"}])
 
     # ---- Floorplan-SVGs generieren -----------------------------------------
     floor_1og.floorplan_image_path = _get_or_create_floorplan(
@@ -368,41 +623,58 @@ def seed(db: Session) -> None:
 
     # ---- Nutzer -------------------------------------------------------------
     maria = User(idm_code="U-1001", display_name="Dr. Maria Schmidt", email="maria.schmidt@bamf.bund.de",
-                 department_id=departments["P.GZ"].id, home_property_id=nuernberg.id, klarname_opt_in=True)
+                 department_id=departments["P.GZ"].id, home_property_id=nuernberg.id, klarname_opt_in=True,
+                 cost_center="KST-110-GZ")
     ali = User(idm_code="U-1002", display_name="Ali Yilmaz", email="ali.yilmaz@bamf.bund.de",
-               department_id=departments["2.1"].id, home_property_id=nuernberg.id, home_desk_id=desks_nord[0].id)
+               department_id=departments["2.1"].id, home_property_id=nuernberg.id, home_desk_id=desks_nord[0].id,
+               cost_center="KST-2100-OPS")
     johannes = User(idm_code="U-1003", display_name="Johannes Schneider", email="johannes.schneider@bamf.bund.de",
-                    department_id=departments["6.1"].id, home_property_id=nuernberg.id)
+                    department_id=departments["6.1"].id, home_property_id=nuernberg.id,
+                    cost_center="KST-6100-GRUND")
     elena = User(idm_code="U-1004", display_name="Elena Petrova", email="elena.petrova@bamf.bund.de",
-                 department_id=departments["9.2"].id, home_property_id=berlin.id)
+                 department_id=departments["9.2"].id, home_property_id=berlin.id,
+                 cost_center="KST-9200-FONDS")
     kessler = User(idm_code="U-1005", display_name="Frau Kessler", email="kessler@bamf.bund.de",
-                   department_id=departments["P.PR"].id, home_property_id=berlin.id)
+                   department_id=departments["P.PR"].id, home_property_id=berlin.id,
+                   cost_center="KST-120-PRESSE")
     kaya = User(idm_code="U-1006", display_name="Frau Kaya", email="kaya@bamf.bund.de",
-                department_id=departments["P.GZ"].id, home_property_id=nuernberg.id)
+                department_id=departments["P.GZ"].id, home_property_id=nuernberg.id,
+                cost_center="KST-110-GZ")
     mueller = User(idm_code="U-1007", display_name="Hans Müller", email="hans.mueller@bamf.bund.de",
-                   department_id=departments["2.1"].id, home_property_id=nuernberg.id)
+                   department_id=departments["2.1"].id, home_property_id=nuernberg.id,
+                   cost_center="KST-2100-OPS")
     demir = User(idm_code="U-1008", display_name="Herr Demir", email="demir@bamf.bund.de",
-                 department_id=departments["P.PR"].id, home_property_id=nuernberg.id)
+                 department_id=departments["P.PR"].id, home_property_id=nuernberg.id,
+                 cost_center="KST-120-PRESSE")
     ostermann = User(idm_code="U-1009", display_name="Frau Ostermann", email="ostermann@bamf.bund.de",
-                     department_id=departments["1.2.1"].id, home_property_id=nuernberg.id)
+                     department_id=departments["1.2.1"].id, home_property_id=nuernberg.id,
+                     cost_center="KST-1210-FM")
     brandt = User(idm_code="U-1010", display_name="Herr Brandt", email="brandt@bamf.bund.de",
-                  department_id=departments["1.2.1"].id, home_property_id=nuernberg.id, security_clearance="Ue2")
+                  department_id=departments["1.2.1"].id, home_property_id=nuernberg.id, security_clearance="Ue2",
+                  cost_center="KST-1210-FM")
     weber = User(idm_code="U-1011", display_name="Thomas Weber", email="weber@bamf.bund.de",
-                 department_id=departments["2.1"].id, home_property_id=nuernberg.id)
+                 department_id=departments["2.1"].id, home_property_id=nuernberg.id,
+                 cost_center="KST-2100-OPS")
     kraus = User(idm_code="U-1012", display_name="Sabine Kraus", email="kraus@bamf.bund.de",
-                 department_id=departments["2.1"].id, home_property_id=nuernberg.id)
+                 department_id=departments["2.1"].id, home_property_id=nuernberg.id,
+                 cost_center="KST-2100-OPS")
     fischer = User(idm_code="U-1013", display_name="Julia Fischer", email="fischer@bamf.bund.de",
-                   department_id=departments["P.PR"].id, home_property_id=nuernberg.id)
+                   department_id=departments["P.PR"].id, home_property_id=nuernberg.id,
+                   cost_center="KST-120-PRESSE")
     # Zusätzliche FM-Rolle mit klarem Planungs-Fokus (München West), unabhängig von 12E Nürnberg
     facility_manager_muc = User(idm_code="U-1014", display_name="Herr Wagner", email="wagner@bamf.bund.de",
-                                 department_id=departments["1.2.2"].id, home_property_id=muenchen.id)
+                                department_id=departments["1.2.2"].id, home_property_id=muenchen.id,
+                                cost_center="KST-1220-BAU")
     # Org-Hierarchie-Demo (Nutzeranforderung): 6 / 6.1 / 6.2 / 6.2.1
     lehmann = User(idm_code="U-1015", display_name="Frau Lehmann", email="lehmann@bamf.bund.de",
-                   department_id=departments["6"].id, home_property_id=nuernberg.id)
+                   department_id=departments["6"].id, home_property_id=nuernberg.id,
+                   cost_center="KST-6000-QS")
     kaiser = User(idm_code="U-1016", display_name="Herr Kaiser", email="kaiser@bamf.bund.de",
-                  department_id=departments["6.2"].id, home_property_id=nuernberg.id)
+                  department_id=departments["6.2"].id, home_property_id=nuernberg.id,
+                  cost_center="KST-6200-IZAM")
     nowak = User(idm_code="U-1017", display_name="Frau Nowak", email="nowak@bamf.bund.de",
-                 department_id=departments["6.2.1"].id, home_property_id=nuernberg.id)
+                 department_id=departments["6.2.1"].id, home_property_id=nuernberg.id,
+                 cost_center="KST-6210-PROZ")
 
     all_users = [maria, ali, johannes, elena, kessler, kaya, mueller, demir, ostermann, brandt, weber, kraus,
                  fischer, facility_manager_muc, lehmann, kaiser, nowak]
@@ -492,10 +764,14 @@ def seed(db: Session) -> None:
 
 
 def main() -> None:
+    import sys
+    force_reset = "--reset" in sys.argv or "--force" in sys.argv
+    if force_reset:
+        Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        seed(db)
+        seed(db, force=force_reset)
     finally:
         db.close()
 

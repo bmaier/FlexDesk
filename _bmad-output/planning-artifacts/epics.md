@@ -14,7 +14,12 @@ Als Mitarbeiter möchte ich in einer Liegenschaft durch Gebäude und Etagen navi
 Als Mitarbeiter möchte ich mit einem Klick meinen bevorzugten Arbeitsplatz buchen.
 
 ### Story 2.2: Gezielte Buchung mit interaktivem Etagen-Grundriss
-Als Mitarbeiter möchte ich auf einem interaktiven Grundriss verfügbare Desks sehen und direkt buchen.
+Als Mitarbeiter möchte ich über die 5-Ebenen-Hierarchie (Liegenschaft -> Gebäude -> Etage) zu einer Etage navigieren, im interaktiven Etagen-Grundriss Räume auswählen und per Drill-Down in den Raum-Innenplan wechseln, um dort Desks mit Ausstattung visuell oder per Listenansicht auszuwählen und direkt zu buchen.
+- **Akzeptanzkriterien:**
+  - 3-stufige Baum-Navigation (Liegenschaft -> Gebäude -> Etage) mit automatischer Selektion.
+  - Umschaltung zwischen interaktiver Grundrissansicht und tabellarischer Listenansicht.
+  - Im Etagen-Grundriss: Klick auf Raum öffnet den Raum-Innenplan mit allen Schreibtischen und Möbeln.
+  - Anzeige des Buchungsstatus (Frei, Gebucht, Eigen, Gesperrt) in Echtzeit.
 
 ## Epic 3: Delegation und Serienbuchung
 
@@ -37,11 +42,23 @@ Als Facility Manager möchte ich Meetingräume im Grundriss-Designer auf dem Eta
 
 ### Story 4.4: Detaillierter Meetingraum-Grundriss mit automatischer Bestuhlung, Drag & Drop und Catering-Option mit Kostenstellen-Abrechnung & Genehmigungswarnung
 Als Facility Manager und buchender Mitarbeiter möchte ich Meetingräume als echte Räume mit automatischer Bestuhlungsanordnung (Konferenztisch, U-Form, Kino, Schulung, etc.) und allen Stühlen gemäß Raumkapazität planen und per Drag & Drop flexibel nachbearbeiten können; bei der Buchung soll zudem Catering ausgewählt werden können, welches standardmäßig über die Kostenstelle der eigenen Organisationseinheit abgerechnet wird oder bei abweichender Org-Einheit/Kostenstelle eine explizite Genehmigungswarnung mit Bestätigungspflicht verlangt.
+- **Akzeptanzkriterien:**
+  - Konfigurierbare Bestuhlungsformen (Standard/Konferenz, U-Form, Block, Theater/Kino, Parlamentarisch, Stuhlkreis) mit Rüstzeiten.
+  - Generierung aller Stühle gemäß Raumkapazität im Innenraum-Plan, frei per Drag & Drop im FM editierbar.
+  - Catering-Option mit Auswahl von Catering-Art und Rechnungs-Kostenstelle.
+  - Automatische Vorbelegung der eigenen Kostenstelle (`User.cost_center` / `Department.cost_center`).
+  - Pflicht-Bestätigungswarnung (`cost_center_warning_acknowledged`) bei Angabe einer fremden Kostenstelle.
 
 ## Epic 5: Facility Management und Raumkontingente
 
 ### Story 5.1: Stammdatenpflege und Etagen-Grundriss-Designer
-Als Facility Manager möchte ich Liegenschaften, Gebäude, Räume und Schreibtische verwalten und Grundrisse zeichnen.
+Als Facility Manager möchte ich Liegenschaften, Gebäude, Etagen, Räume und Schreibtische in einer strikten 5-Ebenen-Hierarchie verwalten, Grundrisse auf Etagen- und Raum-Ebene zeichnen und beim Wechsel zwischen FM-Reitern stets den Bearbeitungs- und Navigationskontext behalten.
+- **Akzeptanzkriterien:**
+  - Saubere 5-Ebenen-Stammdatenpflege ohne Verwechslung von Etage und Raum.
+  - Persistentes FM State-Management (SessionStorage): Gewählte Liegenschaft, Gebäude, Etage und Raum bleiben beim Wechsel zwischen den Tabs erhalten.
+  - Nach Neuanlage von Etagen oder Räumen sofortige Aktualisierung aller Dropdowns und Pläne ohne Browser-Reload.
+  - Etagen-Planer für Raum-Shapes und Infrastruktur (Treppen, Türen, Wände) mit Drag & Drop.
+  - Raum-Innenplaner für Desks, Konferenztische und Bestuhlungen.
 
 ### Story 5.2: Referatsbezogene Zonen und Raumkontingente
 Als Facility Manager möchte ich Zonen für Abteilungen definieren, um exklusive Kontingente zu steuern.

@@ -9,30 +9,67 @@ Architektur. Login ist simuliert (kein echtes IDM/Keycloak), die Datenbank ist S
 
 ## Inhalt
 
+- [Kernkonzepte & Datenmodell](#kernkonzepte--datenmodell)
 - [Architektur auf einen Blick](#architektur-auf-einen-blick)
 - [Voraussetzungen](#voraussetzungen)
 - [Schnellstart](#schnellstart)
-- [Demo-Accounts](#demo-accounts--rollen)
+- [Demo-Accounts, Rollen & Kostenstellen](#demo-accounts-rollen--kostenstellen)
 - [Demo-Ablauf-Skript](#demo-ablauf-skript)
 - [Tests](#tests)
 - [Projektstruktur](#projektstruktur)
 - [Bekannte Vereinfachungen (PoC-Scope)](#bekannte-vereinfachungen-poc-scope)
 
+## Kernkonzepte & Datenmodell
+
+### 1. Strikte 5-Ebenen-Hierarchie
+Ressourcen sind konsistent hierarchisch modelliert:
+```text
+Liegenschaft (Property)
+ └── Gebäude (Building)
+      └── Etage (Floor)
+           └── Raum (Room: desk_area | meeting)
+                ├── Desk / Arbeitsplatz (bei desk_area)
+                │    └── Ausstattungs-Labels (Monitor, Stehpult, etc.)
+                └── Bestuhlung / Stühle & Tische (bei meeting)
+```
+- **Keine Desks ohne Raum**: Arbeitsplätze sind zwingend einem Raum zugeordnet.
+- **Kaskadierende Navigation**: 3-stufiger Baum in der Buchung und im Facility Management (Liegenschaft -> Gebäude -> Etage) mit automatischer Selektion.
+
+### 2. Zwei-Stufen-Grundriss-Architektur (Two-Tier Layout)
+- **Stufe 1: Etagen-Grundriss (`Floor.floorplan_layout`)**:
+  - Zeigt Räume als geschlossene Funktionseinheiten (z. B. Büroräume, Konferenzräume) sowie allgemeine Infrastruktur (Treppenhäuser, Aufzüge, Türen, Wände, WCs, Teeküchen).
+  - Drag & Drop für Raumflächen und Türen/Treppen im FM Designer.
+  - Klick auf einen Raum öffnet direkt den detaillierten Raum-Innenplan.
+- **Stufe 2: Raum-Innenplan (`Room.floorplan_layout`)**:
+  - **Desk-Räume (`desk_area`)**: Zeigt die exakte Schreibtisch-Anordnung mit Desk-Nummern, Status (frei, gebucht, belegt) und Büromöbeln (Schränke, Whiteboards, Pflanzen).
+  - **Meetingräume (`meeting`)**: Zeigt den Konferenztisch sowie alle Stühle gemäß Raumkapazität, passend zur gewählten Bestuhlungsart.
+
+### 3. Meetingraum-Planung mit Bestuhlungsarten & Catering-Abrechnung
+- **Bestuhlungsformen (`SeatingOption`)**: Standard/Konferenztisch (Boardroom), U-Form, Blockbestuhlung, Theater / Kino, Parlamentarisch / Schulung, Stuhlkreis. Alle Stühle werden automatisch auf dem Innenplan angeordnet und können per Drag & Drop verschoben werden.
+- **Rüstzeiten**: Bestuhlungswechsel können Rüsttage (`changeover_days`) definieren, die vor Terminen automatisch reserviert werden.
+- **Catering & Kostenstellen**:
+  - Catering kann als Zusatzleistung gewählt werden.
+  - Standardabrechnung erfolgt über die Kostenstelle der eigenen Org-Einheit (`User.cost_center` / `Department.cost_center`).
+  - Bei Eingabe einer abweichenden/fremden Kostenstelle verlangt das System eine explizite Bestätigung der Kostenstellen-Genehmigungswarnung (`cost_center_warning_acknowledged`).
+
+### 4. Reaktives FM State-Management & Live-Aktualisierung
+- **Tab-übergreifendes State-Management**: Der Bearbeitungskontext (aktive Liegenschaft, Gebäude, Etage, Raum und gewählter Reiter) bleibt über `sessionStorage` beim Hin- und Herschalten zwischen allen FM-Tabs vollständig erhalten.
+- **Live-Aktualisierung**: Nach der Neuanlage oder Bearbeitung von Liegenschaften, Gebäuden, Etagen oder Räumen aktualisieren sich alle Auswahllisten und Canvas-Pläne sofort ohne Browser-Reload.
+
 ## Architektur auf einen Blick
 
 | Schicht | Technologie |
 |---|---|
-| Frontend | React 18 + TypeScript + Vite, React Router, Tailwind CSS (Design-Tokens aus `DESIGN.md`) |
+| Frontend | React 18 + TypeScript + Vite, React Router, Tailwind CSS (Design-Tokens aus `DESIGN.md`), HTML5 Canvas |
 | Backend | Python 3.12 + FastAPI, SQLAlchemy 2.0 |
-| Datenbank | SQLite-Datei, Schema in 4. Normalform (siehe `backend/app/models/`) |
+| Datenbank | SQLite-Datei (`backend/deskshare.db`), Schema in 4. Normalform (siehe `backend/app/models/`) |
 | Auth | **Simuliert** — Rollenwechsel per Demo-Account, kein echtes IDM/Keycloak |
-| Tests | pytest (Unit/Integration), behave (Gherkin/BDD), Playwright (GUI/E2E) |
+| Tests | pytest (Unit/Integration: 33 Tests), behave (Gherkin/BDD), Playwright (GUI/E2E), bmad-loop |
 
 Das Backend legt bei erstem Start automatisch die SQLite-Datei `backend/deskshare.db` an und
-befüllt sie mit BAMF-Stammdaten (Liegenschaften, Gebäude, Räume, Desks, Nutzer, Rollen — siehe
-`backend/app/seed_data.py`). Grundrisspläne werden dabei als einfache SVGs generiert und unter
-`backend/app/static/floorplans/` abgelegt; im Facility-Management können zusätzlich eigene
-Grundrisspläne (Bild-Datei) für neu angelegte Etagen hochgeladen werden.
+befüllt sie mit BAMF-Stammdaten (Liegenschaften, Gebäude, Etagen, Räume, Desks, Bestuhlungen, Nutzer, Rollen — siehe
+`backend/app/seed_data.py`). Grundriss-SVGs und interaktive JSON-Layouts für Etagen und Räume
+werden automatisch generiert.
 
 ## Voraussetzungen
 
@@ -57,13 +94,14 @@ Das Skript:
 
 Danach im Browser `http://127.0.0.1:5183` öffnen und einen Demo-Account aus der Liste wählen.
 
-**Ports:** Falls `8010`/`5183` bei Ihnen belegt sind, können sie per Umgebungsvariable
-überschrieben werden: `BACKEND_PORT=8011 FRONTEND_PORT=5184 ./start.sh` (CORS im Backend ist
-aktuell fest auf `5183` konfiguriert — bei einem anderen Frontend-Port ggf. `backend/app/main.py`
-→ `allow_origins` anpassen).
+**Ports:** Falls `8010`/`5183` belegt sind, können sie per Umgebungsvariable
+überschrieben werden: `BACKEND_PORT=8011 FRONTEND_PORT=5184 ./start.sh`.
 
-**Datenbank zurücksetzen:** `rm backend/deskshare.db` und Backend neu starten — die Stammdaten
-werden beim nächsten Start automatisch neu erzeugt.
+**Datenbank komplett neu initialisieren (inkl. aller Grundrisse & Kostenstellen):**
+```bash
+cd backend
+uv run python -m app.seed_data --reset
+```
 
 ### Manueller Start (ohne start.sh)
 
@@ -80,29 +118,31 @@ npm install
 npm run dev
 ```
 
-## Demo-Accounts / Rollen
+## Demo-Accounts, Rollen & Kostenstellen
 
 Die Rollen-Simulation ersetzt ein echtes IDM: Auf der Login-Seite wird ein Demo-Konto gewählt,
 das Backend akzeptiert dafür ein Opak-Token (`demo:<user_id>`, siehe `backend/app/auth.py`).
 Rollenwechsel jederzeit über den "Wechseln"-Link unten links in der Seitenleiste möglich.
 
-| Konto | Rolle(n) | Relevant für |
-|---|---|---|
-| Dr. Maria Schmidt | `fm`, `raumverantwortlicher` | Facility-Management, Genehmigungen |
-| Ali Yilmaz | `mitarbeiter` | Schnellbuchung (UJ-1, eigener Stammplatz N-01) |
-| Johannes Schneider | `mitarbeiter` | Gezielte Buchung |
-| Elena Petrova | `mitarbeiter` | Vertretung (Self-Service-Delegation an Frau Kaya) |
-| Frau Kessler | `mitarbeiter` | Gezielte Buchung an unbekanntem Standort |
-| Frau Kaya | `team_assistenz` | Buchen für…, Serienbuchung (Vertretung für Hans Müller/Elena) |
-| Hans Müller | `mitarbeiter` | Ziel einer Linienorganisations-Vertretung |
-| Herr Demir | `mitarbeiter` | Meetingraum-Anfrage (genehmigungspflichtig) |
-| Frau Ostermann | `raumverantwortlicher` | Genehmigungscenter (Konferenzraum A) |
-| Herr Brandt | `fm`, `vsnfd` | Facility-Management, Vertrauliche Raumblockierung |
-| Thomas Weber / Sabine Kraus / Julia Fischer | `mitarbeiter` | Auslastungsdemo München West |
-| Herr Wagner | `fm` | Facility-Management für weiteren Standort (München) |
-| Frau Lehmann | `mitarbeiter` (Abteilung 6) | Org-Hierarchie-Kaskade: darf A-12/A-13, nicht QS-Büro (nur Referat 6.2) |
-| Herr Kaiser | `mitarbeiter` (Referat 6.2) | Org-Hierarchie-Kaskade: darf A-12/A-13 (geerbt von Abt. 6) und QS-Büro |
-| Frau Nowak | `mitarbeiter` (Referat 6.2.1) | Org-Hierarchie-Kaskade: darf QS-Büro (geerbt von Referat 6.2) |
+| Konto | Rolle(n) | Org-Einheit / Kostenstelle | Relevant für |
+|---|---|---|---|
+| Dr. Maria Schmidt | `fm`, `raumverantwortlicher` | P.GZ (`KST-110-GZ`) | Facility-Management, Genehmigungen, Raumverantwortung |
+| Ali Yilmaz | `mitarbeiter` | 2.1 (`KST-2100-OPS`) | Schnellbuchung (eigener Stammplatz N-01), Desk-Suche |
+| Johannes Schneider | `mitarbeiter` | 6.1 (`KST-6100-GRUND`) | Gezielte Buchung im 5-Ebenen-Grundriss |
+| Elena Petrova | `mitarbeiter` | 9.2 (`KST-9200-FONDS`) | Vertretung (Self-Service-Delegation an Frau Kaya) |
+| Frau Kessler | `mitarbeiter` | P.PR (`KST-120-PRESSE`) | Gezielte Buchung an unbekanntem Standort |
+| Frau Kaya | `team_assistenz` | P.GZ (`KST-110-GZ`) | Buchen für…, Serienbuchung (Vertretung für Müller/Elena) |
+| Hans Müller | `mitarbeiter` | 2.1 (`KST-2100-OPS`) | Ziel einer Linienorganisations-Vertretung |
+| Herr Demir | `mitarbeiter` | P.PR (`KST-120-PRESSE`) | Meetingraum-Anfrage mit Catering & Genehmigung |
+| Frau Ostermann | `raumverantwortlicher` | 1.2.1 (`KST-1210-FM`) | Genehmigungscenter (Konferenzraum A) |
+| Herr Brandt | `fm`, `vsnfd` | 1.2.1 (`KST-1210-FM`) | FM, Vertrauliche Raumblockierung |
+| Thomas Weber | `mitarbeiter` | 2.1 (`KST-2100-OPS`) | Auslastungsdemo München West |
+| Sabine Kraus | `mitarbeiter` | 2.1 (`KST-2100-OPS`) | Auslastungsdemo Hamburg City |
+| Julia Fischer | `mitarbeiter` | P.PR (`KST-120-PRESSE`) | Buchungsszenarien Nürnberg |
+| Herr Wagner | `fm` | 1.2.2 (`KST-1220-BAU`) | FM München West (Grundriss-Planung) |
+| Frau Lehmann | `mitarbeiter` | 6 (`KST-6000-QS`) | Org-Hierarchie-Kaskade (Berechtigung Räume A-12/A-13) |
+| Herr Kaiser | `mitarbeiter` | 6.2 (`KST-6200-IZAM`) | Org-Hierarchie-Kaskade (A-12/A-13 + QS-Büro 1.20) |
+| Frau Nowak | `mitarbeiter` | 6.2.1 (`KST-6210-PROZ`) | Org-Hierarchie-Kaskade (QS-Büro 1.20) |
 
 ## Demo-Ablauf-Skript
 

@@ -68,19 +68,64 @@ function blankLayout(): FloorplanLayout {
 export interface FloorplanDesignerProps {
   structureVersion?: number;
   onStructureChanged?: () => void;
-  initialPropertyId?: number;
-  initialFloorId?: number;
+  selectedPropertyId?: number | null;
+  onSelectProperty?: (id: number) => void;
+  selectedFloorId?: number | null;
+  onSelectFloor?: (floorId: number) => void;
+  selectedRoomId?: number | null;
+  onSelectRoom?: (roomId: number | null) => void;
+  scope?: "floor" | "room";
+  onScopeChange?: (scope: "floor" | "room") => void;
 }
 
-export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerProps) {
+export function FloorplanDesigner({
+  structureVersion = 0,
+  onStructureChanged,
+  selectedPropertyId: propPropertyId,
+  onSelectProperty,
+  selectedFloorId: propFloorId,
+  onSelectFloor,
+  selectedRoomId: propRoomId,
+  onSelectRoom,
+  scope: propScope,
+  onScopeChange,
+}: FloorplanDesignerProps) {
   const [properties, setProperties] = useState<PropertyOut[]>([]);
-  const [propertyId, setPropertyId] = useState<number | null>(null);
+  const [propertyId, setPropertyId] = useState<number | null>(propPropertyId ?? null);
   const [tree, setTree] = useState<PropertyTree | null>(null);
-  const [floorId, setFloorId] = useState<number | null>(null);
+  const [floorId, setFloorId] = useState<number | null>(propFloorId ?? null);
 
   // Scope: "floor" (Etagen-Grundriss) or "room" (Raum-Innenplanung)
-  const [scope, setScope] = useState<"floor" | "room">("floor");
-  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [scope, setScope] = useState<"floor" | "room">(propScope ?? (propRoomId ? "room" : "floor"));
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(propRoomId ?? null);
+
+  // Sync mit übergeordnetem FM-Zustand
+  useEffect(() => {
+    if (propPropertyId !== undefined && propPropertyId !== null && propPropertyId !== propertyId) {
+      setPropertyId(propPropertyId);
+    }
+  }, [propPropertyId]);
+
+  useEffect(() => {
+    if (propFloorId !== undefined && propFloorId !== null && propFloorId !== floorId) {
+      setFloorId(propFloorId);
+    }
+  }, [propFloorId]);
+
+  useEffect(() => {
+    if (propRoomId !== undefined && propRoomId !== selectedRoomId) {
+      setSelectedRoomId(propRoomId);
+      if (propRoomId) {
+        setScope("room");
+      }
+    }
+  }, [propRoomId]);
+
+  useEffect(() => {
+    if (propScope !== undefined && propScope !== scope) {
+      setScope(propScope);
+    }
+  }, [propScope]);
 
   // Aktives Werkzeug: Default ist "select" (Auswählen / Verschieben)
   const [tool, setTool] = useState<DesignerTool>("select");
@@ -116,7 +161,9 @@ export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerPro
     api.get<PropertyOut[]>("/catalog/properties").then((items) => {
       setProperties(items);
       if (!propertyId && items.length > 0) {
-        setPropertyId(items[0].id);
+        const initialId = propPropertyId ?? items[0].id;
+        setPropertyId(initialId);
+        onSelectProperty?.(initialId);
       }
     });
   }
@@ -131,7 +178,9 @@ export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerPro
       setTree(data);
       const allFloors = data.buildings.flatMap((b) => b.floors);
       if (!floorId || !allFloors.some((f) => f.id === floorId)) {
-        setFloorId(allFloors[0]?.id ?? null);
+        const firstFloorId = allFloors[0]?.id ?? null;
+        setFloorId(firstFloorId);
+        if (firstFloorId) onSelectFloor?.(firstFloorId);
       }
     });
   }, [propertyId, structureVersion]);
@@ -340,6 +389,8 @@ export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerPro
   function handleDrillDownToRoom(roomId: number) {
     setSelectedRoomId(roomId);
     setScope("room");
+    onSelectRoom?.(roomId);
+    onScopeChange?.("room");
     setTool("select");
     setSelectedId(null);
     setMessage(null);
@@ -382,6 +433,7 @@ export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerPro
         if (!floorId) return;
         await api.put(`/fm/floors/${floorId}/floorplan-layout`, { layout: JSON.stringify(layout) });
         setMessage("Etagen-Grundriss erfolgreich gespeichert. Er ist sofort im Raumplan und in allen Ansichten aktiv.");
+        onStructureChanged?.();
       } else {
         if (!selectedRoomId) return;
         await api.put(`/fm/rooms/${selectedRoomId}/floorplan-layout`, {
@@ -389,6 +441,7 @@ export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerPro
           seating_layout: currentRoom?.room_type === "meeting" ? seatingPreset : null,
         });
         setMessage("Raum-Grundriss erfolgreich gespeichert.");
+        onStructureChanged?.();
       }
     } catch {
       setMessage("Fehler beim Speichern des Grundrisses.");
@@ -419,6 +472,9 @@ export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerPro
                 type="button"
                 onClick={() => {
                   setScope("floor");
+                  setSelectedRoomId(null);
+                  onSelectRoom?.(null);
+                  onScopeChange?.("floor");
                   setTool("select");
                   setSelectedId(null);
                 }}
@@ -462,10 +518,14 @@ export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerPro
               <select
                 value={propertyId ?? ""}
                 onChange={(e) => {
-                  setPropertyId(Number(e.target.value));
+                  const newPropId = Number(e.target.value);
+                  setPropertyId(newPropId);
+                  onSelectProperty?.(newPropId);
                   setFloorId(null);
                   setSelectedRoomId(null);
+                  onSelectRoom?.(null);
                   setScope("floor");
+                  onScopeChange?.("floor");
                 }}
                 className="w-full mt-1 bg-surface rounded px-2 py-1.5 border border-outline-variant/30 text-sm"
               >
@@ -482,9 +542,13 @@ export function FloorplanDesigner({ structureVersion = 0 }: FloorplanDesignerPro
               <select
                 value={floorId ?? ""}
                 onChange={(e) => {
-                  setFloorId(Number(e.target.value));
+                  const newFloorId = Number(e.target.value);
+                  setFloorId(newFloorId);
+                  onSelectFloor?.(newFloorId);
                   setSelectedRoomId(null);
+                  onSelectRoom?.(null);
                   setScope("floor");
+                  onScopeChange?.("floor");
                 }}
                 className="w-full mt-1 bg-surface rounded px-2 py-1.5 border border-outline-variant/30 text-sm"
               >

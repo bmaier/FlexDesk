@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import type {
   BuildingNode,
@@ -23,11 +24,116 @@ import { FloorplanDesigner } from "../components/FloorplanDesigner";
 type Tab = "struktur" | "grundriss" | "labels" | "zonen" | "auslastung" | "defekte";
 
 export default function FacilityManagement() {
-  const [tab, setTab] = useState<Tab>("struktur");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTabParam = searchParams.get("tab") as Tab | null;
+  const tab: Tab =
+    activeTabParam && ["struktur", "grundriss", "labels", "zonen", "auslastung", "defekte"].includes(activeTabParam)
+      ? activeTabParam
+      : "struktur";
+
+  function setTab(nextTab: Tab) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", nextTab);
+        return next;
+      },
+      { replace: true }
+    );
+  }
+
   const [structureVersion, setStructureVersion] = useState(0);
+
+  // Geteilter Zustand über alle FM-Tabs hinweg (bleibt beim Umschalten erhalten)
+  const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(() => {
+    const p = searchParams.get("propertyId");
+    return p ? Number(p) : null;
+  });
+  const [selectedFloorId, setSelectedFloorId] = useState<number | null>(() => {
+    const f = searchParams.get("floorId");
+    return f ? Number(f) : null;
+  });
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(() => {
+    const r = searchParams.get("roomId");
+    return r ? Number(r) : null;
+  });
+  const [designerScope, setDesignerScope] = useState<"floor" | "room">(() => {
+    return searchParams.get("roomId") ? "room" : "floor";
+  });
 
   function notifyStructureChanged() {
     setStructureVersion((version) => version + 1);
+  }
+
+  function handleSelectProperty(id: number | null) {
+    setSelectedPropertyId(id);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (id) next.set("propertyId", String(id));
+        else next.delete("propertyId");
+        return next;
+      },
+      { replace: true }
+    );
+  }
+
+  function handleSelectFloor(id: number | null) {
+    setSelectedFloorId(id);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (id) next.set("floorId", String(id));
+        else next.delete("floorId");
+        return next;
+      },
+      { replace: true }
+    );
+  }
+
+  function handleSelectRoom(id: number | null) {
+    setSelectedRoomId(id);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (id) next.set("roomId", String(id));
+        else next.delete("roomId");
+        return next;
+      },
+      { replace: true }
+    );
+  }
+
+  function handleOpenFloorplanForFloor(floorId: number) {
+    setSelectedFloorId(floorId);
+    setSelectedRoomId(null);
+    setDesignerScope("floor");
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", "grundriss");
+        next.set("floorId", String(floorId));
+        next.delete("roomId");
+        return next;
+      },
+      { replace: true }
+    );
+  }
+
+  function handleOpenFloorplanForRoom(roomId: number, floorId?: number | null) {
+    setSelectedRoomId(roomId);
+    if (floorId) setSelectedFloorId(floorId);
+    setDesignerScope("room");
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", "grundriss");
+        next.set("roomId", String(roomId));
+        if (floorId) next.set("floorId", String(floorId));
+        return next;
+      },
+      { replace: true }
+    );
   }
 
   return (
@@ -46,11 +152,42 @@ export default function FacilityManagement() {
         ))}
       </div>
       {/* Alle Tabs bleiben gemountet (nur per CSS ausgeblendet), damit die Auswahl
-          (Liegenschaft/Raum/Desk, Zone-Formular etc.) beim Tab-Wechsel erhalten bleibt. */}
-      <div className={tab === "struktur" ? "" : "hidden"}><StructureTab onStructureChanged={notifyStructureChanged} /></div>
-      <div className={tab === "grundriss" ? "" : "hidden"}><FloorplanDesigner structureVersion={structureVersion} onStructureChanged={notifyStructureChanged} /></div>
+          (Liegenschaft/Raum/Desk, Grundriss-Canvas, Formulare etc.) beim Tab-Wechsel erhalten bleibt. */}
+      <div className={tab === "struktur" ? "" : "hidden"}>
+        <StructureTab
+          onStructureChanged={notifyStructureChanged}
+          selectedPropertyId={selectedPropertyId}
+          onSelectProperty={handleSelectProperty}
+          selectedFloorId={selectedFloorId}
+          onSelectFloor={handleSelectFloor}
+          selectedRoomId={selectedRoomId}
+          onSelectRoom={handleSelectRoom}
+          onOpenFloorplanForFloor={handleOpenFloorplanForFloor}
+          onOpenFloorplanForRoom={handleOpenFloorplanForRoom}
+        />
+      </div>
+      <div className={tab === "grundriss" ? "" : "hidden"}>
+        <FloorplanDesigner
+          structureVersion={structureVersion}
+          onStructureChanged={notifyStructureChanged}
+          selectedPropertyId={selectedPropertyId}
+          onSelectProperty={handleSelectProperty}
+          selectedFloorId={selectedFloorId}
+          onSelectFloor={handleSelectFloor}
+          selectedRoomId={selectedRoomId}
+          onSelectRoom={handleSelectRoom}
+          scope={designerScope}
+          onScopeChange={setDesignerScope}
+        />
+      </div>
       <div className={tab === "labels" ? "" : "hidden"}><LabelsTab /></div>
-      <div className={tab === "zonen" ? "" : "hidden"}><ZonesTab structureVersion={structureVersion} /></div>
+      <div className={tab === "zonen" ? "" : "hidden"}>
+        <ZonesTab
+          structureVersion={structureVersion}
+          selectedPropertyId={selectedPropertyId}
+          onSelectProperty={handleSelectProperty}
+        />
+      </div>
       <div className={tab === "auslastung" ? "" : "hidden"}><OccupancyTab /></div>
       <div className={tab === "defekte" ? "" : "hidden"}><DefectsTab /></div>
     </div>
@@ -61,9 +198,31 @@ export default function FacilityManagement() {
 // Struktur: Baum + Anlegen-Formulare + Raum-/Desk-Detail
 // ---------------------------------------------------------------------------
 
-function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }) {
+interface StructureTabProps {
+  onStructureChanged: () => void;
+  selectedPropertyId?: number | null;
+  onSelectProperty?: (id: number) => void;
+  selectedFloorId?: number | null;
+  onSelectFloor?: (floorId: number) => void;
+  selectedRoomId?: number | null;
+  onSelectRoom?: (roomId: number | null) => void;
+  onOpenFloorplanForFloor?: (floorId: number) => void;
+  onOpenFloorplanForRoom?: (roomId: number, floorId?: number | null) => void;
+}
+
+function StructureTab({
+  onStructureChanged,
+  selectedPropertyId: propPropertyId,
+  onSelectProperty,
+  selectedFloorId: propFloorId,
+  onSelectFloor,
+  selectedRoomId: propRoomId,
+  onSelectRoom,
+  onOpenFloorplanForFloor,
+  onOpenFloorplanForRoom,
+}: StructureTabProps) {
   const [properties, setProperties] = useState<PropertyOut[]>([]);
-  const [propertyId, setPropertyId] = useState<number | null>(null);
+  const [propertyId, setPropertyId] = useState<number | null>(propPropertyId ?? null);
   const [tree, setTree] = useState<PropertyTree | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [selectedRoom, setSelectedRoom] = useState<RoomNode | null>(null);
@@ -72,10 +231,21 @@ function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }
   const [editOpen, setEditOpen] = useState<null | { level: "property" | "building"; id: number }>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  // Sync Liegenschaft bei externer Änderung (z.B. aus Zonen oder Grundriss)
+  useEffect(() => {
+    if (propPropertyId !== undefined && propPropertyId !== null && propPropertyId !== propertyId) {
+      setPropertyId(propPropertyId);
+    }
+  }, [propPropertyId]);
+
   function loadProperties() {
     api.get<PropertyOut[]>("/catalog/properties").then((props) => {
       setProperties(props);
-      if (!propertyId && props.length) setPropertyId(props[0].id);
+      if (!propertyId && props.length) {
+        const initId = propPropertyId ?? props[0].id;
+        setPropertyId(initId);
+        onSelectProperty?.(initId);
+      }
     });
   }
 
@@ -103,6 +273,44 @@ function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tree]);
 
+  // Reaktiv den Struktur-Baum aufklappen und Raum/Etage selektieren, wenn vom Grundriss oder FM-State übergeben
+  useEffect(() => {
+    if (!tree) return;
+    if (propRoomId) {
+      for (const b of tree.buildings) {
+        for (const f of b.floors) {
+          const r = f.rooms.find((rm) => rm.id === propRoomId);
+          if (r) {
+            setExpanded((prev) => ({
+              ...prev,
+              [`b${b.id}`]: true,
+              [`f${f.id}`]: true,
+            }));
+            setSelectedRoom(r);
+            setSelectedDesk(null);
+            return;
+          }
+        }
+      }
+    } else if (propFloorId) {
+      for (const b of tree.buildings) {
+        const f = b.floors.find((fl) => fl.id === propFloorId);
+        if (f) {
+          setExpanded((prev) => ({
+            ...prev,
+            [`b${b.id}`]: true,
+            [`f${f.id}`]: true,
+          }));
+          return;
+        }
+      }
+    }
+  }, [tree, propRoomId, propFloorId]);
+
+  const currentRoomFloorId = tree?.buildings
+    .flatMap((b) => b.floors)
+    .find((fl) => fl.rooms.some((rm) => rm.id === selectedRoom?.id))?.id;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
       <div className="bg-surface-container-low rounded-md p-3 border border-outline-variant/30">
@@ -110,7 +318,15 @@ function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }
           Struktur von oben nach unten pflegen: Liegenschaft → Gebäude → Etage → Raum → Desk. Ein Eintrag öffnet rechts seine Details; ✎ bearbeitet Liegenschaft oder Gebäude.
         </div>
         <div className="flex gap-2 mb-3 items-center">
-          <select value={propertyId ?? ""} onChange={(e) => setPropertyId(Number(e.target.value))} className="flex-1 bg-surface rounded px-2 py-1.5 text-sm">
+          <select
+            value={propertyId ?? ""}
+            onChange={(e) => {
+              const newId = Number(e.target.value);
+              setPropertyId(newId);
+              onSelectProperty?.(newId);
+            }}
+            className="flex-1 bg-surface rounded px-2 py-1.5 text-sm"
+          >
             {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           {propertyId && <button onClick={() => setEditOpen({ level: "property", id: propertyId })} className="text-xs text-primary" title="Liegenschaft bearbeiten">✎</button>}
@@ -127,15 +343,36 @@ function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }
             {expanded[`b${b.id}`] &&
               b.floors.map((f) => (
                 <div key={f.id} className="ml-3">
-                  <button onClick={() => setExpanded((e) => ({ ...e, [`f${f.id}`]: !e[`f${f.id}`] }))} className="w-full text-left text-sm px-1 py-1 flex items-center gap-1 text-on-surface-variant">
-                    <span className={`transition-transform inline-block ${expanded[`f${f.id}`] ? "rotate-90" : ""}`}>›</span> {f.name}
-                  </button>
+                  <div className="flex items-center justify-between group pr-1">
+                    <button
+                      onClick={() => {
+                        setExpanded((e) => ({ ...e, [`f${f.id}`]: !e[`f${f.id}`] }));
+                        onSelectFloor?.(f.id);
+                      }}
+                      className="text-left text-sm px-1 py-1 flex items-center gap-1 text-on-surface-variant flex-1 hover:text-on-surface"
+                    >
+                      <span className={`transition-transform inline-block ${expanded[`f${f.id}`] ? "rotate-90" : ""}`}>›</span> {f.name}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenFloorplanForFloor?.(f.id)}
+                      className="text-[11px] px-1.5 py-0.5 rounded hover:bg-primary/10 text-primary font-medium flex items-center gap-1 transition-colors"
+                      title="Etagen-Grundriss im Designer öffnen"
+                    >
+                      🗺️ Grundriss
+                    </button>
+                  </div>
                   {expanded[`f${f.id}`] && (
                     <div className="ml-3">
                       {f.rooms.map((r) => (
                         <div key={r.id}>
                           <button
-                            onClick={() => { setSelectedRoom(r); setSelectedDesk(null); }}
+                            onClick={() => {
+                              setSelectedRoom(r);
+                              setSelectedDesk(null);
+                              onSelectRoom?.(r.id);
+                              onSelectFloor?.(f.id);
+                            }}
                             className={`w-full text-left text-sm px-2 py-1 rounded flex items-center gap-1 ${selectedRoom?.id === r.id ? "bg-secondary-container text-on-primary-fixed-variant" : "hover:bg-surface-container-high"}`}
                           >
                             {r.room_type === "meeting" ? "🏛" : "🪑"} {r.name}
@@ -144,7 +381,12 @@ function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }
                           {r.room_type === "desk_area" && r.desks.map((d) => (
                             <button
                               key={d.id}
-                              onClick={() => { setSelectedDesk(d); setSelectedRoom(r); }}
+                              onClick={() => {
+                                setSelectedDesk(d);
+                                setSelectedRoom(r);
+                                onSelectRoom?.(r.id);
+                                onSelectFloor?.(f.id);
+                              }}
                               className={`w-full text-left text-xs px-2 py-0.5 ml-4 rounded ${selectedDesk?.id === d.id ? "bg-secondary-container" : "hover:bg-surface-container-high text-on-surface-variant"}`}
                             >
                               {d.desk_number}
@@ -169,7 +411,12 @@ function StructureTab({ onStructureChanged }: { onStructureChanged: () => void }
         {selectedDesk && !selectedRoom?.desks.every((d) => d.id !== selectedDesk.id) ? (
           <DeskDetail desk={selectedDesk} onLocked={() => setMessage("Sperrung gesetzt.")} onChanged={() => { loadTree(); setMessage("Aktualisiert."); }} />
         ) : selectedRoom ? (
-          <RoomDetail room={selectedRoom} onChanged={() => { loadTree(); setMessage("Aktualisiert."); }} />
+          <RoomDetail
+            room={selectedRoom}
+            floorId={currentRoomFloorId}
+            onChanged={() => { loadTree(); setMessage("Aktualisiert."); }}
+            onOpenFloorplanForRoom={onOpenFloorplanForRoom}
+          />
         ) : (
           <div className="text-on-surface-variant text-sm">Wählen Sie links einen Raum oder Desk, oder legen Sie eine neue Ebene an.</div>
         )}
@@ -481,7 +728,17 @@ function OrgUnitAssignment({ roomId }: { roomId: number }) {
   );
 }
 
-function RoomDetail({ room, onChanged }: { room: RoomNode; onChanged: () => void }) {
+function RoomDetail({
+  room,
+  floorId,
+  onChanged,
+  onOpenFloorplanForRoom,
+}: {
+  room: RoomNode;
+  floorId?: number | null;
+  onChanged: () => void;
+  onOpenFloorplanForRoom?: (roomId: number, floorId?: number | null) => void;
+}) {
   const [approvalRequired, setApprovalRequired] = useState(room.approval_required);
   const [checkinRequired, setCheckinRequired] = useState(room.checkin_required);
   const [name, setName] = useState(room.name);
@@ -535,6 +792,22 @@ function RoomDetail({ room, onChanged }: { room: RoomNode; onChanged: () => void
 
   return (
     <div className="bg-surface-container-lowest rounded-md p-5 border border-outline-variant/30">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div className="text-sm text-on-surface-variant font-medium">
+          Raum {room.room_number} · {room.room_type === "meeting" ? "🏛 Meetingraum" : "💼 Büro-/Desk-Fläche"}
+        </div>
+        {onOpenFloorplanForRoom && (
+          <button
+            type="button"
+            onClick={() => onOpenFloorplanForRoom(room.id, floorId)}
+            className="px-3 py-1.5 text-xs font-semibold rounded bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors flex items-center gap-1.5 shadow-sm"
+            title="Diesen Raum im Grundriss-Designer öffnen"
+          >
+            🎨 Diesen Raum im Grundriss-Designer gestalten ↗
+          </button>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 gap-3 mb-4">
         <label className="block text-sm">Name
           <input value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} onBlur={saveDetails} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2" />
@@ -549,7 +822,6 @@ function RoomDetail({ room, onChanged }: { room: RoomNode; onChanged: () => void
         </label>
       )}
       {saved && <div className="text-xs text-tertiary-fixed-dim mb-3">Gespeichert.</div>}
-      <div className="text-sm text-on-surface-variant mb-4">Raum {room.room_number} · {room.room_type === "meeting" ? "Meetingraum" : "Büro-/Desk-Fläche"}</div>
 
       <LabelPicker assigned={room.labels} entityKind="rooms" entityId={room.id} roomType={room.room_type} onChanged={onChanged} />
 
@@ -792,9 +1064,17 @@ function LabelsTab() {
 // Zonen
 // ---------------------------------------------------------------------------
 
-function ZonesTab({ structureVersion }: { structureVersion: number }) {
+function ZonesTab({
+  structureVersion,
+  selectedPropertyId: propPropertyId,
+  onSelectProperty,
+}: {
+  structureVersion: number;
+  selectedPropertyId?: number | null;
+  onSelectProperty?: (id: number) => void;
+}) {
   const [properties, setProperties] = useState<PropertyOut[]>([]);
-  const [propertyId, setPropertyId] = useState<number | null>(null);
+  const [propertyId, setPropertyId] = useState<number | null>(propPropertyId ?? null);
   const [zones, setZones] = useState<ZoneOut[]>([]);
   const [departments, setDepartments] = useState<DepartmentOut[]>([]);
   const [tree, setTree] = useState<PropertyTree | null>(null);
@@ -809,14 +1089,27 @@ function ZonesTab({ structureVersion }: { structureVersion: number }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get<PropertyOut[]>("/catalog/properties").then((props) => { setProperties(props); if (props.length) setPropertyId((current) => current ?? props[0].id); });
+    if (propPropertyId !== undefined && propPropertyId !== null && propPropertyId !== propertyId) {
+      setPropertyId(propPropertyId);
+    }
+  }, [propPropertyId]);
+
+  useEffect(() => {
+    api.get<PropertyOut[]>("/catalog/properties").then((props) => {
+      setProperties(props);
+      if (!propertyId && props.length) {
+        const initId = propPropertyId ?? props[0].id;
+        setPropertyId(initId);
+        onSelectProperty?.(initId);
+      }
+    });
     api.get<DepartmentOut[]>("/fm/departments").then(setDepartments);
   }, []);
 
   useEffect(() => {
     api.get<PropertyOut[]>("/catalog/properties").then((props) => {
       setProperties(props);
-      if (props.length) setPropertyId((current) => current ?? props[0].id);
+      if (props.length) setPropertyId((current) => current ?? propPropertyId ?? props[0].id);
     });
   }, [structureVersion]);
 
@@ -883,7 +1176,15 @@ function ZonesTab({ structureVersion }: { structureVersion: number }) {
         <strong>So funktionieren Zonen:</strong> Zuerst eine Organisationseinheit festlegen, dann ganze Gebäude, Räume oder einzelne Desks zuweisen.
         Mitarbeitende sehen und buchen diese Desks nur, wenn sie der zugeordneten Organisationseinheit angehören; mit „inkl. Unter-Referate“ gilt dies auch für deren Untereinheiten.
       </div>
-      <select value={propertyId ?? ""} onChange={(e) => setPropertyId(Number(e.target.value))} className="mb-4 bg-surface-container-low rounded px-3 py-2 text-sm">
+      <select
+        value={propertyId ?? ""}
+        onChange={(e) => {
+          const newId = Number(e.target.value);
+          setPropertyId(newId);
+          onSelectProperty?.(newId);
+        }}
+        className="mb-4 bg-surface-container-low rounded px-3 py-2 text-sm"
+      >
         {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
       </select>
 

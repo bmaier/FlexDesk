@@ -1,12 +1,13 @@
 ---
-title: Desk Sharing Anwendung für BAMF
+title: Desk4Me — Workspace & Meeting Room Booking Management
 status: final
 created: 2026-08-13
-updated: 2026-08-20
+updated: 2026-09-17
+project: Desk4Me
+license: GNU AGPL-3.0 (Berthold Maier)
 ---
 
-# PRD: Desk Sharing Anwendung für BAMF
-*Working title — confirm.*
+# PRD: Desk4Me — Workspace & Meeting Room Booking Management (BAMF PoC)
 
 ## 0. Document Purpose
 

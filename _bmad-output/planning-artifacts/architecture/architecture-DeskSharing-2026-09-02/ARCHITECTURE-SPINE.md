@@ -1,23 +1,25 @@
 ---
-name: 'DeskSharing BAMF'
+name: 'Desk4Me'
 type: architecture-spine
 purpose: build-substrate
 altitude: initiative
 paradigm: 'Hierarchical Domain-Driven Clean Architecture (FastAPI + React/TS)'
-scope: 'DeskSharing BAMF — Release 1 (5-Ebenen-Hierarchie, 2-Stufen-Grundrisse, Desk-/Meetingraum-Buchung, Bestuhlungsvarianten & Drag-Drop, Catering-Kostenstellenabrechnung, FM-State-Management, Zonen, Check-in)'
+scope: 'Desk4Me (BAMF) — Release 1 (5-Ebenen-Hierarchie, 2-Stufen-Grundrisse, Desk-/Meetingraum-Buchung, Bestuhlungsvarianten & Drag-Drop, Catering-Kostenstellenabrechnung, FM-State-Management, Zonen, Org-Hierarchie-Kaskade, Lock/Unlock-Zyklen, Check-in, Barrierefreiheit)'
 status: active
+license: 'GNU AGPL-3.0 (Berthold Maier)'
 created: '2026-09-02'
-updated: '2026-09-06'
+updated: '2026-09-17'
 binds: []
 sources:
   - ../../prds/prd-DeskSharing-2026-08-13/prd.md
   - ../../prds/prd-DeskSharing-2026-08-13/addendum.md
   - ../../ux-designs/ux-DeskSharing-2026-08-14/DESIGN.md
   - ../../ux-designs/ux-DeskSharing-2026-08-14/EXPERIENCE.md
+  - ../../../../docs/ANFORDERUNGSPRUEFUNG-FACHBEREICHE.md
 companions: []
 ---
 
-# Architecture Spine — DeskSharing BAMF
+# Architecture Spine — Desk4Me (BAMF Workspace Management)
 
 ## Design Paradigm
 
@@ -123,8 +125,33 @@ Zur Vermeidung unübersichtlicher Mischpläne trennt das System sauber zwischen 
 
 ---
 
-## 6. Stack & Bibliotheken
+## 6. Organisationseinheiten-Kaskade & Berechtigungsprüfung
+
+- **Service**: `backend/app/services/org_hierarchy.py`
+- **Kaskadierende Berechtigung**: Einem übergeordneten Referat/Abteilung zugewiesene Räume und Zonen stehen automatisch auch allen Untereinheiten (z. B. Referatsgruppen, Fachgruppen) offen.
+- **Isolierte Zuweisung**: Wird eine Ressource explizit einer Untereinheit zugewiesen, haben übergeordnete Einheiten und Geschwister-Referate keinen Zugriff (HTTP 403 `ZONE_RESTRICTED`).
+
+---
+
+## 7. Lock- und Unlock-Zyklen (FM-Governance)
+
+- **Sperrungen (`locks`)**: FM kann Liegenschaften, Gebäude, Etagen, Räume oder einzelne Desks sperren.
+- **Kollisionen & Auto-Storno**: Aktive Buchungen im Sperrzeitraum werden automatisch storniert (`cancel_kind="locked"`) und Betroffene benachrichtigt.
+- **Entsperren (`/api/fm/locks/{lock_id}`)**: Sperrungen können per `DELETE` gezielt über ihre ID aufgehoben werden; die Ressourcen stehen sofort wieder im Buchungspool bereit.
+
+---
+
+## 8. Barrierefreiheit & Error Handling
+
+- **BITV 2.0 / WCAG 2.1 AA**: Konformitätsanforderungen für Bundesbehörden.
+- **Barrierefreiheitserklärung**: Vollständige Erklärung unter `/barrierefreiheit` ([`AccessibilityStatement.tsx`](frontend/src/pages/AccessibilityStatement.tsx)) mit Feedback-Mechanismus und Schlichtungsstellen-Kontakt.
+- **Error Boundaries**: [`ErrorBoundary.tsx`](frontend/src/components/ErrorBoundary.tsx) fängt Rendering-Fehler ab und bietet Wiederherstellung.
+
+---
+
+## 9. Stack & Bibliotheken
 
 - **Backend**: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.0 (SQLite / `backend/deskshare.db`).
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Lucide Icons, HTML5 Canvas Rendering für interaktive Pläne.
-- **Tests**: `pytest` (Unit/Integration, 33 Tests), `behave` (Gherkin BDD), Playwright (E2E), `bmad-loop` CLI Validierung.
+- **Tests**: `pytest` (Unit/Integration, 42 Tests in `backend/tests/unit`), `behave` (Gherkin BDD), Playwright (E2E).
+- **Lizenz**: GNU Affero General Public License v3.0 (AGPL-3.0), Copyright © 2026 Berthold Maier.

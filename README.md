@@ -1,4 +1,4 @@
-# DeskSharing BAMF — PoC
+# Desk4Me — Workspace & Meeting Room Booking Management
 
 Proof of Concept für eine Desk- und Meetingraum-Buchungsanwendung für das BAMF, basierend auf
 der PRD (`_bmad-output/planning-artifacts/prds/prd-DeskSharing-2026-08-13/prd.md`) und dem
@@ -18,6 +18,7 @@ Architektur. Login ist simuliert (kein echtes IDM/Keycloak), die Datenbank ist S
 - [Tests](#tests)
 - [Projektstruktur](#projektstruktur)
 - [Bekannte Vereinfachungen (PoC-Scope)](#bekannte-vereinfachungen-poc-scope)
+- [Lizenz](#lizenz)
 
 ## Kernkonzepte & Datenmodell
 
@@ -237,3 +238,8 @@ Bewusste Abweichungen von einer produktionsreifen Umsetzung, dokumentiert statt 
   externer Scheduler.
 - Ports `8010`/`5183` statt der Standardports `8000`/`5173`, da diese auf der Entwicklungsmaschine
   von anderen Prozessen belegt waren — per Umgebungsvariable änderbar (siehe oben).
+
+## Lizenz
+
+Dieses Projekt ist lizenziert unter der **GNU Affero General Public License v3.0 (AGPL-3.0)** — Copyright © 2026 Berthold Maier. Siehe [LICENSE](LICENSE) für den vollständigen Lizenztext.
+

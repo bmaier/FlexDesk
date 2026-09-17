@@ -1,8 +1,12 @@
 [project]
 name = "deskshare-backend"
 version = "0.1.0"
-description = "DeskSharing BAMF - PoC Backend (FastAPI + SQLite)"
+description = "Desk4Me - PoC Backend (FastAPI + SQLite)"
 readme = "README.md"
+license = "AGPL-3.0-or-later"
+authors = [
+    { name = "Berthold Maier" }
+]
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.0",

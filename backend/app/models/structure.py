@@ -86,6 +86,9 @@ class Room(Base):
     height: Mapped[float | None] = mapped_column(nullable=True)
     floorplan_layout: Mapped[str | None] = mapped_column(String(20000), nullable=True)
     seating_layout: Mapped[str | None] = mapped_column(String(50), nullable=True, default="boardroom")
+    slot_duration_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    day_start_hour: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    day_end_hour: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     floor = relationship("Floor", back_populates="rooms")
     desks: Mapped[list["Desk"]] = relationship(back_populates="room", cascade="all, delete-orphan")
@@ -175,3 +178,12 @@ class ZoneDesk(Base):
 
     zone_id: Mapped[int] = mapped_column(ForeignKey("zones.id"), primary_key=True)
     desk_id: Mapped[int] = mapped_column(ForeignKey("desks.id"), primary_key=True)
+
+
+class SystemSetting(Base):
+    """Globale Konfigurationen (z. B. Meetingraum-Slot-Dauer, Tag-Beginn/Ende)."""
+
+    __tablename__ = "system_settings"
+
+    key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    value: Mapped[str] = mapped_column(String(500))

@@ -31,6 +31,12 @@ def migrate_sqlite_schema() -> None:
             connection.execute(text("ALTER TABLE rooms ADD COLUMN floorplan_layout VARCHAR(20000)"))
         if "seating_layout" not in room_cols:
             connection.execute(text("ALTER TABLE rooms ADD COLUMN seating_layout VARCHAR(50) DEFAULT 'boardroom'"))
+        if "slot_duration_minutes" not in room_cols:
+            connection.execute(text("ALTER TABLE rooms ADD COLUMN slot_duration_minutes INTEGER"))
+        if "day_start_hour" not in room_cols:
+            connection.execute(text("ALTER TABLE rooms ADD COLUMN day_start_hour INTEGER"))
+        if "day_end_hour" not in room_cols:
+            connection.execute(text("ALTER TABLE rooms ADD COLUMN day_end_hour INTEGER"))
 
         # departments
         dept_cols = {row[1] for row in connection.execute(text("PRAGMA table_info(departments)"))}

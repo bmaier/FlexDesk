@@ -9,8 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.bookings import Booking, DeskBooking
-from app.models.reference import Label
-from app.models.structure import Building, Desk, Floor, Property, Room
+from app.models.locks import DeskLock, Lock, RoomLock
+from app.models.reference import Department, Label
+from app.models.structure import Building, Desk, Floor, Property, Room, RoomDepartment
+from app.services.org_hierarchy import effective_room_department_ids
 
 router = APIRouter(prefix="/api/catalog", tags=["catalog"])
 
@@ -82,6 +84,9 @@ class DeskNode(BaseModel):
     labels: list[str]
     approval_required: bool
     checkin_required: bool
+    is_locked: bool = False
+    lock_reason: str | None = None
+    lock_id: int | None = None
 
 
 class RoomNode(BaseModel):
@@ -95,6 +100,14 @@ class RoomNode(BaseModel):
     checkin_required: bool
     labels: list[str]
     desks: list[DeskNode]
+    slot_duration_minutes: int | None = None
+    day_start_hour: int | None = None
+    day_end_hour: int | None = None
+    seating_layout: str | None = None
+    is_locked: bool = False
+    lock_reason: str | None = None
+    lock_id: int | None = None
+
 
 
 class FloorNode(BaseModel):
@@ -126,23 +139,50 @@ def property_tree(property_id: int, db: Session = Depends(get_db)):
     from app.models.structure import BuildingLabel, DeskLabel, PropertyLabel, RoomLabel
 
     p = db.get(Property, property_id)
+    now = datetime.utcnow()
+    active_desk_locks = {
+        dl.desk_id: l for l, dl in db.query(Lock, DeskLock)
+        .join(DeskLock, DeskLock.lock_id == Lock.id)
+        .filter(Lock.active.is_(True), (Lock.end_at.is_(None) | (Lock.end_at >= now)))
+        .all()
+    }
+    active_room_locks = {
+        rl.room_id: l for l, rl in db.query(Lock, RoomLock)
+        .join(RoomLock, RoomLock.lock_id == Lock.id)
+        .filter(Lock.active.is_(True), (Lock.end_at.is_(None) | (Lock.end_at >= now)))
+        .all()
+    }
+
     buildings_out = []
     for b in sorted(p.buildings, key=lambda x: x.name):
         floors_out = []
         for f in sorted(b.floors, key=lambda x: x.name):
             rooms_out = []
             for r in sorted(f.rooms, key=lambda x: x.room_number):
-                desks_out = [
-                    DeskNode(id=d.id, desk_number=d.desk_number,
-                             labels=_labels_for(db, DeskLabel, "desk_id", d.id),
-                             approval_required=d.approval_required, checkin_required=d.checkin_required)
-                    for d in sorted(r.desks, key=lambda x: x.desk_number)
-                ]
+                desks_out = []
+                for d in sorted(r.desks, key=lambda x: x.desk_number):
+                    dl = active_desk_locks.get(d.id)
+                    desks_out.append(DeskNode(
+                        id=d.id, desk_number=d.desk_number,
+                        labels=_labels_for(db, DeskLabel, "desk_id", d.id),
+                        approval_required=d.approval_required, checkin_required=d.checkin_required,
+                        is_locked=dl is not None,
+                        lock_reason=dl.reason if dl else None,
+                        lock_id=dl.id if dl else None,
+                    ))
+                rl = active_room_locks.get(r.id)
                 rooms_out.append(RoomNode(
                     id=r.id, room_number=r.room_number, name=r.name, room_type=r.room_type,
                     capacity=r.capacity, approval_required=r.approval_required,
                     restricted_role_code=r.restricted_role_code, checkin_required=r.checkin_required,
                     labels=_labels_for(db, RoomLabel, "room_id", r.id), desks=desks_out,
+                    slot_duration_minutes=r.slot_duration_minutes,
+                    day_start_hour=r.day_start_hour,
+                    day_end_hour=r.day_end_hour,
+                    seating_layout=r.seating_layout,
+                    is_locked=rl is not None,
+                    lock_reason=rl.reason if rl else None,
+                    lock_id=rl.id if rl else None,
                 ))
             floors_out.append(FloorNode(id=f.id, name=f.name, floorplan_image_path=f.floorplan_image_path,
                                         floorplan_layout=f.floorplan_layout, rooms=rooms_out))
@@ -228,6 +268,30 @@ def room_bookings_for_date(room_id: int, target_date: str, db: Session = Depends
     return out
 
 
+class MeetingSlotConfigOut(BaseModel):
+    slot_duration_minutes: int
+    day_start_hour: int
+    day_end_hour: int
+
+
+def _get_setting_int(db: Session, key: str, default: int) -> int:
+    from app.models.structure import SystemSetting
+    s = db.get(SystemSetting, key)
+    if s and s.value and s.value.strip().isdigit():
+        return int(s.value.strip())
+    return default
+
+
+@router.get("/meeting-slot-config", response_model=MeetingSlotConfigOut)
+def get_meeting_slot_config(db: Session = Depends(get_db)):
+    """Öffentlich abrufbare Standard-Slot-Konfiguration für Meetingräume."""
+    return MeetingSlotConfigOut(
+        slot_duration_minutes=_get_setting_int(db, "meeting_slot_duration_minutes", 60),
+        day_start_hour=_get_setting_int(db, "meeting_day_start_hour", 8),
+        day_end_hour=_get_setting_int(db, "meeting_day_end_hour", 18),
+    )
+
+
 class MeetingRoomOut(BaseModel):
     id: int
     floor_id: int | None = None
@@ -247,6 +311,17 @@ class MeetingRoomOut(BaseModel):
     height: float | None = None
     seating_layout: str | None = None
     floorplan_layout: str | None = None
+    slot_duration_minutes: int | None = None
+    day_start_hour: int | None = None
+    day_end_hour: int | None = None
+    effective_slot_duration_minutes: int = 60
+    effective_day_start_hour: int = 8
+    effective_day_end_hour: int = 18
+    is_locked: bool = False
+    lock_reason: str | None = None
+    lock_id: int | None = None
+    restricted_department_ids: list[int] = []
+    restricted_department_names: list[str] = []
 
 
 class DepartmentCatalogOut(BaseModel):
@@ -270,6 +345,17 @@ def meeting_rooms_for_property(property_id: int, db: Session = Depends(get_db)):
     from app.models.structure import RoomLabel
 
     now = datetime.utcnow()
+    global_slot_dur = _get_setting_int(db, "meeting_slot_duration_minutes", 60)
+    global_start_h = _get_setting_int(db, "meeting_day_start_hour", 8)
+    global_end_h = _get_setting_int(db, "meeting_day_end_hour", 18)
+
+    active_room_locks = {
+        rl.room_id: l for l, rl in db.query(Lock, RoomLock)
+        .join(RoomLock, RoomLock.lock_id == Lock.id)
+        .filter(Lock.active.is_(True), (Lock.end_at.is_(None) | (Lock.end_at >= now)))
+        .all()
+    }
+
     out = []
     rooms = (
         db.query(Room).join(Floor).join(Building)
@@ -286,6 +372,10 @@ def meeting_rooms_for_property(property_id: int, db: Session = Depends(get_db)):
         )
         floor = db.get(Floor, r.floor_id)
         building = db.get(Building, floor.building_id) if floor else None
+        rl = active_room_locks.get(r.id)
+        room_depts = db.query(RoomDepartment).filter(RoomDepartment.room_id == r.id).all()
+        dept_ids = effective_room_department_ids(db, r.id)
+        dept_names = [db.get(Department, rd.department_id).name for rd in room_depts if db.get(Department, rd.department_id)]
         out.append(MeetingRoomOut(
             id=r.id, floor_id=r.floor_id, floor_name=floor.name if floor else None,
             building_id=building.id if building else None, building_name=building.name if building else None,
@@ -294,6 +384,17 @@ def meeting_rooms_for_property(property_id: int, db: Session = Depends(get_db)):
             labels=_labels_for(db, RoomLabel, "room_id", r.id), is_occupied_now=occupied,
             pos_x=r.pos_x, pos_y=r.pos_y, width=r.width, height=r.height,
             seating_layout=r.seating_layout, floorplan_layout=r.floorplan_layout,
+            slot_duration_minutes=r.slot_duration_minutes,
+            day_start_hour=r.day_start_hour,
+            day_end_hour=r.day_end_hour,
+            effective_slot_duration_minutes=r.slot_duration_minutes or global_slot_dur,
+            effective_day_start_hour=r.day_start_hour if r.day_start_hour is not None else global_start_h,
+            effective_day_end_hour=r.day_end_hour if r.day_end_hour is not None else global_end_h,
+            is_locked=rl is not None,
+            lock_reason=rl.reason if rl else None,
+            lock_id=rl.id if rl else None,
+            restricted_department_ids=dept_ids,
+            restricted_department_names=dept_names,
         ))
     return out
 
@@ -304,6 +405,17 @@ def meeting_rooms_for_floor(floor_id: int, db: Session = Depends(get_db)):
     from app.models.structure import RoomLabel
 
     now = datetime.utcnow()
+    global_slot_dur = _get_setting_int(db, "meeting_slot_duration_minutes", 60)
+    global_start_h = _get_setting_int(db, "meeting_day_start_hour", 8)
+    global_end_h = _get_setting_int(db, "meeting_day_end_hour", 18)
+
+    active_room_locks = {
+        rl.room_id: l for l, rl in db.query(Lock, RoomLock)
+        .join(RoomLock, RoomLock.lock_id == Lock.id)
+        .filter(Lock.active.is_(True), (Lock.end_at.is_(None) | (Lock.end_at >= now)))
+        .all()
+    }
+
     out = []
     floor = db.get(Floor, floor_id)
     if not floor:
@@ -318,6 +430,10 @@ def meeting_rooms_for_floor(floor_id: int, db: Session = Depends(get_db)):
             .first()
             is not None
         )
+        rl = active_room_locks.get(r.id)
+        room_depts = db.query(RoomDepartment).filter(RoomDepartment.room_id == r.id).all()
+        dept_ids = effective_room_department_ids(db, r.id)
+        dept_names = [db.get(Department, rd.department_id).name for rd in room_depts if db.get(Department, rd.department_id)]
         out.append(MeetingRoomOut(
             id=r.id, floor_id=r.floor_id, floor_name=floor.name if floor else None,
             building_id=building.id if building else None, building_name=building.name if building else None,
@@ -326,6 +442,17 @@ def meeting_rooms_for_floor(floor_id: int, db: Session = Depends(get_db)):
             labels=_labels_for(db, RoomLabel, "room_id", r.id), is_occupied_now=occupied,
             pos_x=r.pos_x, pos_y=r.pos_y, width=r.width, height=r.height,
             seating_layout=r.seating_layout, floorplan_layout=r.floorplan_layout,
+            slot_duration_minutes=r.slot_duration_minutes,
+            day_start_hour=r.day_start_hour,
+            day_end_hour=r.day_end_hour,
+            effective_slot_duration_minutes=r.slot_duration_minutes or global_slot_dur,
+            effective_day_start_hour=r.day_start_hour if r.day_start_hour is not None else global_start_h,
+            effective_day_end_hour=r.day_end_hour if r.day_end_hour is not None else global_end_h,
+            is_locked=rl is not None,
+            lock_reason=rl.reason if rl else None,
+            lock_id=rl.id if rl else None,
+            restricted_department_ids=dept_ids,
+            restricted_department_names=dept_names,
         ))
     return out
 
@@ -340,6 +467,10 @@ def get_room_by_id(room_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail={"code": "ROOM_NOT_FOUND", "message": "Raum nicht gefunden."})
 
     now = datetime.utcnow()
+    global_slot_dur = _get_setting_int(db, "meeting_slot_duration_minutes", 60)
+    global_start_h = _get_setting_int(db, "meeting_day_start_hour", 8)
+    global_end_h = _get_setting_int(db, "meeting_day_end_hour", 18)
+
     occupied = (
         db.query(Booking).join(RoomBooking, RoomBooking.booking_id == Booking.id)
         .filter(RoomBooking.room_id == r.id, Booking.status == "confirmed",
@@ -349,6 +480,16 @@ def get_room_by_id(room_id: int, db: Session = Depends(get_db)):
     )
     floor = db.get(Floor, r.floor_id) if r.floor_id else None
     building = db.get(Building, floor.building_id) if floor and floor.building_id else None
+    rl = (
+        db.query(Lock)
+        .join(RoomLock, RoomLock.lock_id == Lock.id)
+        .filter(RoomLock.room_id == r.id, Lock.active.is_(True),
+                (Lock.end_at.is_(None) | (Lock.end_at >= now)))
+        .first()
+    )
+    room_depts = db.query(RoomDepartment).filter(RoomDepartment.room_id == r.id).all()
+    dept_ids = effective_room_department_ids(db, r.id)
+    dept_names = [db.get(Department, rd.department_id).name for rd in room_depts if db.get(Department, rd.department_id)]
     return MeetingRoomOut(
         id=r.id, floor_id=r.floor_id, floor_name=floor.name if floor else None,
         building_id=building.id if building else None, building_name=building.name if building else None,
@@ -357,7 +498,19 @@ def get_room_by_id(room_id: int, db: Session = Depends(get_db)):
         labels=_labels_for(db, RoomLabel, "room_id", r.id), is_occupied_now=occupied,
         pos_x=r.pos_x, pos_y=r.pos_y, width=r.width, height=r.height,
         seating_layout=r.seating_layout, floorplan_layout=r.floorplan_layout,
+        slot_duration_minutes=r.slot_duration_minutes,
+        day_start_hour=r.day_start_hour,
+        day_end_hour=r.day_end_hour,
+        effective_slot_duration_minutes=r.slot_duration_minutes or global_slot_dur,
+        effective_day_start_hour=r.day_start_hour if r.day_start_hour is not None else global_start_h,
+        effective_day_end_hour=r.day_end_hour if r.day_end_hour is not None else global_end_h,
+        is_locked=rl is not None,
+        lock_reason=rl.reason if rl else None,
+        lock_id=rl.id if rl else None,
+        restricted_department_ids=dept_ids,
+        restricted_department_names=dept_names,
     )
+
 
 
 @router.get("/rooms/{room_id}/floorplan-layout")

@@ -67,7 +67,7 @@ function toPoints(outline: [number, number][]): string {
 
 export function GermanyMap() {
   return (
-    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true" role="presentation">
       <polygon points={toPoints(OUTLINE)} className="fill-tertiary-fixed/15 stroke-on-surface-variant/40" strokeWidth={0.3} />
       <polygon points={toPoints(RUEGEN_OUTLINE)} className="fill-tertiary-fixed/15 stroke-on-surface-variant/40" strokeWidth={0.3} />
     </svg>

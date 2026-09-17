@@ -46,9 +46,9 @@ export default function SiteExploration() {
                     <span className={p.free_desks === 0 ? "text-error font-semibold" : "text-tertiary-fixed-dim font-semibold"}>{p.free_desks} Frei</span>
                     <span className="text-on-surface-variant"> · Auslastung {p.occupancy_pct}%</span>
                   </div>
-                  {p.labels.length > 0 && (
+                  {(p.labels ?? []).length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {p.labels.map((l) => (
+                      {(p.labels ?? []).map((l) => (
                         <span key={l} className="text-xs px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container">{l}</span>
                       ))}
                     </div>
@@ -73,12 +73,14 @@ export default function SiteExploration() {
             return (
               <button
                 key={p.id}
+                type="button"
                 onClick={() => openProperty(p.id)}
+                aria-label={`Liegenschaft ${p.name}: ${p.free_desks} von ${p.total_desks} Desks frei, Auslastung ${p.occupancy_pct}%`}
                 title={`${p.name} — ${p.free_desks} frei`}
                 style={{ left: `${x}%`, top: `${y}%`, width: size, height: size, marginLeft: -size / 2, marginTop: -size / 2 }}
-                className={`absolute rounded-full text-white text-xs font-semibold flex items-center justify-center shadow-md hover:scale-110 transition-transform ring-2 ring-white/70 ${markerColor(p)}`}
+                className={`absolute rounded-full text-white text-xs font-semibold flex items-center justify-center shadow-md hover:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary transition-transform ring-2 ring-white/70 ${markerColor(p)}`}
               >
-                {p.free_desks}
+                <span aria-hidden="true">{p.free_desks}</span>
               </button>
             );
           })}

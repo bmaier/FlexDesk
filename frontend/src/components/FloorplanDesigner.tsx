@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api/client";
 import type { FloorNode, MeetingRoomOut, PropertyOut, PropertyTree, RoomNode } from "../api/types";
-import { Button } from "./ui";
+import { Badge, Button } from "./ui";
 import {
   type FloorplanLayout,
   type FloorplanObject,
   type FloorplanObjectType,
   type SeatingPreset,
+  calculateCanvasDimensions,
   generateDeskAreaLayout,
   generateMeetingRoomLayout,
   parseFloorplanLayout,
@@ -135,6 +136,26 @@ export function FloorplanDesigner({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  // Dynamische Canvas-Größe (Auto-Fit an platzierte Elemente oder voreingestellte Mindestgröße)
+  const { canvasWidth, canvasHeight } = useMemo(() => {
+    return calculateCanvasDimensions(layout);
+  }, [layout]);
+
+  // Auto-Save Status: "saved" | "saving" | "unsaved" | "error"
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved" | "error">("saved");
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const isInitialLoadRef = useRef(true);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Verhindert, dass Auto-Saves beim Tree-Refresh das eigene Layout überschreiben oder den Fokus/Selektion zerstören
+  const lastLoadedTargetRef = useRef<{ scope: string; floorId: number | null; roomId: number | null }>({
+    scope,
+    floorId,
+    roomId: selectedRoomId,
+  });
+  const lastSavedFloorLayoutRef = useRef<string | null>(null);
+  const lastSavedRoomLayoutRef = useRef<string | null>(null);
+
   // Raum-Auswahl für Platzierung auf der Etage
   const [assignRoomId, setAssignRoomId] = useState<number | null>(null);
 
@@ -144,7 +165,7 @@ export function FloorplanDesigner({
   // Seating Preset für Meetingraum
   const [seatingPreset, setSeatingPreset] = useState<SeatingPreset>("boardroom");
 
-  // Drag & Drop State
+  // Drag & Drop State mit fester Skalierungsbasis während der Mausbewegung
   const [dragState, setDragState] = useState<{
     id: string;
     startClientX: number;
@@ -152,12 +173,16 @@ export function FloorplanDesigner({
     origX: number;
     origY: number;
     hasMoved: boolean;
+    startCanvasWidth: number;
+    startCanvasHeight: number;
   } | null>(null);
 
   const canvasRef = useRef<SVGSVGElement>(null);
 
   // Lade Liegenschaften & Baum neu, auch reaktiv bei structureVersion-Änderung
   function loadPropertiesAndTree() {
+    lastSavedFloorLayoutRef.current = null;
+    lastSavedRoomLayoutRef.current = null;
     api.get<PropertyOut[]>("/catalog/properties").then((items) => {
       setProperties(items);
       if (!propertyId && items.length > 0) {
@@ -192,45 +217,225 @@ export function FloorplanDesigner({
   const currentRoom = floorRooms.find((r) => r.id === selectedRoomId);
   const currentRoomDesks = currentRoom?.desks ?? [];
 
-  // Lade Layout bei Wechsel von Etage oder Raum
+  // Refs für aktuellen Scope, Floor und Room (verhindert Race Conditions beim Auto-Save)
+  const scopeRef = useRef(scope);
+  const floorIdRef = useRef(floorId);
+  const selectedRoomIdRef = useRef(selectedRoomId);
+  const seatingPresetRef = useRef(seatingPreset);
+  const currentRoomRef = useRef(currentRoom);
+
   useEffect(() => {
-    if (scope === "floor") {
-      if (!floor) return;
-      setLayout(parseFloorplanLayout(floor.floorplan_layout) ?? blankLayout());
+    scopeRef.current = scope;
+    floorIdRef.current = floorId;
+    selectedRoomIdRef.current = selectedRoomId;
+    seatingPresetRef.current = seatingPreset;
+    currentRoomRef.current = currentRoom;
+  }, [scope, floorId, selectedRoomId, seatingPreset, currentRoom]);
+
+  // Unplatzierte Räume auf Etagenebene berechnen
+  const unplacedRooms = useMemo(() => {
+    if (scope !== "floor") return [];
+    const placedRoomIds = new Set(
+      layout.objects
+        .filter((o) => (o.type === "room" || o.type === "meeting_room") && o.roomId != null)
+        .map((o) => o.roomId!)
+    );
+    return floorRooms.filter((r) => !placedRoomIds.has(r.id));
+  }, [scope, floorRooms, layout.objects]);
+
+  // Lade Etagen-Layout bei Wechsel von Etage oder externer Aktualisierung
+  useEffect(() => {
+    if (scope !== "floor") return;
+    if (!floor) return;
+
+    const isNavChange =
+      lastLoadedTargetRef.current.scope !== "floor" ||
+      lastLoadedTargetRef.current.floorId !== floorId;
+
+    if (isNavChange) {
+      lastLoadedTargetRef.current = { scope: "floor", floorId, roomId: null };
+      setSelectedId(null);
+      isInitialLoadRef.current = true;
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    }
+
+    const rawLayout = floor.floorplan_layout;
+
+    // Falls dieses Layout exakt unserem soeben gespeicherten Layout entspricht:
+    // NIEMALS State überschreiben und NIEMALS Selektion / Fokus / Detail-Panel zerstören!
+    if (!isNavChange && rawLayout && rawLayout === lastSavedFloorLayoutRef.current) {
+      return;
+    }
+
+    const parsed = parseFloorplanLayout(rawLayout) ?? blankLayout();
+    setLayout(parsed);
+
+    // Selektion und Fokus erhalten, falls das selektierte Objekt im Layout weiterhin existiert
+    if (isNavChange) {
       setSelectedId(null);
     } else {
-      if (!selectedRoomId) return;
-      api
-        .get<{ layout: string | null; seating_layout: string | null }>(`/catalog/rooms/${selectedRoomId}/floorplan-layout`)
-        .then((res) => {
-          const parsed = parseFloorplanLayout(res.layout);
-          if (parsed && parsed.objects.length > 0) {
-            setLayout(parsed);
+      setSelectedId((prev) => (prev && parsed.objects.some((o) => o.id === prev) ? prev : null));
+    }
+
+    setTimeout(() => {
+      isInitialLoadRef.current = false;
+      setSaveStatus("saved");
+    }, 250);
+  }, [scope, floorId, floor?.floorplan_layout]);
+
+  // Lade Raum-Layout bei Wechsel in den Raum-Detailplan
+  useEffect(() => {
+    if (scope !== "room" || !selectedRoomId) return;
+
+    const isNavChange =
+      lastLoadedTargetRef.current.scope !== "room" ||
+      lastLoadedTargetRef.current.roomId !== selectedRoomId;
+
+    if (isNavChange) {
+      lastLoadedTargetRef.current = { scope: "room", floorId, roomId: selectedRoomId };
+      setSelectedId(null);
+      isInitialLoadRef.current = true;
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    }
+
+    api
+      .get<{ layout: string | null; seating_layout: string | null }>(`/catalog/rooms/${selectedRoomId}/floorplan-layout`)
+      .then((res) => {
+        if (!isNavChange && res.layout && res.layout === lastSavedRoomLayoutRef.current) {
+          return;
+        }
+        const parsed = parseFloorplanLayout(res.layout);
+        if (parsed && parsed.objects.length > 0) {
+          setLayout(parsed);
+          if (isNavChange) {
+            setSelectedId(null);
           } else {
-            // Automatische Erstbestuhlung oder Erst-Desklayout je nach Raumtyp
-            if (currentRoom?.room_type === "meeting") {
-              const cap = currentRoom.capacity || 10;
-              const preset = (res.seating_layout as SeatingPreset) || "boardroom";
-              setSeatingPreset(preset);
-              setLayout({ objects: generateMeetingRoomLayout(cap, preset) });
-            } else {
-              setLayout({ objects: generateDeskAreaLayout(currentRoomDesks) });
-            }
+            setSelectedId((prev) => (prev && parsed.objects.some((o) => o.id === prev) ? prev : null));
           }
-          if (res.seating_layout) {
-            setSeatingPreset(res.seating_layout as SeatingPreset);
-          }
-          setSelectedId(null);
-        })
-        .catch(() => {
+        } else {
           if (currentRoom?.room_type === "meeting") {
-            setLayout({ objects: generateMeetingRoomLayout(currentRoom.capacity || 10, "boardroom") });
+            const cap = currentRoom.capacity || 10;
+            const preset = (res.seating_layout as SeatingPreset) || "boardroom";
+            setSeatingPreset(preset);
+            setLayout({ objects: generateMeetingRoomLayout(cap, preset) });
           } else {
             setLayout({ objects: generateDeskAreaLayout(currentRoomDesks) });
           }
-        });
+          setSelectedId(null);
+        }
+        if (res.seating_layout) {
+          setSeatingPreset(res.seating_layout as SeatingPreset);
+        }
+        setTimeout(() => {
+          isInitialLoadRef.current = false;
+          setSaveStatus("saved");
+        }, 250);
+      })
+      .catch(() => {
+        if (currentRoom?.room_type === "meeting") {
+          setLayout({ objects: generateMeetingRoomLayout(currentRoom?.capacity || 10, "boardroom") });
+        } else {
+          setLayout({ objects: generateDeskAreaLayout(currentRoomDesks) });
+        }
+        setSelectedId(null);
+        setTimeout(() => {
+          isInitialLoadRef.current = false;
+          setSaveStatus("saved");
+        }, 250);
+      });
+  }, [scope, selectedRoomId]);
+
+  // Automatisches Speichern (debounced um 1.2s) bei Layout-Änderungen
+  useEffect(() => {
+    if (isInitialLoadRef.current) return;
+    setSaveStatus("unsaved");
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+
+    saveTimeoutRef.current = setTimeout(() => {
+      triggerSave(layout, seatingPreset, false);
+    }, 1200);
+
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [layout, seatingPreset]);
+
+  // Warnung vor Verlassen der Seite bei ungespeicherten Daten
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (saveStatus === "unsaved") {
+        e.preventDefault();
+        e.returnValue = "";
+      }
     }
-  }, [scope, floorId, floor?.floorplan_layout, selectedRoomId]);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [saveStatus]);
+
+  async function triggerSave(
+    targetLayout = layout,
+    targetPreset = seatingPresetRef.current,
+    isManual = false
+  ) {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    setSaveStatus("saving");
+    try {
+      const jsonStr = JSON.stringify(targetLayout);
+      if (scopeRef.current === "floor") {
+        if (!floorIdRef.current) return;
+        lastSavedFloorLayoutRef.current = jsonStr;
+        await api.put(`/fm/floors/${floorIdRef.current}/floorplan-layout`, {
+          layout: jsonStr,
+        });
+      } else {
+        if (!selectedRoomIdRef.current) return;
+        lastSavedRoomLayoutRef.current = jsonStr;
+        await api.put(`/fm/rooms/${selectedRoomIdRef.current}/floorplan-layout`, {
+          layout: jsonStr,
+          seating_layout: currentRoomRef.current?.room_type === "meeting" ? targetPreset : null,
+        });
+      }
+      setSaveStatus("saved");
+      setLastSavedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+      if (isManual) {
+        setMessage(scopeRef.current === "floor" ? "Etagen-Grundriss erfolgreich gespeichert." : "Raum-Grundriss erfolgreich gespeichert.");
+      }
+      onStructureChanged?.();
+    } catch {
+      setSaveStatus("error");
+      setMessage("Fehler beim automatischen Speichern des Grundrisses.");
+    }
+  }
+
+  function quickPlaceRoom(r: RoomNode) {
+    const existingRooms = layout.objects.filter((o) => o.type === "room" || o.type === "meeting_room");
+    const count = existingRooms.length;
+    const col = count % 3;
+    const row = Math.floor(count / 3);
+    const width = 240;
+    const height = 135;
+    const x = 30 + col * 270;
+    const y = 30 + row * 160;
+
+    const newObj: FloorplanObject = {
+      id: crypto.randomUUID(),
+      type: "room",
+      x,
+      y,
+      width,
+      height,
+      roomId: r.id,
+      roomType: r.room_type,
+      label: `${r.name} (${r.room_number})`,
+    };
+
+    setLayout((curr) => ({ ...curr, objects: [...curr.objects, newObj] }));
+    setSelectedId(newObj.id);
+    setMessage(`Raum „${r.name}” wurde auf dem Grundriss platziert.`);
+  }
 
   // Tastatur-Events: ESC schaltet immer auf "select" zurück, Entf löscht gewähltes Element
   useEffect(() => {
@@ -246,13 +451,13 @@ export function FloorplanDesigner({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedId]);
 
-  // Flüssiges Drag & Drop mit MouseMove/MouseUp auf Window
+  // Flüssiges Drag & Drop mit dynamischer Arbeitsfläche
   useEffect(() => {
     function handleMouseMove(e: MouseEvent) {
       if (!dragState || !canvasRef.current) return;
       const bounds = canvasRef.current.getBoundingClientRect();
-      const scaleX = 900 / bounds.width;
-      const scaleY = 500 / bounds.height;
+      const scaleX = dragState.startCanvasWidth / bounds.width;
+      const scaleY = dragState.startCanvasHeight / bounds.height;
       const deltaX = (e.clientX - dragState.startClientX) * scaleX;
       const deltaY = (e.clientY - dragState.startClientY) * scaleY;
 
@@ -261,12 +466,13 @@ export function FloorplanDesigner({
       }
 
       setLayout((curr) => ({
+        ...curr,
         objects: curr.objects.map((obj) => {
           if (obj.id !== dragState.id) return obj;
           const targetX = Math.round((dragState.origX + deltaX) / 5) * 5;
           const targetY = Math.round((dragState.origY + deltaY) / 5) * 5;
-          const clampedX = Math.max(12, Math.min(888 - obj.width, targetX));
-          const clampedY = Math.max(12, Math.min(488 - obj.height, targetY));
+          const clampedX = Math.max(14, Math.min(3500, targetX));
+          const clampedY = Math.max(14, Math.min(2500, targetY));
           return { ...obj, x: clampedX, y: clampedY };
         }),
       }));
@@ -296,6 +502,8 @@ export function FloorplanDesigner({
       origX: obj.x,
       origY: obj.y,
       hasMoved: false,
+      startCanvasWidth: canvasWidth,
+      startCanvasHeight: canvasHeight,
     });
   }
 
@@ -316,10 +524,10 @@ export function FloorplanDesigner({
     if (dragState?.hasMoved) return;
     if (!canvasRef.current) return;
     const bounds = canvasRef.current.getBoundingClientRect();
-    const scaleX = 900 / bounds.width;
-    const scaleY = 500 / bounds.height;
-    const clickX = Math.max(15, Math.min(860, (event.clientX - bounds.left) * scaleX));
-    const clickY = Math.max(15, Math.min(460, (event.clientY - bounds.top) * scaleY));
+    const scaleX = canvasWidth / bounds.width;
+    const scaleY = canvasHeight / bounds.height;
+    const clickX = Math.max(15, Math.min(canvasWidth - 25, (event.clientX - bounds.left) * scaleX));
+    const clickY = Math.max(15, Math.min(canvasHeight - 25, (event.clientY - bounds.top) * scaleY));
 
     // Finde Konfiguration des aktiven Werkzeugs
     const allTools = [...FLOOR_TOOLS, ...MEETING_ROOM_TOOLS, ...DESK_ROOM_TOOLS];
@@ -327,7 +535,11 @@ export function FloorplanDesigner({
     if (!config) return;
 
     // Spezifische Validierung für Raum-Platzierung auf der Etage
-    if (tool === "room") {
+    if (tool === "room" || (tool as string) === "meeting_room") {
+      if (scope === "room") {
+        setMessage("Räume können nur auf Etagen-Grundrissen platziert werden, nicht innerhalb von Räumen.");
+        return;
+      }
       if (!assignRoomId) {
         setMessage("Bitte wählen Sie links zuerst den zuzuordnenden Raum aus.");
         return;
@@ -400,7 +612,7 @@ export function FloorplanDesigner({
     if (!currentRoom) return;
     const capacity = currentRoom.capacity || 10;
     const generated = generateMeetingRoomLayout(capacity, preset);
-    setLayout({ objects: generated });
+    setLayout((curr) => ({ ...curr, objects: generated }));
     setSeatingPreset(preset);
     setSelectedId(null);
     setMessage(`Automatische Bestuhlung für ${capacity} Plätze (${SEATING_PRESETS.find((p) => p.id === preset)?.label}) generiert.`);
@@ -409,7 +621,7 @@ export function FloorplanDesigner({
   function handleAutoDesks() {
     if (!currentRoom) return;
     const generated = generateDeskAreaLayout(currentRoomDesks);
-    setLayout({ objects: generated });
+    setLayout((curr) => ({ ...curr, objects: generated }));
     setSelectedId(null);
     setMessage(`Automatische Desk-Anordnung für ${currentRoomDesks.length} Arbeitsplätze generiert.`);
   }
@@ -417,38 +629,41 @@ export function FloorplanDesigner({
   function updateSelected(patch: Partial<FloorplanObject>) {
     if (!selectedId) return;
     setLayout((current) => ({
-      objects: current.objects.map((item) => (item.id === selectedId ? { ...item, ...patch } : item)),
+      ...current,
+      objects: current.objects.map((item) => {
+        if (item.id !== selectedId) return item;
+        const updated = { ...item, ...patch };
+        if (patch.width !== undefined) updated.width = Math.max(15, patch.width);
+        if (patch.height !== undefined) updated.height = Math.max(15, patch.height);
+        if (patch.x !== undefined) updated.x = Math.max(12, patch.x);
+        if (patch.y !== undefined) updated.y = Math.max(12, patch.y);
+        return updated;
+      }),
     }));
   }
 
   function deleteSelected() {
     if (!selectedId) return;
-    setLayout((current) => ({ objects: current.objects.filter((item) => item.id !== selectedId) }));
+    setLayout((current) => ({ ...current, objects: current.objects.filter((item) => item.id !== selectedId) }));
     setSelectedId(null);
   }
 
   async function save() {
-    try {
-      if (scope === "floor") {
-        if (!floorId) return;
-        await api.put(`/fm/floors/${floorId}/floorplan-layout`, { layout: JSON.stringify(layout) });
-        setMessage("Etagen-Grundriss erfolgreich gespeichert. Er ist sofort im Raumplan und in allen Ansichten aktiv.");
-        onStructureChanged?.();
-      } else {
-        if (!selectedRoomId) return;
-        await api.put(`/fm/rooms/${selectedRoomId}/floorplan-layout`, {
-          layout: JSON.stringify(layout),
-          seating_layout: currentRoom?.room_type === "meeting" ? seatingPreset : null,
-        });
-        setMessage("Raum-Grundriss erfolgreich gespeichert.");
-        onStructureChanged?.();
-      }
-    } catch {
-      setMessage("Fehler beim Speichern des Grundrisses.");
-    }
+    await triggerSave(layout, seatingPreset, true);
   }
 
   const selected = layout.objects.find((item) => item.id === selectedId);
+
+  const selectedRoomNode =
+    (selected?.type === "room" || selected?.type === "meeting_room") && selected.roomId != null
+      ? floorRooms.find((r) => r.id === selected.roomId)
+      : undefined;
+
+  const selectedDeskNode =
+    selected?.type === "desk" && selected.deskId != null
+      ? currentRoomDesks.find((d) => d.id === selected.deskId) ||
+        floorRooms.flatMap((r) => r.desks).find((d) => d.id === selected.deskId)
+      : undefined;
 
   return (
     <div className="space-y-4">
@@ -490,7 +705,31 @@ export function FloorplanDesigner({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Auto-Save Indikator (BITV 2.0 / WCAG 4.1.3 Status Messages) */}
+          <div className="text-xs flex items-center gap-1.5 font-medium" role="status" aria-live="polite">
+            {saveStatus === "saving" && (
+              <span className="text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                <span className="animate-spin inline-block">⏳</span> Speichere...
+              </span>
+            )}
+            {saveStatus === "saved" && (
+              <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                ✓ Automatisch gespeichert {lastSavedAt ? `(${lastSavedAt})` : ""}
+              </span>
+            )}
+            {saveStatus === "unsaved" && (
+              <span className="text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                <span className="text-[10px]">●</span> Ungespeicherte Änderungen...
+              </span>
+            )}
+            {saveStatus === "error" && (
+              <span className="text-destructive flex items-center gap-1">
+                ⚠️ Speicherfehler
+              </span>
+            )}
+          </div>
+
           <Button
             variant="secondary"
             onClick={() => {
@@ -501,7 +740,7 @@ export function FloorplanDesigner({
           >
             🔄 Aktualisieren
           </Button>
-          <Button variant="primary" onClick={save}>
+          <Button variant="primary" onClick={() => triggerSave(undefined, undefined, true)}>
             💾 {scope === "floor" ? "Etagen-Plan" : "Raum-Plan"} speichern
           </Button>
         </div>
@@ -791,36 +1030,94 @@ export function FloorplanDesigner({
               </div>
             </div>
 
-            {scope === "floor" && floorRooms.length > 0 && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-on-surface-variant">Direkt zu Raum:</span>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Arbeitsfläche / Canvas-Größe & Auto-Expand Kontrollen */}
+              <div className="flex items-center gap-1.5 bg-surface rounded px-2 py-1 border border-outline-variant/30 text-xs shadow-xs">
+                <span className="text-on-surface-variant font-medium">📐 Plan-Größe:</span>
                 <select
-                  value=""
+                  value={layout.width && layout.height ? `${layout.width}x${layout.height}` : "auto"}
                   onChange={(e) => {
-                    if (e.target.value) handleDrillDownToRoom(Number(e.target.value));
+                    const val = e.target.value;
+                    if (val === "auto") {
+                      setLayout((curr) => ({ ...curr, width: undefined, height: undefined }));
+                    } else {
+                      const [w, h] = val.split("x").map(Number);
+                      setLayout((curr) => ({ ...curr, width: w, height: h }));
+                    }
                   }}
-                  className="bg-surface rounded px-2 py-1 border border-outline-variant/30 text-xs"
+                  className="bg-transparent font-semibold text-on-surface text-xs focus:outline-none"
+                  title="Mindestgröße der Arbeitsfläche (passt sich bei vergrößerten Elementen automatisch weiter an)"
                 >
-                  <option value="">Raum-Detailplan öffnen…</option>
-                  {floorRooms.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.room_type === "meeting" ? "🏛" : "💼"} {r.name} ({r.room_number})
-                    </option>
-                  ))}
+                  <option value="auto">Auto-Fit ({canvasWidth} × {canvasHeight} px)</option>
+                  <option value="900x500">Standard (900 × 500 px)</option>
+                  <option value="1200x650">Groß (1200 × 650 px)</option>
+                  <option value="1500x800">Sehr groß (1500 × 800 px)</option>
+                  <option value="1800x950">Campus / Großraum (1800 × 950 px)</option>
                 </select>
               </div>
-            )}
+
+              {scope === "floor" && floorRooms.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-on-surface-variant">Direkt zu Raum:</span>
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) handleDrillDownToRoom(Number(e.target.value));
+                    }}
+                    className="bg-surface rounded px-2 py-1 border border-outline-variant/30 text-xs"
+                  >
+                    <option value="">Raum-Detailplan öffnen…</option>
+                    {floorRooms.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.room_type === "meeting" ? "🏛" : "💼"} {r.name} ({r.room_number})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Ergonomischer Warnhinweis & 1-Klick-Platzierung für unplatzierte Räume auf der Etage */}
+          {scope === "floor" && unplacedRooms.length > 0 && (
+            <div className="p-2.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
+              <div className="font-semibold flex items-center gap-1.5">
+                <span>⚠️</span>
+                <span>
+                  {unplacedRooms.length === 1
+                    ? "1 Raum dieser Etage ist noch nicht auf dem Grundriss platziert:"
+                    : `${unplacedRooms.length} Räume dieser Etage sind noch nicht auf dem Grundriss platziert:`}
+                </span>
+                <span className="text-[11px] font-normal text-amber-800 dark:text-amber-300">
+                  (Unplatzierte Räume erscheinen nicht in der Raum- und Buchungskarte!)
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <span className="text-[11px] font-medium text-on-surface-variant">1-Klick Schnellplatzierung:</span>
+                {unplacedRooms.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => quickPlaceRoom(r)}
+                    className="px-2 py-0.5 rounded bg-amber-200/80 hover:bg-amber-300 dark:bg-amber-900/60 dark:hover:bg-amber-800 text-amber-950 dark:text-amber-100 font-semibold text-[11px] border border-amber-400/40 flex items-center gap-1 transition-colors"
+                    title="Raum direkt auf dem Grundriss platzieren"
+                  >
+                    <span>➕ {r.room_type === "meeting" ? "🏛" : "💼"} {r.name} ({r.room_number})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="relative">
             <svg
               ref={canvasRef}
-              viewBox="0 0 900 500"
+              viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
               onClick={handleCanvasClick}
               className={`w-full bg-surface rounded-md border border-outline-variant/30 select-none ${
                 dragState ? "cursor-grabbing" : tool === "select" ? "cursor-default" : "cursor-crosshair"
               }`}
-              aria-label="Grundriss bearbeiten mit Auswahl und Drag and Drop"
+              aria-label="Grundriss bearbeiten mit dynamisch skalierter Arbeitsfläche und Drag and Drop"
             >
               {/* Raster-Hintergrund */}
               <defs>
@@ -828,14 +1125,14 @@ export function FloorplanDesigner({
                   <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" strokeWidth="0.5" />
                 </pattern>
               </defs>
-              <rect x={10} y={10} width={880} height={480} fill="#fbfaf6" stroke="#4f514c" strokeWidth={4} />
-              <rect x={10} y={10} width={880} height={480} fill="url(#grid)" />
+              <rect x={10} y={10} width={canvasWidth - 20} height={canvasHeight - 20} fill="#fbfaf6" stroke="#4f514c" strokeWidth={4} rx={6} />
+              <rect x={10} y={10} width={canvasWidth - 20} height={canvasHeight - 20} fill="url(#grid)" />
 
               {/* Fußzeilen-Titel im SVG */}
-              <text x={450} y={482} fontSize={11} fill="#64748b" textAnchor="middle" fontWeight="500">
+              <text x={canvasWidth / 2} y={canvasHeight - 16} fontSize={11} fill="#64748b" textAnchor="middle" fontWeight="500">
                 {scope === "floor"
-                  ? `🏢 Etagenplan: ${floor?.buildingName || ""} / ${floor?.name || ""} (${layout.objects.filter((o) => o.type === "room" || o.type === "meeting_room").length} platzierte Räume)`
-                  : `${currentRoom?.room_type === "meeting" ? "🏛 Meetingraum" : "💼 Bürobereich"}: ${currentRoom?.name || ""} (Raum ${currentRoom?.room_number || ""})`}
+                  ? `🏢 Etagenplan: ${floor?.buildingName || ""} / ${floor?.name || ""} (${layout.objects.filter((o) => o.type === "room" || o.type === "meeting_room").length} platzierte Räume) — Arbeitsfläche ${canvasWidth} × ${canvasHeight} px`
+                  : `${currentRoom?.room_type === "meeting" ? "🏛 Meetingraum" : "💼 Bürobereich"}: ${currentRoom?.name || ""} (Raum ${currentRoom?.room_number || ""}) — Arbeitsfläche ${canvasWidth} × ${canvasHeight} px`}
               </text>
 
               {/* Alle platzierten Objekte */}
@@ -1094,7 +1391,7 @@ export function FloorplanDesigner({
 
         {/* Rechte Leiste: Element-Eigenschaften & Navigation */}
         <section className="bg-surface-container-low rounded-md p-3 border border-outline-variant/30 text-xs">
-          <div className="font-semibold text-sm mb-2">3. Element-Details</div>
+          <div className="font-semibold text-sm mb-2">3. Element-Details & Metadaten</div>
 
           {selected ? (
             <div className="space-y-3">
@@ -1103,13 +1400,145 @@ export function FloorplanDesigner({
                 <span className="text-[10px] text-on-surface-variant font-mono">Typ: {selected.type}</span>
               </div>
 
-              {/* Absprung bei Raum auf der Etage */}
-              {(selected.type === "room" || selected.type === "meeting_room") && selected.roomId && (
+              {/* Detail-Metadaten für Räume */}
+              {selectedRoomNode && (
+                <div className="p-2.5 rounded bg-surface border border-outline-variant/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-on-surface flex items-center gap-1">
+                      <span>{selectedRoomNode.room_type === "meeting" ? "🏛️" : "💼"}</span>
+                      <span>{selectedRoomNode.name}</span>
+                    </span>
+                    <Badge tone={selectedRoomNode.room_type === "meeting" ? "neutral" : "positive"}>
+                      {selectedRoomNode.room_type === "meeting" ? "Meetingraum" : "Büroraum"}
+                    </Badge>
+                  </div>
+
+                  <div className="text-[11px] text-on-surface-variant space-y-1">
+                    <div>Raumnummer: <b className="text-on-surface">{selectedRoomNode.room_number}</b></div>
+                    <div>Kapazität: <b className="text-on-surface">{selectedRoomNode.capacity ?? "—"} Personen</b></div>
+                    <div>
+                      Genehmigung:{" "}
+                      <b className={selectedRoomNode.approval_required ? "text-amber-700 dark:text-amber-300" : "text-emerald-700 dark:text-emerald-300"}>
+                        {selectedRoomNode.approval_required ? "Genehmigungspflichtig" : "Direkt buchbar"}
+                      </b>
+                    </div>
+                    <div>
+                      Check-in:{" "}
+                      <b className="text-on-surface">
+                        {selectedRoomNode.checkin_required ? "Erforderlich" : "Nein"}
+                      </b>
+                    </div>
+                    {selectedRoomNode.room_type === "meeting" && (
+                      <>
+                        <div>
+                          Slot-Dauer:{" "}
+                          <b className="text-on-surface">
+                            {selectedRoomNode.slot_duration_minutes ? `${selectedRoomNode.slot_duration_minutes} Min.` : "Globaler Standard"}
+                          </b>
+                        </div>
+                        <div>
+                          Buchungszeiten:{" "}
+                          <b className="text-on-surface">
+                            {selectedRoomNode.day_start_hour != null && selectedRoomNode.day_end_hour != null
+                              ? `${selectedRoomNode.day_start_hour}:00 - ${selectedRoomNode.day_end_hour}:00 Uhr`
+                              : "Globale Betriebszeit"}
+                          </b>
+                        </div>
+                      </>
+                    )}
+                    {selectedRoomNode.restricted_role_code && (
+                      <div>
+                        Beschränkt auf: <b className="text-amber-700">{selectedRoomNode.restricted_role_code}</b>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Labels / Ausstattung */}
+                  <div className="pt-1.5 border-t border-outline-variant/20">
+                    <div className="font-semibold text-[11px] text-on-surface mb-1 flex items-center gap-1">
+                      <span>🏷️</span> Ausstattung & Labels:
+                    </div>
+                    {selectedRoomNode.labels && selectedRoomNode.labels.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {selectedRoomNode.labels.map((l) => (
+                          <span
+                            key={l}
+                            className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium border border-primary/20"
+                          >
+                            {l}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-on-surface-variant italic">Keine Labels hinterlegt</span>
+                    )}
+                  </div>
+
+                  {scope === "floor" && (
+                    <Button
+                      variant="primary"
+                      className="w-full text-xs mt-1"
+                      onClick={() => handleDrillDownToRoom(selectedRoomNode.id)}
+                    >
+                      🚪 Raum-Innenplan gestalten ↗
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Detail-Metadaten für Desks */}
+              {selectedDeskNode && (
+                <div className="p-2.5 rounded bg-surface border border-outline-variant/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-on-surface flex items-center gap-1">
+                      <span>🖥</span>
+                      <span>Desk {selectedDeskNode.desk_number}</span>
+                    </span>
+                    <Badge tone="positive">Arbeitsplatz</Badge>
+                  </div>
+
+                  <div className="text-[11px] text-on-surface-variant space-y-1">
+                    <div>
+                      Genehmigung:{" "}
+                      <b className={selectedDeskNode.approval_required ? "text-amber-700 dark:text-amber-300" : "text-emerald-700 dark:text-emerald-300"}>
+                        {selectedDeskNode.approval_required ? "Genehmigungspflichtig" : "Direkt buchbar"}
+                      </b>
+                    </div>
+                    <div>
+                      Check-in:{" "}
+                      <b className="text-on-surface">
+                        {selectedDeskNode.checkin_required ? "Erforderlich" : "Nein"}
+                      </b>
+                    </div>
+                  </div>
+
+                  {/* Labels / Ausstattung */}
+                  <div className="pt-1.5 border-t border-outline-variant/20">
+                    <div className="font-semibold text-[11px] text-on-surface mb-1 flex items-center gap-1">
+                      <span>🏷️</span> Ausstattung:
+                    </div>
+                    {selectedDeskNode.labels && selectedDeskNode.labels.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {selectedDeskNode.labels.map((l) => (
+                          <span
+                            key={l}
+                            className="px-1.5 py-0.5 rounded bg-secondary/10 text-secondary text-[10px] font-medium border border-secondary/20"
+                          >
+                            {l}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-on-surface-variant italic">Keine Labels hinterlegt</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Absprung bei Raum auf der Etage, falls kein RoomNode gefunden (Fallback) */}
+              {(selected.type === "room" || selected.type === "meeting_room") && selected.roomId && !selectedRoomNode && (
                 <div className="p-2.5 rounded bg-primary/10 border border-primary/30 space-y-2">
                   <div className="font-semibold text-primary">Raum-Innenplanung öffnen</div>
-                  <p className="text-[11px] text-on-surface-variant leading-relaxed">
-                    Wechseln Sie in die Innenansicht dieses Raumes, um Tische, Stühle oder Desks zu konfigurieren.
-                  </p>
                   <Button
                     variant="primary"
                     className="w-full text-xs"
@@ -1180,11 +1609,11 @@ export function FloorplanDesigner({
           ) : (
             <div className="text-on-surface-variant space-y-2.5">
               <p>
-                Klicken Sie ein beliebiges Element im Plan an, um seine Position oder Größe zu ändern bzw. es zu löschen.
+                Klicken Sie ein beliebiges Element im Plan an, um seine Metadaten, Labels, Position oder Größe einzusehen und zu bearbeiten.
               </p>
               <div className="p-2.5 rounded bg-surface border border-outline-variant/20 space-y-1.5 text-[11px]">
                 <div className="font-bold text-on-surface">💡 Bedienungshinweise:</div>
-                <div>• <b>Auswählen:</b> Element anklicken</div>
+                <div>• <b>Auswählen & Metadaten:</b> Element anklicken</div>
                 <div>• <b>Verschieben:</b> Mit gedrückter Maustaste ziehen</div>
                 <div>• <b>Raum gestalten:</b> Raum auf Etage anklicken & „Raum-Innenplan gestalten“ wählen</div>
                 <div>• <b>Löschen:</b> Element wählen und Entf drücken</div>

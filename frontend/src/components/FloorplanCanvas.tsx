@@ -29,16 +29,67 @@ export interface FloorplanObject {
 
 export interface FloorplanLayout {
   objects: FloorplanObject[];
+  width?: number;
+  height?: number;
 }
 
 export function parseFloorplanLayout(value: string | null | undefined): FloorplanLayout | null {
   if (!value) return null;
   try {
     const candidate = JSON.parse(value) as FloorplanLayout;
-    return Array.isArray(candidate.objects) ? candidate : null;
+    if (Array.isArray(candidate.objects)) {
+      return {
+        objects: candidate.objects,
+        width: typeof candidate.width === "number" ? candidate.width : undefined,
+        height: typeof candidate.height === "number" ? candidate.height : undefined,
+      };
+    }
+    return null;
   } catch {
     return null;
   }
+}
+
+export function calculateCanvasDimensions(
+  layout?: FloorplanLayout | null,
+  fallbackDesks?: FloorDeskStatus[],
+  fallbackRooms?: MeetingRoomOut[]
+): { canvasWidth: number; canvasHeight: number } {
+  const safeObjects = layout?.objects ?? [];
+  let maxRight = 0;
+  let maxBottom = 0;
+
+  for (const obj of safeObjects) {
+    if (obj.x != null && obj.width != null) {
+      maxRight = Math.max(maxRight, obj.x + obj.width);
+    }
+    if (obj.y != null && obj.height != null) {
+      maxBottom = Math.max(maxBottom, obj.y + obj.height);
+    }
+  }
+
+  if (fallbackDesks) {
+    for (const d of fallbackDesks) {
+      if (d.pos_x != null) maxRight = Math.max(maxRight, d.pos_x + 40);
+      if (d.pos_y != null) maxBottom = Math.max(maxBottom, d.pos_y + 40);
+    }
+  }
+
+  if (fallbackRooms) {
+    for (const r of fallbackRooms) {
+      if (r.pos_x != null) maxRight = Math.max(maxRight, r.pos_x + (r.width ?? 140));
+      if (r.pos_y != null) maxBottom = Math.max(maxBottom, r.pos_y + (r.height ?? 80));
+    }
+  }
+
+  const baseW = Math.max(900, layout?.width || 900);
+  const baseH = Math.max(500, layout?.height || 500);
+
+  // Dynamische Erweiterung mit mindestens 40px Rand, damit Elemente niemals über den Rahmen ragen
+  const canvasWidth = Math.max(baseW, Math.ceil((maxRight + 40) / 20) * 20);
+  const canvasHeight = Math.max(baseH, Math.ceil((maxBottom + 40) / 20) * 20);
+
+  return { canvasWidth, canvasHeight };
 }
 
 export type SeatingPreset = "boardroom" | "u_shape" | "cinema" | "classroom" | "banquet";
@@ -396,14 +447,14 @@ export function generateMeetingRoomLayout(
 }
 
 export function generateDeskAreaLayout(
-  desks: { id: number; desk_number: string }[],
+  desks: { id: number; desk_number: string }[] = [],
   canvasWidth = 860,
   canvasHeight = 460
 ): FloorplanObject[] {
   const objects: FloorplanObject[] = [];
   const cx = canvasWidth / 2;
   const cy = canvasHeight / 2 + 10;
-  const count = desks.length;
+  const count = (desks ?? []).length;
 
   // Eingangstür
   objects.push({
@@ -660,6 +711,24 @@ function FixedObject({ object, onExitRoom }: { object: FloorplanObject; onExitRo
   );
 }
 
+export const STATUS_LABEL: Record<string, string> = {
+  available: "Verfügbar",
+  top_match: "Top-Match",
+  occupied: "Belegt",
+  locked: "Gesperrt",
+  zone_restricted: "Zonen-Kontingent",
+  mine: "Meine Buchung",
+};
+
+export const STATUS_ICON: Record<string, string> = {
+  available: "✓",
+  top_match: "★",
+  mine: "👤",
+  occupied: "●",
+  locked: "🔒",
+  zone_restricted: "🏷️",
+};
+
 const STATUS_FILL: Record<string, string> = {
   available: "#dff2d9",
   top_match: "#b9e9a8",
@@ -690,28 +759,53 @@ export function FloorplanCanvas({
   onBackToFloor,
   renderFallbackDesks = false,
 }: FloorplanCanvasProps) {
-  const layoutDeskIds = new Set(layout.objects.filter((o) => o.type === "desk" && o.deskId).map((o) => o.deskId));
-  const deskById = new Map(desks.map((desk) => [desk.desk_id, desk]));
+  const safeObjects = layout?.objects ?? [];
+  const layoutDeskIds = new Set(safeObjects.filter((o) => o.type === "desk" && o.deskId).map((o) => o.deskId));
+  const deskById = new Map((desks ?? []).map((desk) => [desk.desk_id, desk]));
 
   const layoutRoomIds = new Set(
-    layout.objects
+    safeObjects
       .filter((o) => (o.type === "meeting_room" || (o.type === "room" && o.roomType === "meeting")) && o.roomId)
       .map((o) => o.roomId)
   );
-  const roomById = new Map(meetingRooms.map((room) => [room.id, room]));
+  const roomById = new Map((meetingRooms ?? []).map((room) => [room.id, room]));
 
   // Prüfe, ob der Grundriss Raumflächen enthält (z. B. Etagen-Grundriss)
-  const hasRoomObjects = layout.objects.some((o) => o.type === "room" || o.type === "meeting_room");
+  const hasRoomObjects = safeObjects.some((o) => o.type === "room" || o.type === "meeting_room");
+
+  const { canvasWidth, canvasHeight } = calculateCanvasDimensions(layout, desks, meetingRooms);
 
   return (
-    <svg viewBox="0 0 900 500" className="w-full bg-surface rounded-md border border-outline-variant/30 select-none" role="img" aria-label="Interaktiver digitaler Grundriss">
-      <rect x={10} y={10} width={880} height={480} fill="#fbfaf6" stroke="#4f514c" strokeWidth={4} rx={6} />
+    <svg
+      viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
+      className="w-full bg-surface rounded-md border border-outline-variant/30 select-none"
+      role="region"
+      aria-label="Interaktiver digitaler Grundriss"
+    >
+      <rect
+        x={10}
+        y={10}
+        width={canvasWidth - 20}
+        height={canvasHeight - 20}
+        fill="#fbfaf6"
+        stroke="#4f514c"
+        strokeWidth={4}
+        rx={6}
+      />
 
       {/* Button zurück zur Etage direkt auf der Zeichenfläche einblenden wenn im Raumplan */}
       {onBackToFloor && (
         <g
-          className="cursor-pointer group select-none"
+          tabIndex={0}
+          role="button"
+          className="cursor-pointer group select-none focus-visible:outline-none"
           onClick={onBackToFloor}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onBackToFloor();
+            }
+          }}
           aria-label="Zurück zum Etagen-Grundriss"
         >
           <rect
@@ -723,7 +817,7 @@ export function FloorplanCanvas({
             fill="#ffffff"
             stroke="#2563eb"
             strokeWidth={1.5}
-            className="shadow-sm group-hover:fill-blue-50 group-hover:stroke-blue-700 transition-all"
+            className="shadow-sm group-hover:fill-blue-50 group-hover:stroke-blue-700 group-focus-visible:stroke-blue-800 group-focus-visible:stroke-[3] transition-all"
           />
           <text x={98} y={38} fontSize={11} fontWeight="bold" textAnchor="middle" fill="#1d4ed8">
             ← Zurück zur Etage
@@ -732,12 +826,12 @@ export function FloorplanCanvas({
       )}
 
       {/* Feste Architekturobjekte (Türen, Fenster, Schränke, Treppenhaus, etc. – AUSSER Räume und Desks) */}
-      {layout.objects.filter((o) => o.type !== "desk" && o.type !== "meeting_room" && o.type !== "room").map((object) => (
+      {safeObjects.filter((o) => o.type !== "desk" && o.type !== "meeting_room" && o.type !== "room").map((object) => (
         <FixedObject key={object.id} object={object} onExitRoom={onBackToFloor} />
       ))}
 
       {/* RÄUME AUF DEM GRUNDRISS (Sowohl Meetingräume als auch Büroräume / Desk-Bereiche) */}
-      {layout.objects.filter((o) => o.type === "room" || o.type === "meeting_room").map((object) => {
+      {safeObjects.filter((o) => o.type === "room" || o.type === "meeting_room").map((object) => {
         const isMeeting = object.type === "meeting_room" || object.roomType === "meeting" || (object.roomId ? roomById.has(object.roomId) : false);
         const meetingRoom = object.roomId ? roomById.get(object.roomId) : undefined;
 
@@ -827,13 +921,32 @@ export function FloorplanCanvas({
           }
         }
 
+        const roomAriaLabel = isMeeting
+          ? `Meetingraum: ${meetingRoom?.name || object.label}, Kapazität: ${meetingRoom?.capacity || "—"} Personen, Status: ${meetingRoom?.is_occupied_now ? "Besetzt" : "Verfügbar"}${meetingRoom?.approval_required ? ", Genehmigung erforderlich" : ""}${meetingRoom?.labels?.length ? `, Ausstattung: ${meetingRoom.labels.join(", ")}` : ""}${canClick ? ". Drücken Sie die Eingabetaste zum Buchen." : ""}`
+          : `Büroraum: ${object.label}, ${totalDesks > 0 ? `${freeDesks} von ${totalDesks} Desks frei` : "Keine Desks"}${canClick ? ". Drücken Sie die Eingabetaste zum Öffnen des Raumplans." : ""}`;
+
         return (
           <g
             key={object.id}
-            className={canClick ? "cursor-pointer group" : ""}
+            tabIndex={canClick ? 0 : undefined}
+            role={canClick ? "button" : undefined}
+            className={canClick ? "cursor-pointer group focus-visible:outline-none" : ""}
             onClick={handleRoomClick}
-            aria-label={object.label || (isMeeting ? "Meetingraum" : "Büroraum")}
+            onKeyDown={canClick ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleRoomClick();
+              }
+            } : undefined}
+            aria-label={roomAriaLabel}
           >
+            <title>
+              {isMeeting
+                ? `🏛 Meetingraum: ${meetingRoom?.name || object.label}\nKapazität: ${meetingRoom?.capacity || "—"} Personen\nAusstattung: ${meetingRoom?.labels?.join(", ") || "Keine"}\nGenehmigung: ${meetingRoom?.approval_required ? "Erforderlich" : "Nein"}`
+                : totalDesks > 0
+                ? `💼 Büroraum: ${object.label}\nDesks: ${freeDesks} von ${totalDesks} frei`
+                : `💼 Büroraum: ${object.label}`}
+            </title>
             {/* Raumfläche */}
             <rect
               x={object.x}
@@ -844,7 +957,7 @@ export function FloorplanCanvas({
               fill={fill}
               stroke={stroke}
               strokeWidth={canClick ? 2 : 1.5}
-              className={canClick ? "transition-all group-hover:filter group-hover:brightness-95 group-hover:stroke-primary" : ""}
+              className={canClick ? "transition-all group-hover:filter group-hover:brightness-95 group-hover:stroke-primary group-focus-visible:stroke-primary group-focus-visible:stroke-[3.5] group-focus-visible:filter group-focus-visible:brightness-95" : ""}
             />
 
             {/* Spezifisches Raum-Icon & Tisch-Silhouette */}
@@ -910,14 +1023,25 @@ export function FloorplanCanvas({
         );
       })}
 
-      {/* Unplatzierte Meetingräume mit fester Koordinate */}
-      {meetingRooms.filter((room) => !layoutRoomIds.has(room.id) && room.pos_x != null && room.pos_y != null).map((room) => (
+      {/* Unplatzierte Meetingräume mit fester Koordinate (nur auf Etage, nicht bei Raum-Detailansicht) */}
+      {!onBackToFloor && meetingRooms.filter((room) => !layoutRoomIds.has(room.id) && room.pos_x != null && room.pos_y != null).map((room) => (
         <g
           key={`unplaced-room-${room.id}`}
-          className={onMeetingRoomClick ? "cursor-pointer group" : ""}
+          tabIndex={onMeetingRoomClick ? 0 : undefined}
+          role={onMeetingRoomClick ? "button" : undefined}
+          className={onMeetingRoomClick ? "cursor-pointer group focus-visible:outline-none" : ""}
           onClick={() => onMeetingRoomClick?.(room)}
-          aria-label={`Meetingraum ${room.name}`}
+          onKeyDown={onMeetingRoomClick ? (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onMeetingRoomClick(room);
+            }
+          } : undefined}
+          aria-label={`Meetingraum ${room.name}, Kapazität: ${room.capacity || "—"} Personen${room.labels?.length ? `, Ausstattung: ${room.labels.join(", ")}` : ""}${room.approval_required ? ", Genehmigung erforderlich" : ""}. Drücken Sie die Eingabetaste zum Buchen.`}
         >
+          <title>
+            {`🏛 Meetingraum: ${room.name}\nKapazität: ${room.capacity || "—"} Personen${room.labels?.length ? `\nAusstattung: ${room.labels.join(", ")}` : ""}\nGenehmigung: ${room.approval_required ? "Erforderlich" : "Nein"}`}
+          </title>
           <rect
             x={room.pos_x!}
             y={room.pos_y!}
@@ -927,6 +1051,7 @@ export function FloorplanCanvas({
             fill={room.is_occupied_now ? "#e2e8f0" : room.approval_required ? "#fef9c3" : "#e0f2fe"}
             stroke={room.approval_required ? "#ca8a04" : "#0284c7"}
             strokeWidth={2}
+            className="group-hover:stroke-primary group-focus-visible:stroke-primary group-focus-visible:stroke-[3.5] transition-all"
           />
           <text x={(room.pos_x!) + (room.width ?? 140) / 2} y={(room.pos_y!) + 22} fontSize={11} fontWeight="bold" textAnchor="middle" fill="#0f172a">
             🏛 {room.name}
@@ -938,11 +1063,34 @@ export function FloorplanCanvas({
       ))}
 
       {/* Desks im Grundriss (z. B. im Raum-Detailplan oder bestehenden Plänen) */}
-      {layout.objects.filter((o) => o.type === "desk").map((object) => {
+      {safeObjects.filter((o) => o.type === "desk").map((object) => {
         const desk = object.deskId ? deskById.get(object.deskId) : undefined;
         const fill = desk ? STATUS_FILL[desk.status] : "#eef0ed";
+        const statusLabel = desk ? STATUS_LABEL[desk.status] || desk.status : "Verfügbar";
+        const statusIcon = desk ? STATUS_ICON[desk.status] || "" : "";
+        const canClickDesk = !!(desk && onDeskClick);
+        const deskAria = desk
+          ? `Schreibtisch ${desk.desk_number || object.label || ""}, Status: ${statusLabel}${desk.labels?.length ? `, Ausstattung: ${desk.labels.join(", ")}` : ""}${canClickDesk && (desk.status === "available" || desk.status === "top_match" || desk.status === "mine") ? ". Drücken Sie die Eingabetaste zum Auswählen." : ""}`
+          : `Schreibtisch ${object.label || ""}`;
+
         return (
-          <g key={object.id} className={desk && onDeskClick ? "cursor-pointer group" : ""} onClick={() => desk && onDeskClick?.(desk)} aria-label={desk?.desk_number || object.label || "Desk"}>
+          <g
+            key={object.id}
+            tabIndex={canClickDesk ? 0 : undefined}
+            role={canClickDesk ? "button" : undefined}
+            className={canClickDesk ? "cursor-pointer group focus-visible:outline-none" : ""}
+            onClick={() => desk && onDeskClick?.(desk)}
+            onKeyDown={canClickDesk ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onDeskClick?.(desk!);
+              }
+            } : undefined}
+            aria-label={deskAria}
+          >
+            <title>
+              {`🖥 Desk ${desk?.desk_number || object.label || ""}\nStatus: ${statusLabel} (${statusIcon})\n${desk?.labels?.length ? `Ausstattung: ${desk.labels.join(", ")}` : ""}`}
+            </title>
             <rect
               x={object.x}
               y={object.y}
@@ -950,22 +1098,56 @@ export function FloorplanCanvas({
               height={object.height}
               rx={4}
               fill={fill}
-              stroke="#425a49"
+              stroke="#1e293b"
               strokeWidth={2}
-              className={desk && onDeskClick ? "group-hover:stroke-primary group-hover:stroke-[2.5]" : ""}
+              className={canClickDesk ? "group-hover:stroke-primary group-hover:stroke-[2.5] group-focus-visible:stroke-primary group-focus-visible:stroke-[3.5] transition-all" : ""}
             />
-            <text x={object.x + object.width / 2} y={object.y + object.height / 2 + 4} fontSize={11} textAnchor="middle" fill="#24302a">{desk?.desk_number || object.label || "Desk"}</text>
+            {/* Zwei-Kanal-Prinzip (WCAG 1.4.1): Status-Symbol + Tischnummer */}
+            <text x={object.x + object.width / 2} y={object.y + object.height / 2 + 4} fontSize={10} fontWeight="bold" textAnchor="middle" fill="#0f172a">
+              {statusIcon ? `${statusIcon} ` : ""}{desk?.desk_number || object.label || "Desk"}
+            </text>
           </g>
         );
       })}
 
-      {/* Fallback-Desks (NUR wenn explizit gewünscht und wenn feste Koordinaten vorhanden sind, NIE als 30,30-Dump auf Etagen-Plänen) */}
-      {renderFallbackDesks && !hasRoomObjects && desks.filter((desk) => !layoutDeskIds.has(desk.desk_id) && desk.pos_x != null && desk.pos_y != null).map((desk) => (
-        <g key={desk.desk_id} className={onDeskClick ? "cursor-pointer group" : ""} onClick={() => onDeskClick?.(desk)} aria-label={desk.desk_number}>
-          <rect x={desk.pos_x!} y={desk.pos_y!} width={40} height={40} rx={4} fill={STATUS_FILL[desk.status]} stroke="#425a49" strokeWidth={2} />
-          <text x={desk.pos_x! + 20} y={desk.pos_y! + 24} fontSize={10} textAnchor="middle">{desk.desk_number}</text>
-        </g>
-      ))}
+      {/* Fallback-Desks (NUR wenn explizit gewünscht und wenn feste Koordinaten vorhanden sind) */}
+      {renderFallbackDesks && !hasRoomObjects && desks.filter((desk) => !layoutDeskIds.has(desk.desk_id) && desk.pos_x != null && desk.pos_y != null).map((desk) => {
+        const statusLabel = STATUS_LABEL[desk.status] || desk.status;
+        const statusIcon = STATUS_ICON[desk.status] || "";
+        const canClickDesk = !!onDeskClick;
+        return (
+          <g
+            key={desk.desk_id}
+            tabIndex={canClickDesk ? 0 : undefined}
+            role={canClickDesk ? "button" : undefined}
+            className={canClickDesk ? "cursor-pointer group focus-visible:outline-none" : ""}
+            onClick={() => onDeskClick?.(desk)}
+            onKeyDown={canClickDesk ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onDeskClick?.(desk);
+              }
+            } : undefined}
+            aria-label={`Schreibtisch ${desk.desk_number}, Status: ${statusLabel}${desk.labels?.length ? `, Ausstattung: ${desk.labels.join(", ")}` : ""}. Drücken Sie die Eingabetaste zum Auswählen.`}
+          >
+            <title>{`Desk ${desk.desk_number}: ${statusLabel} (${statusIcon})`}</title>
+            <rect
+              x={desk.pos_x!}
+              y={desk.pos_y!}
+              width={40}
+              height={40}
+              rx={4}
+              fill={STATUS_FILL[desk.status]}
+              stroke="#1e293b"
+              strokeWidth={2}
+              className="group-hover:stroke-primary group-focus-visible:stroke-primary group-focus-visible:stroke-[3.5] transition-all"
+            />
+            <text x={desk.pos_x! + 20} y={desk.pos_y! + 24} fontSize={10} fontWeight="bold" textAnchor="middle" fill="#0f172a">
+              {statusIcon ? `${statusIcon} ` : ""}{desk.desk_number}
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }

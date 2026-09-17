@@ -42,7 +42,7 @@ from app.services.availability import (
     user_overlapping_bookings,
 )
 from app.services.notifications import notify
-from app.services.org_hierarchy import is_authorized
+from app.services.org_hierarchy import is_authorized, is_desk_authorized_for_user, is_room_authorized_for_user
 from app.services.scheduling import desk_day_part_range, expand_series_dates
 
 router = APIRouter(prefix="/api/bookings", tags=["bookings"])
@@ -147,16 +147,18 @@ def quick_suggestion(target_date: date_type | None = None, for_user_id: int | No
     home_available = False
     if target.home_desk_id:
         desk = db.get(Desk, target.home_desk_id)
-        prop = property_of_desk(db, desk)
-        start_at, end_at = desk_day_part_range(the_date, "full", prop.day_part_switch_hour)
-        conflicts = desk_conflicts(db, desk.id, start_at, end_at)
-        locked = desk_is_locked(db, desk.id, start_at, end_at)
-        home_available = not conflicts and not locked
-        room = db.get(Room, desk.room_id)
-        labels = [db.get(Label, dl.label_id).name
-                  for dl in db.query(DeskLabel).filter(DeskLabel.desk_id == desk.id)]
-        home_desk_out = QuickDeskOut(desk_id=desk.id, desk_number=desk.desk_number, room_name=room.name,
-                                     property_name=prop.name, score=preference_score(db, target.id, desk.id), labels=labels)
+        if desk:
+            prop = property_of_desk(db, desk)
+            start_at, end_at = desk_day_part_range(the_date, "full", prop.day_part_switch_hour)
+            conflicts = desk_conflicts(db, desk.id, start_at, end_at)
+            locked = desk_is_locked(db, desk.id, start_at, end_at)
+            authorized, _ = is_desk_authorized_for_user(db, desk.id, target.id)
+            home_available = not conflicts and not locked and authorized
+            room = db.get(Room, desk.room_id)
+            labels = [db.get(Label, dl.label_id).name
+                      for dl in db.query(DeskLabel).filter(DeskLabel.desk_id == desk.id)]
+            home_desk_out = QuickDeskOut(desk_id=desk.id, desk_number=desk.desk_number, room_name=room.name,
+                                         property_name=prop.name, score=preference_score(db, target.id, desk.id), labels=labels)
 
     recs: list[QuickDeskOut] = []
     if target.home_property_id:
@@ -167,6 +169,8 @@ def quick_suggestion(target_date: date_type | None = None, for_user_id: int | No
         )
         for d in desks:
             if target.home_desk_id and d.id == target.home_desk_id:
+                continue
+            if not is_desk_authorized_for_user(db, d.id, target.id)[0]:
                 continue
             prop = property_of_desk(db, d)
             start_at, end_at = desk_day_part_range(the_date, "full", prop.day_part_switch_hour)
@@ -362,16 +366,10 @@ def create_desk_booking(payload: CreateDeskBookingIn, user: User = Depends(get_c
     room = db.get(Room, desk.room_id)
     prop = property_of_desk(db, desk)
 
-    zone_link = db.query(ZoneDesk).filter(ZoneDesk.desk_id == desk.id).first()
-    if zone_link:
-        zone_depts = db.query(ZoneDepartment).filter(ZoneDepartment.zone_id == zone_link.zone_id).all()
-        if not any(is_authorized(db, target.department_id, zd.department_id, zd.include_descendants) for zd in zone_depts):
-            _err(403, "ZONE_RESTRICTED", "Dieser Arbeitsplatz ist einem Referats-Kontingent vorbehalten.")
-
-    room_depts = db.query(RoomDepartment).filter(RoomDepartment.room_id == room.id).all()
-    if room_depts and "fm" not in get_user_roles(user, db):
-        if not any(is_authorized(db, target.department_id, rd.department_id, rd.include_descendants) for rd in room_depts):
-            _err(403, "ZONE_RESTRICTED", "Dieser Arbeitsplatz ist bestimmten Organisationseinheiten vorbehalten.")
+    actor_roles = get_user_roles(user, db)
+    authorized, auth_reason = is_desk_authorized_for_user(db, desk.id, target.id, is_fm="fm" in actor_roles)
+    if not authorized:
+        _err(403, "ZONE_RESTRICTED", auth_reason or "Dieser Arbeitsplatz ist einer anderen Organisationseinheit vorbehalten.")
 
     start_at, end_at = desk_day_part_range(payload.date, payload.day_part, prop.day_part_switch_hour)
 
@@ -413,14 +411,7 @@ def _suggest_alternative_desk(db: Session, property_id: int, user_id: int, the_d
     for d in candidates:
         if desk_conflicts(db, d.id, start_at, end_at) or desk_is_locked(db, d.id, start_at, end_at):
             continue
-        zone_link = db.query(ZoneDesk).filter(ZoneDesk.desk_id == d.id).first()
-        user = db.get(User, user_id)
-        if zone_link:
-            zone_depts = db.query(ZoneDepartment).filter(ZoneDepartment.zone_id == zone_link.zone_id).all()
-            if not any(is_authorized(db, user.department_id, zd.department_id, zd.include_descendants) for zd in zone_depts):
-                continue
-        room_depts = db.query(RoomDepartment).filter(RoomDepartment.room_id == d.room_id).all()
-        if room_depts and not any(is_authorized(db, user.department_id, rd.department_id, rd.include_descendants) for rd in room_depts):
+        if not is_desk_authorized_for_user(db, d.id, user_id)[0]:
             continue
         score = preference_score(db, user_id, d.id)
         if score > best_score:
@@ -457,14 +448,9 @@ def create_room_booking(payload: CreateRoomBookingIn, user: User = Depends(get_c
         _err(404, "ROOM_NOT_FOUND", "Meetingraum nicht gefunden.")
 
     actor_roles = get_user_roles(user, db)
-    if room.restricted_role_code and "fm" not in actor_roles:
-        if room.restricted_role_code not in get_user_roles(target, db) and room.restricted_role_code not in actor_roles:
-            _err(403, "NOT_AUTHORIZED_ROOM", "Dieser Raum ist einer bestimmten Rolle/Einheit vorbehalten.")
-
-    room_depts = db.query(RoomDepartment).filter(RoomDepartment.room_id == room.id).all()
-    if room_depts and "fm" not in actor_roles:
-        if not any(is_authorized(db, target.department_id, rd.department_id, rd.include_descendants) for rd in room_depts):
-            _err(403, "NOT_AUTHORIZED_ORG_UNIT", "Dieser Raum ist bestimmten Organisationseinheiten vorbehalten.")
+    authorized, auth_reason = is_room_authorized_for_user(db, room.id, target.id)
+    if not authorized and "fm" not in actor_roles:
+        _err(403, "NOT_AUTHORIZED_ORG_UNIT", auth_reason or "Dieser Raum ist bestimmten Organisationseinheiten vorbehalten.")
 
     if room_is_locked(db, room.id, payload.start_at, payload.end_at):
         _err(409, "ROOM_LOCKED", "Dieser Raum ist für den gewählten Zeitraum gesperrt.")
@@ -585,6 +571,7 @@ def preview_series(payload: SeriesPreviewIn, user: User = Depends(get_current_us
     Ersatzvorschlag bei Konflikt, statt sofort ungefragt zu buchen. Der Nutzer kann jeden Tag
     einzeln aus der Serie entfernen oder die Ressource wechseln, bevor final gebucht wird."""
     target = resolve_target_user(db, user, payload.for_user_id)
+    actor_roles = get_user_roles(user, db)
     dates = expand_series_dates(payload.start_date, payload.weekdays, payload.interval, payload.end_date)
     if not dates:
         _err(400, "NO_OCCURRENCES", "Für dieses Muster ergeben sich keine Termine.")
@@ -596,6 +583,21 @@ def preview_series(payload: SeriesPreviewIn, user: User = Depends(get_current_us
         prop = property_of_desk(db, desk)
         for d in dates:
             start_at, end_at = desk_day_part_range(d, payload.day_part, prop.day_part_switch_hour)
+            authorized, auth_err = is_desk_authorized_for_user(db, desk.id, target.id)
+            if not authorized and "fm" not in actor_roles:
+                alt = _suggest_alternative_desk(db, prop.id, target.id, d, payload.day_part, exclude_desk_id=desk.id)
+                if alt:
+                    alt_room = db.get(Room, alt.room_id)
+                    occurrences.append(SeriesOccurrencePreview(
+                        date=d, resource_id=alt.id, resource_label=f"{alt.desk_number} · {alt_room.name}",
+                        labels=_desk_label_names(db, alt.id), available=True,
+                        conflict_reason=f"{desk.desk_number} nicht berechtigt (Org-Einheit) — Ersatz vorgeschlagen"))
+                else:
+                    occurrences.append(SeriesOccurrencePreview(
+                        date=d, resource_id=desk.id, resource_label=f"{desk.desk_number} · {room.name}",
+                        labels=_desk_label_names(db, desk.id), available=False,
+                        conflict_reason=auth_err or "Keine Buchungsberechtigung für diesen Arbeitsplatz"))
+                continue
             if desk_is_locked(db, desk.id, start_at, end_at) or desk_conflicts(db, desk.id, start_at, end_at):
                 alt = _suggest_alternative_desk(db, prop.id, target.id, d, payload.day_part, exclude_desk_id=desk.id)
                 if alt:
@@ -618,6 +620,12 @@ def preview_series(payload: SeriesPreviewIn, user: User = Depends(get_current_us
         for d in dates:
             start_at = datetime.combine(d, datetime.min.time()).replace(hour=9)
             end_at = datetime.combine(d, datetime.min.time()).replace(hour=10)
+            authorized, auth_err = is_room_authorized_for_user(db, room.id, target.id)
+            if not authorized and "fm" not in actor_roles:
+                occurrences.append(SeriesOccurrencePreview(
+                    date=d, resource_id=room.id, resource_label=room.name, labels=_room_label_names(db, room.id),
+                    available=False, conflict_reason=auth_err or "Raum für Ihre Organisationseinheit nicht zugelassen"))
+                continue
             conflict = room_is_locked(db, room.id, start_at, end_at) or room_conflicts(db, room.id, start_at, end_at)
             occurrences.append(SeriesOccurrencePreview(
                 date=d, resource_id=room.id, resource_label=room.name, labels=_room_label_names(db, room.id),
@@ -659,6 +667,7 @@ class SeriesResultOut(BaseModel):
 @router.post("/series", response_model=SeriesResultOut)
 def create_series(payload: CreateSeriesIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     target = resolve_target_user(db, user, payload.for_user_id)
+    actor_roles = get_user_roles(user, db)
     if not payload.occurrences:
         _err(400, "NO_OCCURRENCES", "Es wurde kein Termin zur Buchung ausgewählt.")
 
@@ -676,6 +685,10 @@ def create_series(payload: CreateSeriesIn, user: User = Depends(get_current_user
             desk = db.get(Desk, occ.resource_id)
             if desk is None:
                 conflicts.append(SeriesConflict(date=occ.date, reason="Arbeitsplatz nicht gefunden"))
+                continue
+            authorized, auth_err = is_desk_authorized_for_user(db, desk.id, target.id)
+            if not authorized and "fm" not in actor_roles:
+                conflicts.append(SeriesConflict(date=occ.date, reason=auth_err or "Arbeitsplatz ist für Ihre Organisationseinheit nicht zugelassen"))
                 continue
             prop = property_of_desk(db, desk)
             start_at, end_at = desk_day_part_range(occ.date, payload.day_part, prop.day_part_switch_hour)
@@ -695,11 +708,17 @@ def create_series(payload: CreateSeriesIn, user: User = Depends(get_current_user
             if room is None:
                 conflicts.append(SeriesConflict(date=occ.date, reason="Raum nicht gefunden"))
                 continue
+            authorized, auth_err = is_room_authorized_for_user(db, room.id, target.id)
+            if not authorized and "fm" not in actor_roles:
+                conflicts.append(SeriesConflict(date=occ.date, reason=auth_err or "Raum ist für Ihre Organisationseinheit nicht zugelassen"))
+                continue
             start_at = datetime.combine(occ.date, datetime.min.time()).replace(hour=9)
             end_at = datetime.combine(occ.date, datetime.min.time()).replace(hour=10)
             if room_is_locked(db, room.id, start_at, end_at) or room_conflicts(db, room.id, start_at, end_at):
                 conflicts.append(SeriesConflict(date=occ.date, reason="Raum in diesem Slot bereits belegt"))
                 continue
+
+
             status = "pending_approval" if room.approval_required else "confirmed"
             booking = Booking(kind="room", status=status, booked_for_user_id=target.id, booked_by_user_id=user.id,
                                start_at=start_at, end_at=end_at, series_id=series.id)

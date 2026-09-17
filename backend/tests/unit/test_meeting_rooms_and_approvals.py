@@ -1,7 +1,7 @@
 """Meetingraum-Buchung inkl. Genehmigungspflicht (FR-39/40/41/42), Bestuhlung (FR-53/54)."""
 from datetime import datetime, timedelta
 
-from tests.conftest import FRAU_OSTERMANN, HERR_BRANDT, HERR_DEMIR, MARIA_SCHMIDT
+from tests.conftest import ALI_YILMAZ, FRAU_OSTERMANN, HERR_BRANDT, HERR_DEMIR, MARIA_SCHMIDT
 
 
 def _find_room(client, headers, name: str):
@@ -289,6 +289,115 @@ def test_catalog_get_room_by_id_and_timeline(client, auth_headers):
     t_res = client.get(f"/api/catalog/rooms/3/bookings?target_date={target_date}", headers=maria_headers)
     assert t_res.status_code == 200
     assert isinstance(t_res.json(), list)
+
+
+def test_seating_option_update_and_delete(client, auth_headers):
+    fm_headers = auth_headers(HERR_BRANDT)
+    ali_headers = auth_headers(ALI_YILMAZ)
+
+    # 1. Neue Bestuhlungsoption anlegen
+    create_res = client.post(
+        "/api/fm/rooms/3/seating-options",
+        headers=fm_headers,
+        json={"name": "Parlamentarisch", "is_standard": False, "changeover_days": 1},
+    )
+    assert create_res.status_code == 200
+    opt_id = create_res.json()["id"]
+
+    # 2. Nicht-FM darf nicht ändern -> 403
+    forbidden_res = client.put(
+        f"/api/fm/rooms/3/seating-options/{opt_id}",
+        headers=ali_headers,
+        json={"name": "Parlamentarisch Neu", "is_standard": True, "changeover_days": 2},
+    )
+    assert forbidden_res.status_code == 403
+
+    # 3. FM ändert Option
+    update_res = client.put(
+        f"/api/fm/rooms/3/seating-options/{opt_id}",
+        headers=fm_headers,
+        json={"name": "Parlamentarisch Erweitert", "is_standard": True, "changeover_days": 2},
+    )
+    assert update_res.status_code == 200
+    updated_data = update_res.json()
+    assert updated_data["name"] == "Parlamentarisch Erweitert"
+    assert updated_data["is_standard"] is True
+    assert updated_data["changeover_days"] == 2
+
+    # 4. FM löscht Option
+    del_res = client.delete(f"/api/fm/rooms/3/seating-options/{opt_id}", headers=fm_headers)
+    assert del_res.status_code == 200
+    assert del_res.json()["id"] == opt_id
+
+    # 5. Nochmals löschen -> 404
+    del_again = client.delete(f"/api/fm/rooms/3/seating-options/{opt_id}", headers=fm_headers)
+    assert del_again.status_code == 404
+
+
+def test_global_meeting_slot_settings_and_room_overrides(client, auth_headers):
+    fm_headers = auth_headers(HERR_BRANDT)
+    maria_headers = auth_headers(MARIA_SCHMIDT)
+
+    # 1. Globale Slot-Einstellungen abfragen (auch öffentlich via /catalog/meeting-slot-config)
+    cat_cfg = client.get("/api/catalog/meeting-slot-config")
+    assert cat_cfg.status_code == 200
+    cfg_json = cat_cfg.json()
+    assert "slot_duration_minutes" in cfg_json
+    assert "day_start_hour" in cfg_json
+    assert "day_end_hour" in cfg_json
+
+    # 2. Globale Slot-Einstellungen per FM aktualisieren
+    update_cfg = client.put(
+        "/api/fm/settings/meeting-slots",
+        headers=fm_headers,
+        json={"slot_duration_minutes": 30, "day_start_hour": 7, "day_end_hour": 19},
+    )
+    assert update_cfg.status_code == 200
+    assert update_cfg.json() == {"slot_duration_minutes": 30, "day_start_hour": 7, "day_end_hour": 19}
+
+    # Verify via catalog
+    cat_cfg2 = client.get("/api/catalog/meeting-slot-config")
+    assert cat_cfg2.json() == {"slot_duration_minutes": 30, "day_start_hour": 7, "day_end_hour": 19}
+
+    # 3. Raum 3 mit eigenem Override versehen (z. B. 90 Minuten, 08:00 - 16:00)
+    patch_room = client.patch(
+        "/api/fm/rooms/3",
+        headers=fm_headers,
+        json={"slot_duration_minutes": 90, "day_start_hour": 8, "day_end_hour": 16},
+    )
+    assert patch_room.status_code == 200
+
+    # 4. Über Catalog abfragen und prüfen, dass effective_ Werte korrekt berechnet sind
+    room3_res = client.get("/api/catalog/rooms/3", headers=maria_headers)
+    assert room3_res.status_code == 200
+    r3 = room3_res.json()
+    assert r3["slot_duration_minutes"] == 90
+    assert r3["day_start_hour"] == 8
+    assert r3["day_end_hour"] == 16
+    assert r3["effective_slot_duration_minutes"] == 90
+    assert r3["effective_day_start_hour"] == 8
+    assert r3["effective_day_end_hour"] == 16
+
+    # 5. Raum ohne Override erbt die neuen globalen Werte
+    rooms_list = client.get("/api/catalog/properties/1/meeting-rooms", headers=maria_headers).json()
+    other_room = next((r for r in rooms_list if r["id"] != 3), None)
+    if other_room:
+        assert other_room["effective_slot_duration_minutes"] == 30
+        assert other_room["effective_day_start_hour"] == 7
+        assert other_room["effective_day_end_hour"] == 19
+
+    # Clean up: set global defaults back to 60 / 8 / 18
+    client.put(
+        "/api/fm/settings/meeting-slots",
+        headers=fm_headers,
+        json={"slot_duration_minutes": 60, "day_start_hour": 8, "day_end_hour": 18},
+    )
+    client.patch(
+        "/api/fm/rooms/3",
+        headers=fm_headers,
+        json={"slot_duration_minutes": 0, "day_start_hour": -1, "day_end_hour": 0},
+    )
+
 
 
 

@@ -15,6 +15,7 @@ import MasterData from "./pages/MasterData";
 import ConfidentialBlock from "./pages/ConfidentialBlock";
 import BookFor from "./pages/BookFor";
 import Preferences from "./pages/Preferences";
+import AccessibilityStatement from "./pages/AccessibilityStatement";
 import type { ReactNode } from "react";
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -102,6 +103,7 @@ export default function App() {
             />
             <Route path="buchen-fuer" element={<BookFor />} />
             <Route path="meine-praeferenzen" element={<Preferences />} />
+            <Route path="barrierefreiheit" element={<AccessibilityStatement />} />
           </Route>
         </Routes>
       </AuthProvider>

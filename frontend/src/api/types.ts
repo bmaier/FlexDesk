@@ -35,6 +35,9 @@ export interface DeskNode {
   labels: string[];
   approval_required: boolean;
   checkin_required: boolean;
+  is_locked?: boolean;
+  lock_reason?: string | null;
+  lock_id?: number | null;
 }
 
 export interface RoomNode {
@@ -48,6 +51,13 @@ export interface RoomNode {
   checkin_required: boolean;
   labels: string[];
   desks: DeskNode[];
+  slot_duration_minutes?: number | null;
+  day_start_hour?: number | null;
+  day_end_hour?: number | null;
+  seating_layout?: string | null;
+  is_locked?: boolean;
+  lock_reason?: string | null;
+  lock_id?: number | null;
 }
 
 export interface FloorNode {
@@ -92,6 +102,24 @@ export interface MeetingRoomOut {
   height?: number | null;
   seating_layout?: string | null;
   floorplan_layout?: string | null;
+  slot_duration_minutes?: number | null;
+  day_start_hour?: number | null;
+  day_end_hour?: number | null;
+  effective_slot_duration_minutes?: number;
+  effective_day_start_hour?: number;
+  effective_day_end_hour?: number;
+  is_locked?: boolean;
+  lock_reason?: string | null;
+  lock_id?: number | null;
+  restricted_department_ids?: number[];
+  restricted_department_names?: string[];
+}
+
+
+export interface MeetingSlotConfigOut {
+  slot_duration_minutes: number;
+  day_start_hour: number;
+  day_end_hour: number;
 }
 
 

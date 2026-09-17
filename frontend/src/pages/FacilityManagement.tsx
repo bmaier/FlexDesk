@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import type {
@@ -230,6 +230,9 @@ function StructureTab({
   const [formOpen, setFormOpen] = useState<null | { level: "property" | "building" | "floor" | "room" | "desk"; parentId: number | null }>(null);
   const [editOpen, setEditOpen] = useState<null | { level: "property" | "building"; id: number }>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [globalSlotsOpen, setGlobalSlotsOpen] = useState(false);
+  const handledPropRoomRef = useRef<number | null>(null);
+  const handledPropFloorRef = useRef<number | null>(null);
 
   // Sync Liegenschaft bei externer Änderung (z.B. aus Zonen oder Grundriss)
   useEffect(() => {
@@ -262,13 +265,16 @@ function StructureTab({
   useEffect(() => {
     if (!tree) return;
     const allRooms = tree.buildings.flatMap((b) => b.floors.flatMap((f) => f.rooms));
-    if (selectedRoom) {
-      const updated = allRooms.find((r) => r.id === selectedRoom.id);
-      if (updated) setSelectedRoom(updated);
-    }
     if (selectedDesk) {
-      const updated = allRooms.flatMap((r) => r.desks).find((d) => d.id === selectedDesk.id);
-      if (updated) setSelectedDesk(updated);
+      const updatedDesk = allRooms.flatMap((r) => r.desks).find((d) => d.id === selectedDesk.id);
+      if (updatedDesk) {
+        setSelectedDesk(updatedDesk);
+        const parentRoom = allRooms.find((r) => r.desks.some((d) => d.id === updatedDesk.id));
+        if (parentRoom) setSelectedRoom(parentRoom);
+      }
+    } else if (selectedRoom) {
+      const updatedRoom = allRooms.find((r) => r.id === selectedRoom.id);
+      if (updatedRoom) setSelectedRoom(updatedRoom);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tree]);
@@ -276,7 +282,8 @@ function StructureTab({
   // Reaktiv den Struktur-Baum aufklappen und Raum/Etage selektieren, wenn vom Grundriss oder FM-State übergeben
   useEffect(() => {
     if (!tree) return;
-    if (propRoomId) {
+    if (propRoomId && propRoomId !== handledPropRoomRef.current) {
+      handledPropRoomRef.current = propRoomId;
       for (const b of tree.buildings) {
         for (const f of b.floors) {
           const r = f.rooms.find((rm) => rm.id === propRoomId);
@@ -292,7 +299,8 @@ function StructureTab({
           }
         }
       }
-    } else if (propFloorId) {
+    } else if (propFloorId && propFloorId !== handledPropFloorRef.current) {
+      handledPropFloorRef.current = propFloorId;
       for (const b of tree.buildings) {
         const f = b.floors.find((fl) => fl.id === propFloorId);
         if (f) {
@@ -405,10 +413,19 @@ function StructureTab({
         ))}
         {propertyId && <button onClick={() => setFormOpen({ level: "building", parentId: propertyId })} className="text-xs text-primary mt-1">+ Gebäude</button>}
         <button onClick={() => setFormOpen({ level: "property", parentId: null })} className="text-xs font-semibold text-primary mt-2 block">+ Neue Liegenschaft</button>
+        <div className="pt-3 mt-3 border-t border-outline-variant/30">
+          <button
+            type="button"
+            onClick={() => setGlobalSlotsOpen(true)}
+            className="w-full p-2 rounded text-xs font-semibold bg-surface hover:bg-surface-container border border-outline-variant/30 text-primary flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+          >
+            ⏱️ Globale Meeting-Slot Einstellungen
+          </button>
+        </div>
       </div>
 
       <div>
-        {selectedDesk && !selectedRoom?.desks.every((d) => d.id !== selectedDesk.id) ? (
+        {selectedDesk ? (
           <DeskDetail desk={selectedDesk} onLocked={() => setMessage("Sperrung gesetzt.")} onChanged={() => { loadTree(); setMessage("Aktualisiert."); }} />
         ) : selectedRoom ? (
           <RoomDetail
@@ -447,6 +464,18 @@ function StructureTab({
             loadTree();
             onStructureChanged();
             setMessage("Erfolgreich angelegt.");
+          }}
+        />
+      )}
+
+      {globalSlotsOpen && (
+        <GlobalMeetingSlotSettingsModal
+          onClose={() => setGlobalSlotsOpen(false)}
+          onSaved={() => {
+            loadProperties();
+            loadTree();
+            onStructureChanged();
+            setMessage("Globale Meeting-Slot Einstellungen aktualisiert.");
           }}
         />
       )}
@@ -620,6 +649,7 @@ function LabelPicker({ assigned, entityKind, entityId, roomType, onChanged }: {
 }) {
   const [catalog, setCatalog] = useState<LabelOut[]>([]);
   const [picking, setPicking] = useState(false);
+  const addBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const entityType = entityKind === "properties" ? "property" : entityKind === "buildings" ? "building"
@@ -631,6 +661,7 @@ function LabelPicker({ assigned, entityKind, entityId, roomType, onChanged }: {
     await api.post(`/fm/${entityKind}/${entityId}/labels`, { label_id: labelId });
     setPicking(false);
     onChanged();
+    setTimeout(() => addBtnRef.current?.focus(), 50);
   }
 
   async function remove(labelName: string) {
@@ -638,6 +669,7 @@ function LabelPicker({ assigned, entityKind, entityId, roomType, onChanged }: {
     if (!label) return;
     await api.del(`/fm/${entityKind}/${entityId}/labels/${label.id}`);
     onChanged();
+    setTimeout(() => addBtnRef.current?.focus(), 50);
   }
 
   const unassigned = catalog.filter((l) => !assigned.includes(l.name));
@@ -655,12 +687,22 @@ function LabelPicker({ assigned, entityKind, entityId, roomType, onChanged }: {
         {assigned.length === 0 && <span className="text-xs text-on-surface-variant">Keine Labels zugewiesen.</span>}
       </div>
       {picking ? (
-        <select autoFocus onChange={(e) => e.target.value && add(Number(e.target.value))} onBlur={() => setPicking(false)} className="bg-surface-container-low rounded px-2 py-1 text-sm">
+        <select
+          autoFocus
+          onChange={(e) => {
+            if (e.target.value) add(Number(e.target.value));
+          }}
+          onBlur={() => {
+            setPicking(false);
+            setTimeout(() => addBtnRef.current?.focus(), 50);
+          }}
+          className="bg-surface-container-low rounded px-2 py-1 text-sm"
+        >
           <option value="">Label wählen…</option>
           {unassigned.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
       ) : (
-        <button onClick={() => setPicking(true)} className="text-xs text-primary">+ Label hinzufügen</button>
+        <button ref={addBtnRef} type="button" onClick={() => setPicking(true)} className="text-xs text-primary">+ Label hinzufügen</button>
       )}
     </div>
   );
@@ -728,6 +770,331 @@ function OrgUnitAssignment({ roomId }: { roomId: number }) {
   );
 }
 
+function GlobalMeetingSlotSettingsModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [slotDuration, setSlotDuration] = useState(60);
+  const [dayStart, setDayStart] = useState(8);
+  const [dayEnd, setDayEnd] = useState(18);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get<{ slot_duration_minutes: number; day_start_hour: number; day_end_hour: number }>("/fm/settings/meeting-slots")
+      .then((cfg) => {
+        setSlotDuration(cfg.slot_duration_minutes);
+        setDayStart(cfg.day_start_hour);
+        setDayEnd(cfg.day_end_hour);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  async function handleSave() {
+    if (dayEnd <= dayStart) {
+      setError("Das Ende des Buchungsfensters muss nach dem Beginn liegen.");
+      return;
+    }
+    try {
+      await api.put("/fm/settings/meeting-slots", {
+        slot_duration_minutes: Number(slotDuration),
+        day_start_hour: Number(dayStart),
+        day_end_hour: Number(dayEnd),
+      });
+      onSaved();
+      onClose();
+    } catch (e) {
+      if (e instanceof ApiError) setError(e.message);
+      else setError("Fehler beim Speichern der Slot-Einstellungen.");
+    }
+  }
+
+  return (
+    <Modal title="Globale Meetingraum-Slot-Einstellungen" onClose={onClose}>
+      <div className="space-y-4 text-sm text-on-surface">
+        <p className="text-xs text-on-surface-variant">
+          Diese Einstellungen gelten standardmäßig für alle Meetingräume, sofern kein raumspezifischer Override hinterlegt ist.
+        </p>
+        {error && <div className="p-2 rounded bg-error-container text-on-error-container text-xs">{error}</div>}
+
+        <label className="block text-xs">
+          Standard Slot-Dauer
+          <select
+            value={slotDuration}
+            onChange={(e) => setSlotDuration(Number(e.target.value))}
+            className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+          >
+            <option value={15}>15 Minuten</option>
+            <option value={30}>30 Minuten</option>
+            <option value={45}>45 Minuten</option>
+            <option value={60}>60 Minuten (1 Stunde)</option>
+            <option value={90}>90 Minuten (1,5 Stunden)</option>
+            <option value={120}>120 Minuten (2 Stunden)</option>
+          </select>
+        </label>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block text-xs">
+            Buchungsfenster Beginn
+            <select
+              value={dayStart}
+              onChange={(e) => setDayStart(Number(e.target.value))}
+              className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+            >
+              {[6, 7, 8, 9, 10].map((h) => (
+                <option key={h} value={h}>{String(h).padStart(2, "0")}:00 Uhr</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block text-xs">
+            Buchungsfenster Ende
+            <select
+              value={dayEnd}
+              onChange={(e) => setDayEnd(Number(e.target.value))}
+              className="w-full mt-1 bg-surface-container-low rounded px-2.5 py-1.5 border border-outline-variant/30 text-sm"
+            >
+              {[16, 17, 18, 19, 20, 21, 22].map((h) => (
+                <option key={h} value={h}>{String(h).padStart(2, "0")}:00 Uhr</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="secondary" onClick={onClose}>Abbrechen</Button>
+          <Button variant="primary" onClick={handleSave} disabled={loading}>Einstellungen speichern</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function SeatingOptionManager({
+  roomId,
+  options,
+  onOptionsChanged,
+}: {
+  roomId: number;
+  options: SeatingOptionOut[];
+  onOptionsChanged: () => void;
+}) {
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editIsStandard, setEditIsStandard] = useState(false);
+  const [editDays, setEditDays] = useState(0);
+
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newIsStandard, setNewIsStandard] = useState(false);
+  const [newDays, setNewDays] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  function startEdit(opt: SeatingOptionOut) {
+    setEditingId(opt.id);
+    setEditName(opt.name);
+    setEditIsStandard(opt.is_standard);
+    setEditDays(opt.changeover_days);
+    setError(null);
+  }
+
+  async function saveEdit(optionId: number) {
+    if (!editName.trim()) {
+      setError("Name der Bestuhlungsoption darf nicht leer sein.");
+      return;
+    }
+    try {
+      await api.put(`/fm/rooms/${roomId}/seating-options/${optionId}`, {
+        name: editName.trim(),
+        is_standard: editIsStandard,
+        changeover_days: Number(editDays),
+      });
+      setEditingId(null);
+      setError(null);
+      onOptionsChanged();
+    } catch (e) {
+      if (e instanceof ApiError) setError(e.message);
+      else setError("Fehler beim Speichern der Bestuhlungsoption.");
+    }
+  }
+
+  async function deleteOption(optionId: number) {
+    if (!confirm("Möchten Sie diese Bestuhlungsoption wirklich löschen?")) return;
+    try {
+      await api.del(`/fm/rooms/${roomId}/seating-options/${optionId}`);
+      if (editingId === optionId) setEditingId(null);
+      onOptionsChanged();
+    } catch (e) {
+      if (e instanceof ApiError) setError(e.message);
+      else setError("Fehler beim Löschen der Bestuhlungsoption.");
+    }
+  }
+
+  async function createOption() {
+    if (!newName.trim()) {
+      setError("Bitte einen Namen für die Bestuhlungsoption eingeben.");
+      return;
+    }
+    try {
+      await api.post(`/fm/rooms/${roomId}/seating-options`, {
+        name: newName.trim(),
+        is_standard: newIsStandard,
+        changeover_days: Number(newDays),
+      });
+      setAdding(false);
+      setNewName("");
+      setNewIsStandard(false);
+      setNewDays(0);
+      setError(null);
+      onOptionsChanged();
+    } catch (e) {
+      if (e instanceof ApiError) setError(e.message);
+      else setError("Fehler beim Anlegen der Bestuhlungsoption.");
+    }
+  }
+
+  return (
+    <div className="mb-5 p-3.5 rounded-md bg-surface-container-low border border-outline-variant/30 space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="text-sm font-semibold text-on-surface">🪑 Bestuhlungsoptionen & Umbautage</div>
+          <div className="text-xs text-on-surface-variant">Konfigurieren Sie verfügbare Bestuhlungsarten und nötige Vorlaufzeiten (Umbautage).</div>
+        </div>
+        {!adding && (
+          <button
+            type="button"
+            onClick={() => { setAdding(true); setError(null); }}
+            className="px-2.5 py-1 text-xs font-semibold rounded bg-primary text-on-primary hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            + Option hinzufügen
+          </button>
+        )}
+      </div>
+
+      {error && <div className="p-2 rounded bg-error-container text-on-error-container text-xs">{error}</div>}
+
+      {/* Liste der Optionen */}
+      <div className="space-y-2">
+        {options.map((opt) => (
+          <div key={opt.id} className="p-2.5 rounded bg-surface border border-outline-variant/20 text-xs">
+            {editingId === opt.id ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <label className="block">
+                    Name
+                    <input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full mt-0.5 bg-surface-container-lowest rounded px-2 py-1 border border-outline-variant/30 text-xs"
+                    />
+                  </label>
+                  <label className="block">
+                    Umbautage
+                    <input
+                      type="number"
+                      min={0}
+                      max={5}
+                      value={editDays}
+                      onChange={(e) => setEditDays(Number(e.target.value))}
+                      className="w-full mt-0.5 bg-surface-container-lowest rounded px-2 py-1 border border-outline-variant/30 text-xs"
+                    />
+                  </label>
+                  <label className="flex items-center gap-2 pt-4">
+                    <input
+                      type="checkbox"
+                      checked={editIsStandard}
+                      onChange={(e) => setEditIsStandard(e.target.checked)}
+                    />
+                    Als Standardbestuhlung
+                  </label>
+                </div>
+                <div className="flex gap-2 justify-end pt-1">
+                  <Button variant="secondary" className="text-xs py-1" onClick={() => setEditingId(null)}>Abbrechen</Button>
+                  <Button variant="primary" className="text-xs py-1" onClick={() => saveEdit(opt.id)}>Speichern</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-on-surface">{opt.name}</span>
+                  {opt.is_standard && (
+                    <span className="px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-medium text-[10px]">
+                      Standard
+                    </span>
+                  )}
+                  <span className="text-on-surface-variant">
+                    · {opt.changeover_days} {opt.changeover_days === 1 ? "Umbautag" : "Umbautage"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(opt)}
+                    className="px-2 py-0.5 rounded text-[11px] text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    ✎ Bearbeiten
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteOption(opt.id)}
+                    className="px-2 py-0.5 rounded text-[11px] text-error hover:bg-error/10 transition-colors"
+                  >
+                    🗑 Löschen
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+        {options.length === 0 && !adding && (
+          <div className="text-xs text-on-surface-variant italic py-1">
+            Noch keine speziellen Bestuhlungsoptionen angelegt. Der Raum nutzt die im Plan konfigurierte Standard-Anordnung.
+          </div>
+        )}
+      </div>
+
+      {/* Neue Option anlegen */}
+      {adding && (
+        <div className="p-3 rounded bg-surface border border-primary/40 space-y-2 text-xs">
+          <div className="font-semibold text-primary">Neue Bestuhlungsoption erfassen</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <label className="block">
+              Name
+              <input
+                placeholder="z. B. U-Form, Parlament..."
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="w-full mt-0.5 bg-surface-container-lowest rounded px-2 py-1 border border-outline-variant/30 text-xs"
+              />
+            </label>
+            <label className="block">
+              Umbautage
+              <input
+                type="number"
+                min={0}
+                max={5}
+                value={newDays}
+                onChange={(e) => setNewDays(Number(e.target.value))}
+                className="w-full mt-0.5 bg-surface-container-lowest rounded px-2 py-1 border border-outline-variant/30 text-xs"
+              />
+            </label>
+            <label className="flex items-center gap-2 pt-4">
+              <input
+                type="checkbox"
+                checked={newIsStandard}
+                onChange={(e) => setNewIsStandard(e.target.checked)}
+              />
+              Als Standard
+            </label>
+          </div>
+          <div className="flex gap-2 justify-end pt-1">
+            <Button variant="secondary" className="text-xs py-1" onClick={() => setAdding(false)}>Abbrechen</Button>
+            <Button variant="primary" className="text-xs py-1" onClick={createOption}>Option anlegen</Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RoomDetail({
   room,
   floorId,
@@ -744,6 +1111,10 @@ function RoomDetail({
   const [name, setName] = useState(room.name);
   const [roomNumber, setRoomNumber] = useState(room.room_number);
   const [capacity, setCapacity] = useState(room.capacity ?? 0);
+  const [slotDuration, setSlotDuration] = useState<number | "">(room.slot_duration_minutes ?? "");
+  const [dayStartHour, setDayStartHour] = useState<number | "">(room.day_start_hour ?? "");
+  const [dayEndHour, setDayEndHour] = useState<number | "">(room.day_end_hour ?? "");
+  const [seatingLayout, setSeatingLayout] = useState(room.seating_layout || "boardroom");
   const [lockOpen, setLockOpen] = useState(false);
   const [lockReason, setLockReason] = useState("");
   const [lockError, setLockError] = useState<string | null>(null);
@@ -756,7 +1127,13 @@ function RoomDetail({
     setName(room.name);
     setRoomNumber(room.room_number);
     setCapacity(room.capacity ?? 0);
-    if (room.room_type === "meeting") api.get<SeatingOptionOut[]>(`/fm/rooms/${room.id}/seating-options`).then(setSeating);
+    setSlotDuration(room.slot_duration_minutes ?? "");
+    setDayStartHour(room.day_start_hour ?? "");
+    setDayEndHour(room.day_end_hour ?? "");
+    setSeatingLayout(room.seating_layout || "boardroom");
+    if (room.room_type === "meeting") {
+      api.get<SeatingOptionOut[]>(`/fm/rooms/${room.id}/seating-options`).then(setSeating);
+    }
   }, [room]);
 
   async function toggleApproval() {
@@ -771,8 +1148,20 @@ function RoomDetail({
     onChanged();
   }
 
-  async function saveDetails() {
-    await api.patch(`/fm/rooms/${room.id}`, { name, room_number: roomNumber, capacity: room.room_type === "meeting" ? capacity : null });
+  async function saveDetails(newDuration?: number | "", newStart?: number | "", newEnd?: number | "") {
+    const d = newDuration !== undefined ? newDuration : slotDuration;
+    const s = newStart !== undefined ? newStart : dayStartHour;
+    const e = newEnd !== undefined ? newEnd : dayEndHour;
+
+    await api.patch(`/fm/rooms/${room.id}`, {
+      name,
+      room_number: roomNumber,
+      capacity: room.room_type === "meeting" ? capacity : null,
+      seating_layout: room.room_type === "meeting" ? seatingLayout : null,
+      slot_duration_minutes: d === "" ? 0 : Number(d),
+      day_start_hour: s === "" ? -1 : Number(s),
+      day_end_hour: e === "" ? 0 : Number(e),
+    });
     setSaved(true);
     onChanged();
   }
@@ -791,8 +1180,8 @@ function RoomDetail({
   }
 
   return (
-    <div className="bg-surface-container-lowest rounded-md p-5 border border-outline-variant/30">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+    <div className="bg-surface-container-lowest rounded-md p-5 border border-outline-variant/30 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-sm text-on-surface-variant font-medium">
           Raum {room.room_number} · {room.room_type === "meeting" ? "🏛 Meetingraum" : "💼 Büro-/Desk-Fläche"}
         </div>
@@ -808,41 +1197,160 @@ function RoomDetail({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-3">
         <label className="block text-sm">Name
-          <input value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} onBlur={saveDetails} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2" />
+          <input value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} onBlur={() => saveDetails()} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2 text-sm" />
         </label>
         <label className="block text-sm">Raumnummer
-          <input value={roomNumber} onChange={(e) => { setRoomNumber(e.target.value); setSaved(false); }} onBlur={saveDetails} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2" />
+          <input value={roomNumber} onChange={(e) => { setRoomNumber(e.target.value); setSaved(false); }} onBlur={() => saveDetails()} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2 text-sm" />
         </label>
       </div>
       {room.room_type === "meeting" && (
-        <label className="block text-sm mb-4 max-w-[160px]">Kapazität
-          <input type="number" value={capacity} onChange={(e) => { setCapacity(Number(e.target.value)); setSaved(false); }} onBlur={saveDetails} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2" />
-        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block text-sm">Kapazität (Personen)
+            <input type="number" value={capacity} onChange={(e) => { setCapacity(Number(e.target.value)); setSaved(false); }} onBlur={() => saveDetails()} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2 text-sm" />
+          </label>
+          <label className="block text-sm">Standard-Bestuhlung
+            <select
+              value={seatingLayout}
+              onChange={async (e) => {
+                const val = e.target.value;
+                setSeatingLayout(val);
+                await api.patch(`/fm/rooms/${room.id}`, { seating_layout: val });
+                setSaved(true);
+                onChanged();
+              }}
+              className="w-full mt-1 bg-surface-container-low rounded px-3 py-2 text-sm"
+            >
+              <option value="boardroom">Konferenztisch (Boardroom)</option>
+              <option value="u_shape">U-Form</option>
+              <option value="classroom">Parlamentarisch / Schulung</option>
+              <option value="cinema">Reihenbestuhlung / Theater</option>
+              <option value="banquet">Bankett / Gruppen</option>
+            </select>
+          </label>
+        </div>
       )}
-      {saved && <div className="text-xs text-tertiary-fixed-dim mb-3">Gespeichert.</div>}
+
+      {/* RAUM-SPEZIFISCHE BUCHUNGS-SLOT KONFIGURATION BEI MEETINGRÄUMEN */}
+      {room.room_type === "meeting" && (
+        <div className="p-3.5 rounded-md bg-surface-container-low border border-outline-variant/30 space-y-2.5">
+          <div className="text-sm font-semibold text-on-surface">⏱️ Buchungs-Slot Konfiguration (Raum-Override)</div>
+          <div className="text-xs text-on-surface-variant">
+            Hier können Sie die Slot-Dauer und das tägliche Buchungsfenster individuell für diesen Meetingraum überschreiben.
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <label className="block text-xs">
+              Slot-Dauer
+              <select
+                value={slotDuration}
+                onChange={(e) => {
+                  const val = e.target.value ? Number(e.target.value) : "";
+                  setSlotDuration(val);
+                  saveDetails(val, undefined, undefined);
+                }}
+                className="w-full mt-1 bg-surface rounded px-2.5 py-1.5 border border-outline-variant/30 text-xs"
+              >
+                <option value="">Globaler Standard</option>
+                <option value={15}>15 Minuten</option>
+                <option value={30}>30 Minuten</option>
+                <option value={45}>45 Minuten</option>
+                <option value={60}>60 Minuten (1 Stunde)</option>
+                <option value={90}>90 Minuten (1,5 Stunden)</option>
+                <option value={120}>120 Minuten (2 Stunden)</option>
+              </select>
+            </label>
+
+            <label className="block text-xs">
+              Buchungsfenster Beginn
+              <select
+                value={dayStartHour}
+                onChange={(e) => {
+                  const val = e.target.value ? Number(e.target.value) : "";
+                  setDayStartHour(val);
+                  saveDetails(undefined, val, undefined);
+                }}
+                className="w-full mt-1 bg-surface rounded px-2.5 py-1.5 border border-outline-variant/30 text-xs"
+              >
+                <option value="">Globaler Standard</option>
+                {[6, 7, 8, 9, 10].map((h) => (
+                  <option key={h} value={h}>{String(h).padStart(2, "0")}:00 Uhr</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-xs">
+              Buchungsfenster Ende
+              <select
+                value={dayEndHour}
+                onChange={(e) => {
+                  const val = e.target.value ? Number(e.target.value) : "";
+                  setDayEndHour(val);
+                  saveDetails(undefined, undefined, val);
+                }}
+                className="w-full mt-1 bg-surface rounded px-2.5 py-1.5 border border-outline-variant/30 text-xs"
+              >
+                <option value="">Globaler Standard</option>
+                {[16, 17, 18, 19, 20, 21, 22].map((h) => (
+                  <option key={h} value={h}>{String(h).padStart(2, "0")}:00 Uhr</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {saved && <div className="text-xs text-tertiary-fixed-dim">✓ Gespeichert.</div>}
 
       <LabelPicker assigned={room.labels} entityKind="rooms" entityId={room.id} roomType={room.room_type} onChanged={onChanged} />
 
-      <label className="flex items-center gap-2 text-sm mb-3">
+      <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={approvalRequired} onChange={toggleApproval} /> Genehmigungspflichtig
       </label>
-      <label className="flex items-center gap-2 text-sm mb-4">
+      <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={checkinRequired} onChange={toggleCheckin} /> Check-in erforderlich (unabhängig von der Liegenschaft)
       </label>
 
       <OrgUnitAssignment roomId={room.id} />
 
-      {seating.length > 0 && (
-        <div className="mb-4">
-          <div className="text-sm font-semibold mb-1">Bestuhlungsoptionen</div>
-          <ul className="text-sm text-on-surface-variant">
-            {seating.map((s) => <li key={s.id}>{s.name} {s.is_standard && "(Standard)"} — {s.changeover_days} Umbautag/e</li>)}
-          </ul>
-        </div>
+      {/* BESTUHLUNGSOPTIONEN MANAGER FÜR MEETINGRÄUME */}
+      {room.room_type === "meeting" && (
+        <SeatingOptionManager
+          roomId={room.id}
+          options={seating}
+          onOptionsChanged={() => {
+            api.get<SeatingOptionOut[]>(`/fm/rooms/${room.id}/seating-options`).then(setSeating);
+            onChanged();
+          }}
+        />
       )}
-      <Button variant="destructive" onClick={() => setLockOpen(true)}>Raum sperren</Button>
+
+      {room.is_locked ? (
+        <div className="p-3.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-200 flex items-center justify-between">
+          <div>
+            <div className="font-semibold text-sm flex items-center gap-1.5">
+              🔒 Raum ist aktuell gesperrt
+            </div>
+            {room.lock_reason && <div className="text-xs text-on-surface-variant mt-0.5">Grund: {room.lock_reason}</div>}
+          </div>
+          <Button
+            variant="secondary"
+            onClick={async () => {
+              try {
+                await api.post("/fm/unlock", { entity_type: "room", entity_id: room.id, lock_id: room.lock_id });
+                onChanged();
+              } catch (err) {
+                if (err instanceof ApiError) setLockError(err.message);
+              }
+            }}
+          >
+            Sperrung aufheben
+          </Button>
+        </div>
+      ) : (
+        <Button variant="destructive" onClick={() => setLockOpen(true)}>Raum sperren</Button>
+      )}
 
       {lockOpen && (
         <Modal title="Raum sperren" onClose={() => setLockOpen(false)}>
@@ -856,7 +1364,7 @@ function RoomDetail({
   );
 }
 
-function DeskDetail({ desk, onLocked, onChanged }: { desk: { id: number; desk_number: string; approval_required: boolean; checkin_required: boolean; labels: string[] }; onLocked: () => void; onChanged: () => void }) {
+function DeskDetail({ desk, onLocked, onChanged }: { desk: DeskNode; onLocked: () => void; onChanged: () => void }) {
   const [lockOpen, setLockOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -902,6 +1410,30 @@ function DeskDetail({ desk, onLocked, onChanged }: { desk: { id: number; desk_nu
 
   return (
     <div className="bg-surface-container-lowest rounded-md p-5 border border-outline-variant/30">
+      {desk.is_locked ? (
+        <div className="mb-4 p-3.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-200 flex items-center justify-between">
+          <div>
+            <div className="font-semibold text-sm flex items-center gap-1.5">
+              🔒 Arbeitsplatz ist aktuell gesperrt
+            </div>
+            {desk.lock_reason && <div className="text-xs text-on-surface-variant mt-0.5">Grund: {desk.lock_reason}</div>}
+          </div>
+          <Button
+            variant="secondary"
+            onClick={async () => {
+              try {
+                await api.post("/fm/unlock", { entity_type: "desk", entity_id: desk.id, lock_id: desk.lock_id });
+                onChanged();
+              } catch (err) {
+                if (err instanceof ApiError) setError(err.message);
+              }
+            }}
+          >
+            Sperrung aufheben
+          </Button>
+        </div>
+      ) : null}
+
       <label className="block text-sm mb-4 max-w-[200px]">Desk-Nummer
         <input value={deskNumber} onChange={(e) => setDeskNumber(e.target.value)} onBlur={saveNumber} className="w-full mt-1 bg-surface-container-low rounded px-3 py-2" />
       </label>
@@ -915,7 +1447,9 @@ function DeskDetail({ desk, onLocked, onChanged }: { desk: { id: number; desk_nu
         <input type="checkbox" checked={checkinRequired} onChange={toggleCheckin} /> Check-in erforderlich
       </label>
 
-      <Button variant="destructive" onClick={() => setLockOpen(true)}>Desk sperren (Wartung)</Button>
+      {!desk.is_locked && (
+        <Button variant="destructive" onClick={() => setLockOpen(true)}>Desk sperren (Wartung)</Button>
+      )}
       {lockOpen && (
         <Modal title="Desk sperren" onClose={() => setLockOpen(false)}>
           {error && <div className="p-2 rounded bg-error-container text-on-error-container text-sm mb-2" role="alert">{error}</div>}

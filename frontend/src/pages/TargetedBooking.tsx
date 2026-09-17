@@ -15,6 +15,7 @@ import type {
 import { Badge, Button, Card, Modal } from "../components/ui";
 import { DoubleBookingModal, type DoubleBookingDetail } from "../components/DoubleBookingModal";
 import { useAuth } from "../context/AuthContext";
+import { isDeptAuthorized } from "../utils/orgHierarchy";
 import {
   FloorplanCanvas,
   type FloorplanLayout,
@@ -36,7 +37,8 @@ const STATUS_LABEL: Record<string, string> = {
 export default function TargetedBooking() {
   const { propertyId } = useParams();
   const navigate = useNavigate();
-  const { user, hasRole, actingAsUserId } = useAuth();
+  const { user, users, hasRole, actingAsUserId } = useAuth();
+  const effectiveUser = (actingAsUserId && users.find((u) => u.id === actingAsUserId)) || user;
   const [searchParams] = useSearchParams();
 
   const [tree, setTree] = useState<PropertyTree | null>(null);
@@ -264,6 +266,17 @@ export default function TargetedBooking() {
     }
   }
 
+  const activeMeetingRoomDeptRestricted = activeMeetingRoom
+    ? !isDeptAuthorized(
+        effectiveUser?.department_id,
+        effectiveUser?.department,
+        activeMeetingRoom.restricted_department_ids,
+        activeMeetingRoom.restricted_department_names,
+        departments,
+        hasRole("fm")
+      )
+    : false;
+
   if (!tree) {
     return (
       <div className="p-12 text-center text-on-surface-variant">
@@ -273,18 +286,29 @@ export default function TargetedBooking() {
     );
   }
 
-  const currentBuilding = tree.buildings.find((b) => b.floors.some((f) => f.id === selectedFloor?.id));
+  const currentBuilding = (tree.buildings ?? []).find((b) => (b.floors ?? []).some((f) => f.id === selectedFloor?.id));
   const floorLayout = parseFloorplanLayout(selectedFloor?.floorplan_layout || (selectedFloor as any)?.layout);
   const isRoomActive = !!selectedRoom;
   const activeLayout = isRoomActive && selectedRoom.room_type === "desk_area"
-    ? (roomInteriorLayout || { objects: generateDeskAreaLayout(selectedRoom.desks) })
+    ? (roomInteriorLayout || { objects: generateDeskAreaLayout(selectedRoom.desks ?? []) })
     : floorLayout;
   const hasLayout = !!(activeLayout && activeLayout.objects && activeLayout.objects.length > 0);
   const showPlan = viewMode === "plan" && hasLayout;
 
   const roomDesks = selectedRoom ? statuses.filter((s) => s.room_id === selectedRoom.id) : statuses;
-  const floorMeetingRooms = selectedFloor ? selectedFloor.rooms.filter((r) => r.room_type === "meeting") : [];
-  const floorDeskRooms = selectedFloor ? selectedFloor.rooms.filter((r) => r.room_type === "desk_area") : [];
+  const floorMeetingRooms = selectedFloor ? (selectedFloor.rooms ?? []).filter((r) => r.room_type === "meeting") : [];
+  const floorDeskRooms = selectedFloor ? (selectedFloor.rooms ?? []).filter((r) => r.room_type === "desk_area") : [];
+
+  const unplacedRoomsOnFloor = (!selectedFloor || selectedRoom)
+    ? []
+    : (() => {
+        const placedRoomIds = new Set(
+          (floorLayout?.objects ?? [])
+            .filter((o) => (o.type === "room" || o.type === "meeting_room") && o.roomId != null)
+            .map((o) => o.roomId!)
+        );
+        return (selectedFloor.rooms ?? []).filter((r) => !placedRoomIds.has(r.id));
+      })();
 
   function handleDeskClick(desk: FloorDeskStatus) {
     if (desk.status === "available" || desk.status === "top_match" || desk.status === "mine") {
@@ -427,22 +451,30 @@ export default function TargetedBooking() {
 
         <div className="flex items-center gap-2">
           {hasLayout && (
-            <div className="flex gap-1 bg-surface-container-low rounded p-1 border border-outline-variant/40">
+            <div role="tablist" aria-label="Ansichtsmodus" className="flex gap-1 bg-surface-container-low rounded p-1 border border-outline-variant/40">
               <button
+                role="tab"
+                id="tab-plan"
+                aria-selected={viewMode === "plan"}
+                aria-controls="panel-content"
                 onClick={() => setViewMode("plan")}
-                className={`px-3 py-1 text-xs font-semibold rounded flex items-center gap-1 ${
+                className={`px-3 py-1 text-xs font-semibold rounded flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   viewMode === "plan" ? "bg-primary text-on-primary shadow-sm" : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
-                🗺️ Grundriss
+                <span>🗺️</span> Grundriss
               </button>
               <button
+                role="tab"
+                id="tab-list"
+                aria-selected={viewMode === "list"}
+                aria-controls="panel-content"
                 onClick={() => setViewMode("list")}
-                className={`px-3 py-1 text-xs font-semibold rounded flex items-center gap-1 ${
+                className={`px-3 py-1 text-xs font-semibold rounded flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   viewMode === "list" ? "bg-primary text-on-primary shadow-sm" : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
-                📋 Liste
+                <span>📋</span> Listenansicht
               </button>
             </div>
           )}
@@ -450,7 +482,7 @@ export default function TargetedBooking() {
       </div>
 
       {/* Hauptbereich: Links hierarchischer Baum, Rechts Grundriss oder Liste */}
-      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6" id="panel-content">
         {/* Linke Sidebar: Liegenschaft -> Gebäude -> Etage -> Räume */}
         <div className="bg-surface-container-low rounded-xl p-3 border border-outline-variant/30 h-fit space-y-2">
           <div className="text-xs font-bold uppercase tracking-wider text-on-surface-variant px-2 py-1">
@@ -462,12 +494,15 @@ export default function TargetedBooking() {
             return (
               <div key={b.id} className="border-b border-outline-variant/20 last:border-0 pb-2">
                 <button
+                  type="button"
                   onClick={() => setExpandedBuildings((prev) => ({ ...prev, [b.id]: !isBExpanded }))}
-                  className="w-full text-left font-bold text-sm px-2 py-1.5 flex items-center justify-between rounded hover:bg-surface-container-high"
+                  aria-expanded={isBExpanded}
+                  aria-label={`Gebäude ${b.name}, ${b.floors.length} Etagen, ${isBExpanded ? "aufgeklappt" : "zugeklappt"}`}
+                  className="w-full text-left font-bold text-sm px-2 py-1.5 flex items-center justify-between rounded hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <span className="flex items-center gap-1.5">
-                    <span className={`inline-block text-xs transition-transform ${isBExpanded ? "rotate-90" : ""}`}>▶</span>
-                    🏢 {b.name}
+                    <span className={`inline-block text-xs transition-transform ${isBExpanded ? "rotate-90" : ""}`} aria-hidden="true">▶</span>
+                    <span>🏢 {b.name}</span>
                   </span>
                   <span className="text-xs font-normal text-on-surface-variant">{b.floors.length} Etagen</span>
                 </button>
@@ -491,11 +526,13 @@ export default function TargetedBooking() {
                             }`}
                           >
                             <button
+                              type="button"
                               onClick={() => {
                                 setSelectedFloor(f);
                                 setSelectedRoom(null);
                               }}
-                              className="flex-1 text-left flex items-center gap-1.5"
+                              aria-current={isSelectedF && !selectedRoom ? "page" : undefined}
+                              className="flex-1 text-left flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1"
                             >
                               <span>📐 {f.name}</span>
                             </button>
@@ -505,12 +542,14 @@ export default function TargetedBooking() {
                               </span>
                               {f.rooms.length > 0 && (
                                 <button
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setExpandedFloors((prev) => ({ ...prev, [f.id]: !isFExpanded }));
                                   }}
-                                  className="text-xs p-1 text-on-surface-variant hover:text-on-surface"
-                                  title="Räume anzeigen"
+                                  aria-expanded={isFExpanded}
+                                  aria-label={`${f.name} Räume ${isFExpanded ? "zuklappen" : "aufklappen"}`}
+                                  className="text-xs p-1 text-on-surface-variant hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
                                 >
                                   {isFExpanded ? "▲" : "▼"}
                                 </button>
@@ -528,6 +567,7 @@ export default function TargetedBooking() {
                                 return (
                                   <button
                                     key={r.id}
+                                    type="button"
                                     onClick={() => {
                                       setSelectedFloor(f);
                                       setSelectedRoom(r);
@@ -545,7 +585,8 @@ export default function TargetedBooking() {
                                         openMeetingRoom(mr);
                                       }
                                     }}
-                                    className={`w-full flex items-center justify-between px-2 py-1 rounded text-xs text-left transition-colors ${
+                                    aria-current={isRoomActiveItem ? "page" : undefined}
+                                    className={`w-full flex items-center justify-between px-2 py-1 rounded text-xs text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                       isRoomActiveItem
                                         ? "bg-primary text-on-primary font-semibold shadow-sm"
                                         : "hover:bg-surface-container text-on-surface-variant hover:text-on-surface"
@@ -677,7 +718,7 @@ export default function TargetedBooking() {
               <FloorplanCanvas
                 layout={activeLayout!}
                 desks={roomDesks}
-                meetingRooms={meetingRooms}
+                meetingRooms={selectedRoom ? [] : meetingRooms}
                 onDeskClick={handleDeskClick}
                 onRoomClick={handleRoomClick}
                 onMeetingRoomClick={handleMeetingRoomClick}
@@ -690,6 +731,38 @@ export default function TargetedBooking() {
                   <span>
                     <strong>Tipp:</strong> Klicke direkt auf einen <strong>Büroraum (💼)</strong>, um dessen Grundriss mit allen Desks zu öffnen. Klicke auf einen <strong>Meetingraum (🏛️)</strong>, um Bestuhlung und Catering zu buchen.
                   </span>
+                </div>
+              )}
+              {unplacedRoomsOnFloor.length > 0 && !selectedRoom && (
+                <div className="mt-2.5 p-2.5 rounded bg-surface-container-low border border-outline-variant/30 text-xs space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-on-surface flex items-center gap-1.5">
+                      <span>ℹ️</span>
+                      <span>
+                        {unplacedRoomsOnFloor.length === 1
+                          ? "1 weiterer Raum auf dieser Etage (noch nicht im Plan eingezeichnet):"
+                          : `${unplacedRoomsOnFloor.length} weitere Räume auf dieser Etage (noch nicht im Plan eingezeichnet):`}
+                      </span>
+                    </span>
+                    <span className="text-[11px] text-on-surface-variant">Direkt per Klick öffnen</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {unplacedRoomsOnFloor.map((r: RoomNode) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => handleRoomClick(r.id, r.room_type)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-surface-container border border-outline-variant/30 text-on-surface text-xs font-medium transition-all shadow-sm"
+                      >
+                        <span>{r.room_type === "meeting" ? "🏛️" : "💼"}</span>
+                        <span>{r.name} ({r.room_number})</span>
+                        <span className="text-[10px] text-on-surface-variant">
+                          {r.room_type === "meeting" ? `· max. ${r.capacity || "?"} P.` : `· ${r.desks?.length ?? 0} Desks`}
+                        </span>
+                        <span className="text-primary font-bold ml-0.5">↗</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -708,18 +781,39 @@ export default function TargetedBooking() {
 
               {/* Wenn ein einzelner Büroraum gewählt ist, liste seine Desks */}
               {selectedRoom ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded bg-surface border border-outline-variant/30">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRoom(null)}
+                      className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-2 py-1"
+                    >
+                      ← Zurück zur Raum-Übersicht ({selectedFloor?.name})
+                    </button>
+                    {hasLayout && (
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("plan")}
+                        className="text-xs font-semibold text-on-surface-variant hover:text-primary flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-2 py-1"
+                      >
+                        🗺️ Zu diesem Raum im Grundriss wechseln ↗
+                      </button>
+                    )}
+                  </div>
+
                   {roomDesks.length === 0 ? (
-                    <div className="p-6 text-center text-sm text-on-surface-variant bg-surface-container-lowest rounded border border-outline-variant/30">
+                    <div className="p-6 text-center text-sm text-on-surface-variant bg-surface-container-lowest rounded border border-outline-variant/30" role="status">
                       In diesem Raum sind noch keine Desks angelegt.
                     </div>
                   ) : (
                     roomDesks.map((s) => (
                       <button
                         key={s.desk_id}
+                        type="button"
                         disabled={s.status !== "available" && s.status !== "top_match" && s.status !== "mine"}
                         onClick={() => handleDeskClick(s)}
-                        className="w-full flex justify-between items-center p-3 rounded bg-surface-container-lowest border border-outline-variant/30 disabled:opacity-50 hover:shadow-sm text-left transition-all"
+                        aria-label={`Schreibtisch ${s.desk_number}, Status: ${s.zone_name ? `Zone ${s.zone_name}` : STATUS_LABEL[s.status]}${s.labels.length ? `, Ausstattung: ${s.labels.join(", ")}` : ""}${s.status === "available" || s.status === "top_match" || s.status === "mine" ? ". Drücken Sie die Eingabetaste zum Auswählen." : ""}`}
+                        className="w-full flex justify-between items-center p-3 rounded bg-surface-container-lowest border border-outline-variant/30 disabled:opacity-50 hover:shadow-sm text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <div>
                           <span className="font-semibold text-sm">{s.desk_number}</span>
@@ -754,7 +848,7 @@ export default function TargetedBooking() {
                   {floorDeskRooms.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                        <span>💼</span> Büroräume & Arbeitsplatz-Bereiche ({floorDeskRooms.length})
+                        <span aria-hidden="true">💼</span> Büroräume & Arbeitsplatz-Bereiche ({floorDeskRooms.length})
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {floorDeskRooms.map((r) => {
@@ -766,7 +860,7 @@ export default function TargetedBooking() {
                               <div className="flex justify-between items-start mb-2">
                                 <div>
                                   <div className="font-semibold text-sm text-on-surface flex items-center gap-1">
-                                    <span>💼</span> {r.name}
+                                    <span aria-hidden="true">💼</span> {r.name}
                                   </div>
                                   <div className="text-xs text-on-surface-variant">Raumnr. {r.room_number}</div>
                                 </div>
@@ -785,17 +879,28 @@ export default function TargetedBooking() {
                                 </div>
                               )}
 
-                              <div className="flex items-center justify-between pt-2 border-t border-outline-variant/20">
+                              <div className="flex items-center justify-between pt-2 border-t border-outline-variant/20 gap-2">
                                 <span className="text-xs text-on-surface-variant">{r.desks.length} Desks</span>
-                                <button
-                                  onClick={() => {
-                                    setSelectedRoom(r);
-                                    setViewMode("plan");
-                                  }}
-                                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-                                >
-                                  🔍 Raumplan & Desks öffnen ↗
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedRoom(r)}
+                                    className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1.5 py-0.5"
+                                  >
+                                    📋 Desks in Liste anzeigen
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedRoom(r);
+                                      setViewMode("plan");
+                                    }}
+                                    title="Diesen Raum im interaktiven Grundriss ansehen"
+                                    className="text-xs font-semibold text-on-surface-variant hover:text-primary flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1.5 py-0.5"
+                                  >
+                                    🗺️ Im Plan ↗
+                                  </button>
+                                </div>
                               </div>
                             </Card>
                           );
@@ -951,6 +1056,18 @@ export default function TargetedBooking() {
             <div className="mt-6 p-3 rounded bg-tertiary-fixed/40 text-on-tertiary-fixed-variant text-sm font-semibold text-center">
               ✓ Erfolgreich gebucht!
             </div>
+          ) : selectedDesk.status === "zone_restricted" ? (
+            <div className="mt-6 p-3 rounded bg-error-container text-on-error-container text-xs font-semibold text-center leading-relaxed">
+              🚫 Buchung nicht möglich: Dieser Arbeitsplatz ist für die Organisationseinheit {selectedDesk.zone_name ? `"${selectedDesk.zone_name}"` : ""} reserviert (Org-Zugehörigkeit erforderlich).
+            </div>
+          ) : selectedDesk.status === "locked" ? (
+            <div className="mt-6 p-3 rounded bg-surface-container-high text-on-surface-variant text-xs font-semibold text-center">
+              🔒 Buchung nicht möglich: Arbeitsplatz ist wegen Wartung gesperrt.
+            </div>
+          ) : selectedDesk.status === "occupied" ? (
+            <div className="mt-6 p-3 rounded bg-surface-container-high text-on-surface-variant text-xs font-semibold text-center">
+              Arbeitsplatz ist in diesem Zeitraum bereits belegt.
+            </div>
           ) : (
             <Button
               variant="accent"
@@ -976,13 +1093,27 @@ export default function TargetedBooking() {
               <strong>{activeMeetingRoom.capacity || "?"} Personen</strong>
             </div>
 
+            {activeMeetingRoom.is_locked && (
+              <div className="p-3 rounded bg-red-100 text-red-900 border border-red-300 text-xs font-semibold flex items-center gap-2">
+                <span>🔒</span>
+                <span>Dieser Meetingraum ist derzeit gesperrt ({activeMeetingRoom.lock_reason || "Wartung"}). Buchungen sind nicht möglich.</span>
+              </div>
+            )}
+
+            {activeMeetingRoomDeptRestricted && (
+              <div className="p-3 rounded bg-sky-100 text-sky-900 border border-sky-300 text-xs font-semibold flex items-center gap-2">
+                <span>🏢</span>
+                <span>Dieser Meetingraum ist für die Organisationseinheit {activeMeetingRoom.restricted_department_names?.join(", ")} reserviert. Ihre Org-Einheit ({effectiveUser?.department || "Keine"}) hat hierfür keine Buchungsberechtigung.</span>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1">Von (Uhr)</label>
                 <select
                   value={meetingForm.startHour}
                   onChange={(e) => setMeetingForm((f) => ({ ...f, startHour: Number(e.target.value) }))}
-                  className="w-full bg-surface-container-low rounded px-2 py-1.5 text-sm border border-outline-variant/40"
+                  className="w-full bg-surface-container-low rounded px-2.5 py-1.5 text-sm border border-outline-variant/40"
                 >
                   {Array.from({ length: 14 }, (_, i) => i + 7).map((h) => (
                     <option key={h} value={h}>
@@ -996,7 +1127,7 @@ export default function TargetedBooking() {
                 <select
                   value={meetingForm.endHour}
                   onChange={(e) => setMeetingForm((f) => ({ ...f, endHour: Number(e.target.value) }))}
-                  className="w-full bg-surface-container-low rounded px-2 py-1.5 text-sm border border-outline-variant/40"
+                  className="w-full bg-surface-container-low rounded px-2.5 py-1.5 text-sm border border-outline-variant/40"
                 >
                   {Array.from({ length: 14 }, (_, i) => i + 8).map((h) => (
                     <option key={h} value={h} disabled={h <= meetingForm.startHour}>
@@ -1029,7 +1160,22 @@ export default function TargetedBooking() {
                           name="seatingOption"
                           value={opt.id}
                           checked={meetingForm.seatingOptionId === String(opt.id)}
-                          onChange={(e) => setMeetingForm((f) => ({ ...f, seatingOptionId: e.target.value }))}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setMeetingForm((f) => ({ ...f, seatingOptionId: val }));
+                            const cap = activeMeetingRoom.capacity || 10;
+                            if (opt.is_standard) {
+                              setMeetingLayout({ objects: generateMeetingRoomLayout(cap, activeMeetingRoom.seating_layout || "boardroom") });
+                            } else {
+                              const n = opt.name.toLowerCase();
+                              let preset = "boardroom";
+                              if (n.includes("u-form") || n.includes("u_shape") || n.includes("u form")) preset = "u_shape";
+                              else if (n.includes("parlament") || n.includes("schulung") || n.includes("classroom")) preset = "classroom";
+                              else if (n.includes("kino") || n.includes("reihe") || n.includes("cinema") || n.includes("theater")) preset = "cinema";
+                              else if (n.includes("bankett") || n.includes("banquet") || n.includes("gruppe")) preset = "banquet";
+                              setMeetingLayout({ objects: generateMeetingRoomLayout(cap, preset) });
+                            }
+                          }}
                         />
                         <span>
                           {opt.name} {opt.is_standard ? "(Standard)" : ""} · Vorlauf: {opt.changeover_days} Tag(e)
@@ -1187,9 +1333,14 @@ export default function TargetedBooking() {
                 <Button
                   variant="accent"
                   loading={meetingBookingState === "loading"}
+                  disabled={Boolean(activeMeetingRoom.is_locked || activeMeetingRoomDeptRestricted)}
                   onClick={() => submitMeetingBooking()}
                 >
-                  Verbindlich buchen
+                  {activeMeetingRoom.is_locked
+                    ? "Raum gesperrt"
+                    : activeMeetingRoomDeptRestricted
+                    ? "Nicht berechtigt (Org-Einheit)"
+                    : "Verbindlich buchen"}
                 </Button>
               )}
             </div>

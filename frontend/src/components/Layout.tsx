@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api/client";
 import type { NotificationOut, SearchResult } from "../api/types";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 function NavItem({ to, label }: { to: string; label: string }) {
   return (
@@ -102,6 +103,11 @@ export default function Layout() {
             <NavItem to="/buchen-fuer" label="Im Namen von agieren" />
             <NavItem to="/meine-praeferenzen" label="Meine Präferenzen" />
           </div>
+
+          <SectionLabel>Rechtliches & Hilfe</SectionLabel>
+          <div className="space-y-1">
+            <NavItem to="/barrierefreiheit" label="♿ Barrierefreiheit (BITV)" />
+          </div>
         </nav>
         <div className="p-3 border-t border-outline-variant/30 flex items-center gap-2">
           <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-semibold">
@@ -191,7 +197,9 @@ export default function Layout() {
           </div>
         </header>
         <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto p-6">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

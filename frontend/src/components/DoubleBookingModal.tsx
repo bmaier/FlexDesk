@@ -55,7 +55,8 @@ export function DoubleBookingModal({ detail, onCancelOther, onOverride, onClose 
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="Begründung für die Doppelbuchung…"
-            className="w-full bg-surface-container-low rounded px-3 py-2"
+            aria-label="Begründung für die Doppelbuchung"
+            className="w-full bg-surface-container-low rounded px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             rows={3}
           />
           <Button

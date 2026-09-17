@@ -293,6 +293,9 @@ class UpdateRoomIn(BaseModel):
     capacity: int | None = None
     seating_layout: str | None = None
     checkin_required: bool | None = None
+    slot_duration_minutes: int | None = None
+    day_start_hour: int | None = None
+    day_end_hour: int | None = None
 
 
 @router.patch("/rooms/{room_id}", response_model=IdOut)
@@ -316,8 +319,15 @@ def update_room(room_id: int, payload: UpdateRoomIn, user: User = Depends(requir
         room.seating_layout = payload.seating_layout
     if payload.checkin_required is not None:
         room.checkin_required = payload.checkin_required
+    if payload.slot_duration_minutes is not None:
+        room.slot_duration_minutes = payload.slot_duration_minutes if payload.slot_duration_minutes > 0 else None
+    if payload.day_start_hour is not None:
+        room.day_start_hour = payload.day_start_hour if payload.day_start_hour >= 0 else None
+    if payload.day_end_hour is not None:
+        room.day_end_hour = payload.day_end_hour if payload.day_end_hour > 0 else None
     db.commit()
     return IdOut(id=room.id)
+
 
 
 class UpdateDeskIn(BaseModel):
@@ -663,6 +673,80 @@ def create_lock(payload: CreateLockIn, user: User = Depends(require_roles("fm"))
     return IdOut(id=lock.id)
 
 
+class UnlockIn(BaseModel):
+    lock_id: int | None = None
+    entity_type: str | None = None  # desk | room | property
+    entity_id: int | None = None
+
+
+@router.post("/unlock")
+def unlock_entity(payload: UnlockIn, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    """Hebt eine Sperrung auf (aktiv = False).
+    Unterstützt Entsperren per konkreter lock_id oder für eine Ressource (desk, room, property).
+    """
+    unlocked_count = 0
+    if payload.lock_id is not None:
+        lock = db.get(Lock, payload.lock_id)
+        if lock and lock.active:
+            lock.active = False
+            unlocked_count += 1
+    elif payload.entity_type and payload.entity_id:
+        if payload.entity_type == "desk":
+            locks = (
+                db.query(Lock)
+                .join(DeskLock, DeskLock.lock_id == Lock.id)
+                .filter(DeskLock.desk_id == payload.entity_id, Lock.active.is_(True))
+                .all()
+            )
+        elif payload.entity_type == "room":
+            locks = (
+                db.query(Lock)
+                .join(RoomLock, RoomLock.lock_id == Lock.id)
+                .filter(RoomLock.room_id == payload.entity_id, Lock.active.is_(True))
+                .all()
+            )
+        elif payload.entity_type == "property":
+            locks = (
+                db.query(Lock)
+                .join(PropertyLock, PropertyLock.lock_id == Lock.id)
+                .filter(PropertyLock.property_id == payload.entity_id, Lock.active.is_(True))
+                .all()
+            )
+        else:
+            _err(400, "INVALID_ENTITY_TYPE", f"Ungültiger entity_type: {payload.entity_type}")
+
+        for l in locks:
+            l.active = False
+            unlocked_count += 1
+    else:
+        _err(400, "MISSING_PARAMS", "lock_id oder (entity_type und entity_id) erforderlich.")
+
+    db.commit()
+    return {"ok": True, "unlocked_count": unlocked_count}
+
+
+@router.delete("/locks/{lock_id}")
+def delete_lock(lock_id: int, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    """Hebt eine Sperrung anhand ihrer ID auf."""
+    lock = db.get(Lock, lock_id)
+    if lock is None:
+        _err(404, "LOCK_NOT_FOUND", "Sperrung nicht gefunden.")
+    lock.active = False
+    db.commit()
+    return {"ok": True, "lock_id": lock_id}
+
+
+@router.post("/locks/{lock_id}/unlock")
+def unlock_lock_by_id(lock_id: int, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    """Hebt eine Sperrung anhand ihrer ID auf."""
+    lock = db.get(Lock, lock_id)
+    if lock is None:
+        _err(404, "LOCK_NOT_FOUND", "Sperrung nicht gefunden.")
+    lock.active = False
+    db.commit()
+    return {"ok": True, "lock_id": lock_id}
+
+
 class ForceCancelIn(BaseModel):
     reason: str
 
@@ -849,6 +933,97 @@ class SeatingOptionOut(BaseModel):
 def list_seating_options(room_id: int, db: Session = Depends(get_db)):
     rows = db.query(SeatingOption).filter(SeatingOption.room_id == room_id).all()
     return [SeatingOptionOut(id=r.id, name=r.name, is_standard=r.is_standard, changeover_days=r.changeover_days) for r in rows]
+
+
+@router.put("/rooms/{room_id}/seating-options/{option_id}", response_model=SeatingOptionOut)
+def update_seating_option(room_id: int, option_id: int, payload: SeatingOptionIn, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    so = db.get(SeatingOption, option_id)
+    if not so or so.room_id != room_id:
+        _err(404, "OPTION_NOT_FOUND", "Bestuhlungsoption nicht gefunden.")
+    so.name = payload.name
+    so.is_standard = payload.is_standard
+    so.changeover_days = payload.changeover_days
+    if payload.is_standard:
+        others = db.query(SeatingOption).filter(SeatingOption.room_id == room_id, SeatingOption.id != option_id).all()
+        for o in others:
+            o.is_standard = False
+    db.commit()
+    db.refresh(so)
+    return SeatingOptionOut(id=so.id, name=so.name, is_standard=so.is_standard, changeover_days=so.changeover_days)
+
+
+@router.delete("/rooms/{room_id}/seating-options/{option_id}", response_model=IdOut)
+def delete_seating_option(room_id: int, option_id: int, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    so = db.get(SeatingOption, option_id)
+    if not so or so.room_id != room_id:
+        _err(404, "OPTION_NOT_FOUND", "Bestuhlungsoption nicht gefunden.")
+    db.delete(so)
+    db.commit()
+    return IdOut(id=option_id)
+
+
+# --------------------------------------------------------------------------
+# Globale Meetingraum-Slot-Einstellungen
+# --------------------------------------------------------------------------
+
+class MeetingSlotSettingsIn(BaseModel):
+    slot_duration_minutes: int
+    day_start_hour: int
+    day_end_hour: int
+
+
+class MeetingSlotSettingsOut(BaseModel):
+    slot_duration_minutes: int
+    day_start_hour: int
+    day_end_hour: int
+
+
+def _get_setting_int(db: Session, key: str, default: int) -> int:
+    from app.models.structure import SystemSetting
+    s = db.get(SystemSetting, key)
+    if s and s.value and s.value.strip().isdigit():
+        return int(s.value.strip())
+    return default
+
+
+def _set_setting_int(db: Session, key: str, val: int) -> None:
+    from app.models.structure import SystemSetting
+    s = db.get(SystemSetting, key)
+    if not s:
+        s = SystemSetting(key=key, value=str(val))
+        db.add(s)
+    else:
+        s.value = str(val)
+
+
+@router.get("/settings/meeting-slots", response_model=MeetingSlotSettingsOut)
+def get_meeting_slot_settings(db: Session = Depends(get_db)):
+    return MeetingSlotSettingsOut(
+        slot_duration_minutes=_get_setting_int(db, "meeting_slot_duration_minutes", 60),
+        day_start_hour=_get_setting_int(db, "meeting_day_start_hour", 8),
+        day_end_hour=_get_setting_int(db, "meeting_day_end_hour", 18),
+    )
+
+
+@router.put("/settings/meeting-slots", response_model=MeetingSlotSettingsOut)
+def update_meeting_slot_settings(payload: MeetingSlotSettingsIn, user: User = Depends(require_roles("fm")), db: Session = Depends(get_db)):
+    if payload.slot_duration_minutes not in (15, 30, 45, 60, 90, 120):
+        _err(400, "INVALID_SLOT_DURATION", "Slot-Dauer muss 15, 30, 45, 60, 90 oder 120 Minuten betragen.")
+    if payload.day_start_hour < 0 or payload.day_start_hour > 23:
+        _err(400, "INVALID_HOUR", "Ungültige Start-Uhrzeit.")
+    if payload.day_end_hour <= payload.day_start_hour or payload.day_end_hour > 24:
+        _err(400, "INVALID_HOUR", "Ende-Uhrzeit muss nach der Start-Uhrzeit liegen.")
+
+    _set_setting_int(db, "meeting_slot_duration_minutes", payload.slot_duration_minutes)
+    _set_setting_int(db, "meeting_day_start_hour", payload.day_start_hour)
+    _set_setting_int(db, "meeting_day_end_hour", payload.day_end_hour)
+    db.commit()
+    return MeetingSlotSettingsOut(
+        slot_duration_minutes=payload.slot_duration_minutes,
+        day_start_hour=payload.day_start_hour,
+        day_end_hour=payload.day_end_hour,
+    )
+
 
 
 # --------------------------------------------------------------------------

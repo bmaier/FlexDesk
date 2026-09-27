@@ -1,4 +1,4 @@
-# PRD Quality Review — Desk Sharing Anwendung für BAMF
+# PRD Quality Review — Desk4Me
 
 ## Overall verdict
 
@@ -6,7 +6,7 @@ This PRD is disciplined and largely decision-ready: it names trade-offs, tags as
 
 ## Decision-readiness — strong
 
-Trade-offs are named, not smoothed. FR-5 ("Uneingeschränkte Desk-Verfügbarkeit" — no quota by team/Referat) is stated plainly as a decision, and its downside (team-clustering complaints) surfaces honestly as counter-metric **SM-C2** rather than being silently absorbed. FR-17 (no approval check for confidential room blocking) is a real risk accepted deliberately, and it's paired with `[NOTE FOR PM]` at §6.1 flagging it must still be checked with the actual BAMF Geheimschutzbeauftragter — a real tension, not a safe checkpoint. Open Questions (§12) are genuinely unresolved (pilot site, hosting operator/BSI-C5, VS-NFD sign-off, integration spec, adoption target, notification channel) rather than rhetorical.
+Trade-offs are named, not smoothed. FR-5 ("Uneingeschränkte Desk-Verfügbarkeit" — no quota by team/Referat) is stated plainly as a decision, and its downside (team-clustering complaints) surfaces honestly as counter-metric **SM-C2** rather than being silently absorbed. FR-17 (no approval check for confidential room blocking) is a real risk accepted deliberately, and it's paired with `[NOTE FOR PM]` at §6.1 flagging it must still be checked with the actual Ihre Organisation Geheimschutzbeauftragter — a real tension, not a safe checkpoint. Open Questions (§12) are genuinely unresolved (pilot site, hosting operator/BSI-C5, VS-NFD sign-off, integration spec, adoption target, notification channel) rather than rhetorical.
 
 ### Findings
 - **low** Quota trade-off narrated only via counter-metric, not in the FR itself (§4.1 FR-5, §9) — FR-5's consequence block states "Keine Kontingentierung nach Team, Referat oder Zugehörigkeit" with no rationale for why this is safe; the downside only appears three sections later as SM-C2. *Fix:* one sentence in FR-5's Beschreibung linking to the SM-C2 trade-off so the decision is legible standalone.

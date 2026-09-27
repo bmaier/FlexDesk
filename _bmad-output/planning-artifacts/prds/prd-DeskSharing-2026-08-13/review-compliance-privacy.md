@@ -1,17 +1,17 @@
 ---
-title: Compliance/Privacy Review — DeskSharing BAMF PRD
+title: Compliance/Privacy Review — Desk4Me PRD
 reviewed: prd.md, addendum.md (prd-DeskSharing-2026-08-13)
 review-date: 2026-08-13
 reviewer-focus: DSGVO/GDPR, BITV 2.0/WCAG 2.1 AA, VS-NFD, Data Governance
 ---
 
-# Compliance & Privacy Review — DeskSharing BAMF PRD
+# Compliance & Privacy Review — Desk4Me PRD
 
 ## Overall Verdict
 
 The PRD's headline privacy claims (pseudonymized-by-default presence, no cancellation-reason capture) are directionally sound and clearly the product of real thought — but they are **necessary, not sufficient**, for a Launch-stakes federal-agency system. The stated stance is undermined by unspecified controls around the mechanisms that surround it (who can de-pseudonymize, how long audit/booking data is kept, whether the workforce co-determination process has even been triggered). Accessibility is asserted but not engineered — a real legal-risk gap at this stakes level. VS-NFD handling is already correctly flagged by the PM as risky, but the current spec goes further than "needs review" — it locks the no-control decision into Non-Goals (§9) *before* the promised expert sign-off happens, and provides no compensating control (audit trail) even as an interim measure. Data retention/deletion is a genuine blind spot: nothing in the document says how long presence/booking data lives, which is the single most consequential omission for a system whose entire value proposition is recording where employees are.
 
-**None of this blocks continued design work**, but several items should not survive to build without an explicit decision (ideally from BAMF's Datenschutzbeauftragter, Personalrat, and Barrierefreiheitsbeauftragter, mirroring the VS-NFD escalation already planned).
+**None of this blocks continued design work**, but several items should not survive to build without an explicit decision (ideally from Ihre Organisation's Datenschutzbeauftragter, Personalrat, and Barrierefreiheitsbeauftragter, mirroring the VS-NFD escalation already planned).
 
 ## Findings by Severity
 
@@ -75,7 +75,7 @@ FR-15 deliberately omits a cancellation-reason field specifically to avoid captu
 
 Systematic recording of employee location/presence across 50-100 sites, with role-based re-identification (FR-19/20) and audit trails (FR-13), plausibly meets the Art. 35(3) DSGVO criteria for mandatory Datenschutz-Folgenabschätzung (systematic monitoring at scale of a publicly accessible area is one enumerated trigger category, and BfDI/state DPA guidance treats large-scale workplace-monitoring-capable systems as DPIA candidates). §6.1 lists DSGVO as a constraint but doesn't mention a DPIA obligation or owner.
 
-**Fix:** Add a DPIA action item to §12 Open Questions, owned by BAMF's Datenschutzbeauftragter, gating pilot rollout (§8).
+**Fix:** Add a DPIA action item to §12 Open Questions, owned by Ihre Organisation's Datenschutzbeauftragter, gating pilot rollout (§8).
 
 ### 7. [HIGH] BITV 2.0/WCAG 2.1 AA is a bullet, not a requirement
 **Section:** §6.1 (one line); no FR/NFR coverage anywhere.
@@ -94,9 +94,9 @@ The HR-system integration ("DataGrid Services", §7/addendum) presumably supplie
 ### 9. [MEDIUM] Inconsistent compliance rigor between VS-NFD and DSGVO
 **Section:** §6.1, §12 OQ3 vs. rest of §6.1.
 
-The PRD explicitly commits to getting VS-NFD handling "gegengeprüft" by the actual Geheimschutzbeauftragter before finalizing (§6.1, §12.3) — a good practice. No equivalent commitment exists for the pseudonymization design (§4.7) or retention posture (§6.2) being reviewed by BAMF's actual Datenschutzbeauftragter, despite comparable stakes (both are federal-agency-specific compliance domains with a named internal expert role that should sign off).
+The PRD explicitly commits to getting VS-NFD handling "gegengeprüft" by the actual Geheimschutzbeauftragter before finalizing (§6.1, §12.3) — a good practice. No equivalent commitment exists for the pseudonymization design (§4.7) or retention posture (§6.2) being reviewed by Ihre Organisation's actual Datenschutzbeauftragter, despite comparable stakes (both are federal-agency-specific compliance domains with a named internal expert role that should sign off).
 
-**Fix:** Add a parallel Open Question: "DSGVO-Pseudonymisierungs- und Aufbewahrungskonzept final mit dem BAMF-Datenschutzbeauftragten abstimmen," mirroring §12.3.
+**Fix:** Add a parallel Open Question: "DSGVO-Pseudonymisierungs- und Aufbewahrungskonzept final mit dem Datenschutzbeauftragten Ihrer Organisation abstimmen," mirroring §12.3.
 
 ### 10. [MEDIUM] Real names stored as generic Labels, exposed to FM dedup tooling
 **Section:** §4.7 FR-21, §4.8 FR-24/FR-25.
@@ -117,7 +117,7 @@ Map-zoom navigation (Land → Region → Stadt → Gebäude → Etage → Raum) 
 
 No FR or NFR addresses how an employee exercises Art. 15 (access) or Art. 17 (erasure) DSGVO rights over their own Bewegungsdaten, Labels, or the FR-13 audit entries naming them.
 
-**Fix:** Add a short NFR/FR noting the process (even if "handled via existing BAMF DSGVO-Auskunftsprozess, out of scope for this system's UI") so it's at least acknowledged rather than silent.
+**Fix:** Add a short NFR/FR noting the process (even if "handled via existing Ihre Organisation DSGVO-Auskunftsprozess, out of scope for this system's UI") so it's at least acknowledged rather than silent.
 
 ### 13. [LOW] R2 backend (Google Agent ADK) raises international-transfer questions
 **Section:** addendum.md "Chat-Buchung — Tech-Stack"; PRD §6.2, §12 OQ2.

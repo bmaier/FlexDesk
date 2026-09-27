@@ -4,7 +4,7 @@ type: architecture-spine
 purpose: build-substrate
 altitude: initiative
 paradigm: 'Hierarchical Domain-Driven Clean Architecture (FastAPI + React/TS)'
-scope: 'Desk4Me (BAMF) — Release 1 (5-Ebenen-Hierarchie, 2-Stufen-Grundrisse, Desk-/Meetingraum-Buchung, Bestuhlungsvarianten & Drag-Drop, Catering-Kostenstellenabrechnung, FM-State-Management, Zonen, Org-Hierarchie-Kaskade, Lock/Unlock-Zyklen, Check-in, Barrierefreiheit)'
+scope: 'Desk4Me (Ihre Organisation) — Release 1 (5-Ebenen-Hierarchie, 2-Stufen-Grundrisse, Desk-/Meetingraum-Buchung, Bestuhlungsvarianten & Drag-Drop, Catering-Kostenstellenabrechnung, FM-State-Management, Zonen, Org-Hierarchie-Kaskade, Lock/Unlock-Zyklen, Check-in, Barrierefreiheit)'
 status: active
 license: 'GNU AGPL-3.0 (Berthold Maier)'
 created: '2026-09-02'
@@ -19,7 +19,7 @@ sources:
 companions: []
 ---
 
-# Architecture Spine — Desk4Me (BAMF Workspace Management)
+# Architecture Spine — Desk4Me (Ihre Organisation Workspace Management)
 
 ## Design Paradigm
 
@@ -113,7 +113,7 @@ Zur Vermeidung unübersichtlicher Mischpläne trennt das System sauber zwischen 
 
 ---
 
-## 5. Rollen- und Rechte-Matrix (BAMF Governance)
+## 5. Rollen- und Rechte-Matrix (Ihre Organisation Governance)
 
 | Rolle | Liegenschaft/Etage anlegen | Grundriss zeichnen | Desks/Möbel platzieren | Meeting buchen | Catering buchen | Buchung genehmigen |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -184,7 +184,7 @@ Release 1 wurde als PoC bewusst schnell gegen den fachlichen Kern des PRD gebaut
 
 ### AD-4 — Authentifizierung ist ein simulierter Demo-Mechanismus `[ADOPTED]`
 
-- **Binds:** Auth-/Pseudonymisierungsmodell (PRD FR-18–FR-21), `addendum.md` „IDM/IAM des BAMF (Keycloak-basiert)"
+- **Binds:** Auth-/Pseudonymisierungsmodell (PRD FR-18–FR-21), `addendum.md` „IDM/IAM Ihrer Organisation (Keycloak-basiert)"
 - **Prevents:** Annahme einer echten Identitätsprüfung/SSO; Annahme, dass die Rollen-/Rechteprüfung (§5) gegen ein echtes IDM validiert ist
 - **Rule:** `backend/app/auth.py` implementiert bewusst **keine** Keycloak-/IDM-Integration — die Anmeldung erfolgt per Demo-Nutzerauswahl, das Backend akzeptiert ein opakes `Bearer demo:<id>`-Token ohne kryptografische Prüfung. **Sicherheitskritisch:** Dies ist vor jeglicher Produktivsetzung — nicht optional, nicht „später" — durch eine echte Keycloak-/IDM-Integration mit signierten/validierten Tokens zu ersetzen, da sonst weder Authentifizierung noch das darauf aufbauende Pseudonymisierungs-/Berechtigungsmodell (§5, §6) tragfähig sind.
 

@@ -2,7 +2,7 @@
 
 ## Management-Zusammenfassung
 
-Die BAMF-Anforderungen wurden am 20.08.2026 im `sprint-change-proposal-2026-08-20.md` strukturiert erfasst und als funktionale Anforderungen (FR-44 bis FR-57) in das `prd.md` integriert.
+Die fachlichen Anforderungen wurden am 20.08.2026 im `sprint-change-proposal-2026-08-20.md` strukturiert erfasst und als funktionale Anforderungen (FR-44 bis FR-57) in das `prd.md` integriert.
 
 | Bereich | Vollständig umgesetzt | Teilweise / mit PoC-Grenzen | Noch offen / Klärungsbedarf |
 | --- | ---: | ---: | ---: |
@@ -19,7 +19,7 @@ Die BAMF-Anforderungen wurden am 20.08.2026 im `sprint-change-proposal-2026-08-2
     - **Datenmodell:** `structure.py:159`, `structure.py:169`, `structure.py:177` sowie `structure.py:104`.
     - **Backend:** In `bookings.py:365-375` wird geprüft, ob der Desk oder Raum einer Zone/Org-Einheit zugewiesen ist. Nicht zugeordnete Personen erhalten HTTP 403 `ZONE_RESTRICTED`.
     - **Frontend:** Eigener Reiter „Zonen & Kontingente“ in `FacilityManagement.tsx:184` zur Zuweisung von Referaten und Desks. Im Buchungsplan (`TargetedBooking.tsx:820`) werden
-    gesperrte Zonenplätze visuell als „Zonen-Kontingent“ markiert. Büros ohne Zonenzuordnung bleiben nach Standard (FR-5) für alle BAMF-Mitarbeitenden frei buchbar.
+    gesperrte Zonenplätze visuell als „Zonen-Kontingent“ markiert. Büros ohne Zonenzuordnung bleiben nach Standard (FR-5) für alle Mitarbeitenden frei buchbar.
 
 ### 2. Mehrfachbuchung durch Berechtigte (VL, GZ / Team-Assistenz)
 - **Status:** Umgesetzt (FR-11, FR-12)

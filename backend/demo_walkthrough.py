@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Demo-Ablauf für DeskSharing BAMF — führt die zentralen Use Cases nacheinander aus.
+"""Demo-Ablauf für Desk4Me — führt die zentralen Use Cases nacheinander aus.
 
 Setzt eine laufende Backend-Instanz voraus (siehe README/start.sh, Standard-Port 8010).
 Während das Skript läuft, kann parallel im Browser (Frontend) mitverfolgt werden, wie sich

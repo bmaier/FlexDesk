@@ -3,7 +3,7 @@
 
 ## Desk4Me
 
-Workspace & Meeting Room Booking Management System (Proof of Concept for BAMF). Python 3.12 (FastAPI, SQLAlchemy 2.0, SQLite) and TypeScript (React 18, Vite, Tailwind CSS). Planning and BMad artifacts live in `_bmad-output/`, domain docs and requirements in `docs/`. Licensed under GNU AGPL-3.0 (Copyright 2026 Berthold Maier).
+Workspace & Meeting Room Booking Management System (Proof of Concept, organization-agnostic). Python 3.12 (FastAPI, SQLAlchemy 2.0, SQLite) and TypeScript (React 18, Vite, Tailwind CSS). Planning and BMad artifacts live in `_bmad-output/`, domain docs and requirements in `docs/`. Licensed under GNU AGPL-3.0 (Copyright 2026 Berthold Maier).
 
 ## Policy
 

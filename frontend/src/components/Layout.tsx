@@ -73,7 +73,7 @@ export default function Layout() {
       <aside className="w-72 shrink-0 bg-surface-container-low border-r border-outline-variant/30 flex flex-col">
         <div className="h-16 flex items-center px-4 border-b border-outline-variant/30">
           <span className="font-bold text-primary">DeskSharing</span>
-          <span className="ml-1 font-bold text-tertiary-fixed-dim">BAMF</span>
+          <span className="ml-1 font-bold text-tertiary-fixed-dim">Ihre Organisation</span>
         </div>
         <nav className="flex-1 overflow-y-auto px-2 pb-4">
           <SectionLabel>Arbeitsplatz</SectionLabel>

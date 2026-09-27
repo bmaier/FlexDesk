@@ -7,15 +7,15 @@ project: Desk4Me
 license: GNU AGPL-3.0 (Berthold Maier)
 ---
 
-# PRD: Desk4Me — Workspace & Meeting Room Booking Management (BAMF PoC)
+# PRD: Desk4Me — Workspace & Meeting Room Booking Management (PoC)
 
 ## 0. Document Purpose
 
-Diese PRD richtet sich an Product-Owner, UX-, Architektur- und Umsetzungsverantwortliche des DeskSharing-BAMF-Projekts. Sie baut auf zwei vorgelagerten Sessions auf: einer Forge-Idea-Session (`../../forge/bamf-desk-sharing/forged-idea.md`, 13 gehärtete Entscheidungen) und einer Party-Mode-Diskussion (`../../party-mode/2026-08-13-desk-sharing-bamf.html`, Release-Schnitt R1/R2a/R2b). Begriffe folgen dem Glossar (§3) verbindlich; Features sind gruppiert mit global nummerierten FRs; Annahmen sind inline mit `[ASSUMPTION]` markiert und in §13 indexiert. Technische Integrations- und Architekturdetails, die nicht Teil der Produktanforderung sind, stehen in `addendum.md`.
+Diese PRD richtet sich an Product-Owner, UX-, Architektur- und Umsetzungsverantwortliche des Desk4Me-Projekts. Sie baut auf zwei vorgelagerten Sessions auf: einer Forge-Idea-Session (`../../forge/bamf-desk-sharing/forged-idea.md`, 13 gehärtete Entscheidungen) und einer Party-Mode-Diskussion (`../../party-mode/2026-08-13-desk-sharing-bamf.html`, Release-Schnitt R1/R2a/R2b). Begriffe folgen dem Glossar (§3) verbindlich; Features sind gruppiert mit global nummerierten FRs; Annahmen sind inline mit `[ASSUMPTION]` markiert und in §13 indexiert. Technische Integrations- und Architekturdetails, die nicht Teil der Produktanforderung sind, stehen in `addendum.md`.
 
 ## 1. Vision
 
-DeskSharing BAMF ermöglicht Mitarbeitenden des Bundesamts für Migration und Flüchtlinge, über alle 50-100 Liegenschaften hinweg in Sekunden einen Arbeitsplatz oder Meetingraum zu finden und zu buchen — am eigenen Standardstandort per Ein-Klick, an unbekannten Standorten über eine schnelle Kartenauswahl. Buchen funktioniert genauso einfach im Auftrag: Team-Assistenzen und Führungskräfte können für abwesende Kolleginnen und Kollegen handeln, ohne sensible Gründe preiszugeben.
+Desk4Me ermöglicht Mitarbeitenden Ihrer Organisation, über alle 50-100 Liegenschaften hinweg in Sekunden einen Arbeitsplatz oder Meetingraum zu finden und zu buchen — am eigenen Standardstandort per Ein-Klick, an unbekannten Standorten über eine schnelle Kartenauswahl. Buchen funktioniert genauso einfach im Auftrag: Team-Assistenzen und Führungskräfte können für abwesende Kolleginnen und Kollegen handeln, ohne sensible Gründe preiszugeben.
 
 Facility Management erhält die volle Kontrolle über Gebäude, Räume und Ausstattung durch ein flexibles Label-System, kann Flächen bei Renovierung oder Defekt gezielt sperren, ohne dass betroffene Nutzer im Ungewissen bleiben. Besondere Vertraulichkeitsanforderungen (z.B. VS-NFD-Aufgaben) lassen sich unbürokratisch abbilden, ohne zum Standardfall zu werden. Wer wo sitzt, bleibt grundsätzlich pseudonymisiert sichtbar — Transparenz für die Organisation, ohne unnötige Preisgabe von Identität.
 
@@ -33,13 +33,13 @@ Ab Release 2 wird die Buchung zusätzlich als vollwertiger, gleichwertiger Gespr
 
 ### 2.2 Non-Users (v1)
 
-Ausschließlich interne BAMF-Mitarbeitende mit BAMF-IDM-Konto. Keine externen Dienstleister, Besucher, Praktikant:innen ohne volles IDM-Konto oder andere Behörden in v1.
+Ausschließlich interne Mitarbeitende mit Organisations-IDM-Konto. Keine externen Dienstleister, Besucher, Praktikant:innen ohne volles IDM-Konto oder andere Behörden in v1.
 
 ### 2.3 Key User Journeys
 
 - **UJ-1. Herr Yilmaz bucht seinen Stammtisch in 5 Sekunden.**
   - **Persona + Kontext:** Sachbearbeiter, bucht 3x/Woche denselben Standort.
-  - **Entry state:** authentifiziert über BAMF-IDM, öffnet die App.
+  - **Entry state:** authentifiziert über Organisations-IDM, öffnet die App.
   - **Path:** Startbildschirm zeigt Standardstandort als Ein-Klick-Chip → antippen → System zeigt freie Desks am Standort, nach Präferenz-Ranking sortiert → einen wählen → bestätigen.
   - **Climax:** Buchung erscheint sofort bestätigt, kein Formular, keine Karte nötig.
   - **Resolution:** Buchung sichtbar in "Meine Buchungen", Desk für den Tag reserviert.
@@ -61,7 +61,7 @@ Ausschließlich interne BAMF-Mitarbeitende mit BAMF-IDM-Konto. Keine externen Di
 
 ## 3. Glossar
 
-- **Liegenschaft** — Eine der 50-100 Immobilien/Standorte des BAMF, mit Adresse und Geokoordinaten. Enthält ein oder mehrere Gebäude.
+- **Liegenschaft** — Eine der 50-100 Immobilien/Standorte Ihrer Organisation, mit Adresse und Geokoordinaten. Enthält ein oder mehrere Gebäude.
 - **Gebäude** — Bauwerk innerhalb einer Liegenschaft. Enthält Räume.
 - **Raum** — Räumliche Einheit innerhalb eines Gebäudes, mit fester Raumnummer. Typ: Büro-/Desk-Fläche oder Meetingraum.
 - **Meetingraum** — Raum vom Typ Meetingraum: nur als Ganzes buchbar (nicht einzelplatzweise), in Halbstunden-Granularität. Verhält sich funktional grundlegend anders als ein Desk-haltender Raum.
@@ -127,7 +127,7 @@ System verhindert, dass derselbe Desk für überlappende Zeiträume doppelt gebu
 - Bei Konflikt wird die Buchung abgelehnt, nicht die bestehende Buchung überschrieben.
 
 #### FR-44: Referatsbezogenes Raumkontingent / Zonen (Opt-in)
-FM kann pro Liegenschaft eine oder mehrere Zonen einrichten, die einem oder mehreren Referaten/Arbeitsgebieten zugeordnete Raumkontingente abbilden. Ist eine Zone aktiv, können nur Mitarbeitende der zugeordneten Referate dort Desks buchen; Büros außerhalb einer Zone bleiben für alle BAMF-Mitarbeitenden uneingeschränkt buchbar (FR-5).
+FM kann pro Liegenschaft eine oder mehrere Zonen einrichten, die einem oder mehreren Referaten/Arbeitsgebieten zugeordnete Raumkontingente abbilden. Ist eine Zone aktiv, können nur Mitarbeitende der zugeordneten Referate dort Desks buchen; Büros außerhalb einer Zone bleiben für alle Mitarbeitenden uneingeschränkt buchbar (FR-5).
 
 **Consequences (testable):**
 - Ohne eingerichtete Zone verhält sich eine Liegenschaft wie bisher (FR-5).
@@ -263,7 +263,7 @@ Mitarbeiter kann einen gesamten Raum (inkl. aller darin enthaltenen Desks) mit e
 - Ohne ausgefüllte Begründung ist die Blockierung nicht abschließbar.
 
 #### FR-17: Keine Freigabeprüfung, aber Pflicht-Audit-Log
-System führt keine Berechtigungs- oder Freigabeprüfung für eine vertrauliche Raumblockierung durch. `[NOTE FOR PM]` Diese Entscheidung ist vorläufig, bis die Prüfung mit dem BAMF-Geheimschutzbeauftragten (§12) stattgefunden hat.
+System führt keine Berechtigungs- oder Freigabeprüfung für eine vertrauliche Raumblockierung durch. `[NOTE FOR PM]` Diese Entscheidung ist vorläufig, bis die Prüfung mit dem Geheimschutzbeauftragten Ihrer Organisation (§12) stattgefunden hat.
 
 **Consequences (testable):**
 - Jede vertrauliche Raumblockierung wird in einem zugriffsbeschränkten Audit-Log erfasst (wer, wann, welcher Raum, Begründungstext) als kompensierende Mindestkontrolle, unabhängig davon, ob später ein Freigabeprozess ergänzt wird.
@@ -460,9 +460,9 @@ Checkt der Buchende nicht innerhalb des Zeitfensters (FR-47) ein, storniert das 
 
 - **BITV 2.0 / WCAG 2.1 AA** — rechtlich verbindlich für Bundesbehörden, gilt für alle Oberflächen inkl. Barrierefreiheitserklärung und Feedback-Mechanismus.
 - **DSGVO** — Pseudonymisierung als Standard (§4.7); keine Erfassung besonderer Datenkategorien (FR-15).
-- **VS-NFD-Handhabung** — `[NOTE FOR PM]` Blockierung ohne Freigabeprüfung (§4.6, FR-17) ist eine bewusste, aber vorläufige Entscheidung mit Pflicht-Audit-Log als Mindestkontrolle — sie gilt erst als final, wenn sie mit dem tatsächlichen BAMF-Geheimschutzbeauftragten gegengeprüft wurde (§12).
+- **VS-NFD-Handhabung** — `[NOTE FOR PM]` Blockierung ohne Freigabeprüfung (§4.6, FR-17) ist eine bewusste, aber vorläufige Entscheidung mit Pflicht-Audit-Log als Mindestkontrolle — sie gilt erst als final, wenn sie mit dem tatsächlichen Geheimschutzbeauftragten Ihrer Organisation gegengeprüft wurde (§12).
 - **Personalrat/Mitbestimmung** — `[Open Question]` Ein System, das erfasst, wer wo sitzt und wer für wen bucht/storniert, löst voraussichtlich Mitbestimmungsrechte des Personalrats aus. Klärung und ggf. Dienstvereinbarung sind ein Rollout-Gate, siehe §8/§12.
-- **DSFA/DPIA** — `[Open Question]` Systematische Anwesenheitserfassung über 50-100 Standorte ist ein plausibler Art.-35-DSGVO-Trigger; Klärung mit dem BAMF-Datenschutzbeauftragten steht aus, siehe §12.
+- **DSFA/DPIA** — `[Open Question]` Systematische Anwesenheitserfassung über 50-100 Standorte ist ein plausibler Art.-35-DSGVO-Trigger; Klärung mit dem Datenschutzbeauftragten Ihrer Organisation steht aus, siehe §12.
 
 ### 6.2 Data Governance
 
@@ -485,7 +485,7 @@ Details siehe `addendum.md` ("API-Design-Grundsätze für Release 1").
 
 ## 7. Integration & Abhängigkeiten
 
-Kurzgefasst (Details in `addendum.md`): BAMF-IDM/IAM (Keycloak), BAMF-Stammdaten/Codelisten, HR-System, EventGrid/CloudEvents, OpenTelemetry, TaskManagement.
+Kurzgefasst (Details in `addendum.md`): Organisations-IDM/IAM (Keycloak), Stammdaten Ihrer Organisation/Codelisten, HR-System, EventGrid/CloudEvents, OpenTelemetry, TaskManagement.
 
 ## 8. Rollout & Change Management
 
@@ -533,13 +533,13 @@ Desk-Buchung inkl. optionaler Zonen-/Kontingentverwaltung (§4.1, FR-44/FR-45), 
 
 1. **Rollout:** Konkreter Pilot-Standort für den phasierten Rollout (§8).
 2. **Hosting/Infrastruktur:** Hosting-Betreiber und BSI-C5-/EVB-IT-Cloud-Konformität (§6.2) — inkl. Prüfung, ob der Release-2-Chat-Backend-Anbieter (Google Agent ADK, siehe `addendum.md`) dieselbe Anforderung erfüllt.
-3. **Compliance:** VS-NFD-Handhabung final mit dem BAMF-Geheimschutzbeauftragten abstimmen (§6.1, FR-17) — inkl. wer Zugriff auf das neue Pflicht-Audit-Log erhält.
+3. **Compliance:** VS-NFD-Handhabung final mit dem Geheimschutzbeauftragten Ihrer Organisation abstimmen (§6.1, FR-17) — inkl. wer Zugriff auf das neue Pflicht-Audit-Log erhält.
 4. **Integration:** Detaillierte Integrationsspezifikation zu IDM/IAM, HR-System (DataGrid Services), Stammdaten/Codelisten (siehe `addendum.md`).
 5. **Metrics:** Zielwert und Messzeitraum für Adoptionsrate (SM-1).
 6. **Integration:** Konkrete Benachrichtigungskanäle (E-Mail-System, Postkorb-System) technisch festlegen (siehe `addendum.md`).
 7. **Compliance:** Personalrat-Mitbestimmung/Dienstvereinbarung klären, bevor der Pilot-Rollout (§8) startet — vergleichbare Prüfung wie bei VS-NFD (Punkt 3).
-8. **Compliance:** DSFA/DPIA (Art. 35 DSGVO) mit dem BAMF-Datenschutzbeauftragten klären und terminieren — Gate vor Pilot-Rollout.
-9. **Data Governance:** Aufbewahrungs- und Löschkonzept je Datenklasse festlegen (Bewegungsdaten, Vertretungs-Audit-Log FR-13, VS-NFD-Audit-Log FR-17) — mit dem BAMF-Datenschutzbeauftragten, analog zu Punkt 3.
+8. **Compliance:** DSFA/DPIA (Art. 35 DSGVO) mit dem Datenschutzbeauftragten Ihrer Organisation klären und terminieren — Gate vor Pilot-Rollout.
+9. **Data Governance:** Aufbewahrungs- und Löschkonzept je Datenklasse festlegen (Bewegungsdaten, Vertretungs-Audit-Log FR-13, VS-NFD-Audit-Log FR-17) — mit dem Datenschutzbeauftragten Ihrer Organisation, analog zu Punkt 3.
 10. **Data Governance:** Zusammenhang Mitarbeiter-Austritt ↔ Datenlöschung/-anonymisierung (Stammdaten, Bewegungsdaten, Labels inkl. FR-21) festlegen.
 11. **Sicherheit:** Welche Rollen dürfen Pseudonym-Auflösung (FR-20) auslösen, und wird der Lookup selbst protokolliert?
 12. **Barrierefreiheit:** BITV 2.0/WCAG-2.1-AA-Konformitätskriterien pro Komponententyp mit dem Barrierefreiheitsbeauftragten festlegen, insbesondere für Kartenexploration (FR-2) und generative Chat-UI (FR-31).

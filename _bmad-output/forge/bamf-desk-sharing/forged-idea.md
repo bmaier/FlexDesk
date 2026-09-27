@@ -1,4 +1,4 @@
-# Forged Idea: Desk Sharing für BAMF
+# Forged Idea: Desk4Me
 
 **Ausgangsidee:** Desk-/Raum-Sharing-Plattform für Behörde mit 50-100 Liegenschaften. Flexible Buchung durch Mitarbeiter selbst oder in Vertretung (Team-Assistenz/Manager), Facility-Management-Verwaltung von Gebäuden/Räumen/Desks, Meetingraum-Buchung, Serienbuchungen, vertrauliche Raumnutzung (VS-NFD), Chat-basierte Buchung mit KI, durchgängige Semantic-Web-Datenmodellierung.
 

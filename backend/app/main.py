@@ -1,4 +1,4 @@
-"""DeskSharing BAMF — PoC FastAPI entrypoint.
+"""Desk4Me — PoC FastAPI entrypoint.
 
 Wires up all routers, static floorplan files, CORS for the Vite dev server,
 DB creation + seed on first boot, and a lightweight background sweep for
@@ -87,7 +87,7 @@ async def lifespan(app: FastAPI):
     task.cancel()
 
 
-app = FastAPI(title="DeskSharing BAMF — PoC API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Desk4Me — PoC API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

@@ -3,14 +3,14 @@
   (Redirect — Anmeldung; Fehler — Zugriff verweigert), Accessibility Floor
   (Anmelde-Redirect aria-live).
   Content scope decided 2026-08-18: kein eigener Login-Screen, Auth komplett an
-  BAMF-IDM/Keycloak delegiert (Standard-OIDC-Redirect). Zwei Zustände in einer Datei.
+  Organisations-IDM/Keycloak delegiert (Standard-OIDC-Redirect). Zwei Zustände in einer Datei.
   Tokens from DESIGN.md frontmatter, applied literally (no build step).
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Anmelde-Redirect &amp; Zugriff verweigert — DeskSharing BAMF</title>
+<title>Anmelde-Redirect &amp; Zugriff verweigert — Desk4Me</title>
 <style>
   :root {
     --background: #f7f9fb;
@@ -52,7 +52,7 @@
       <div class="card">
         <div class="icon-circle neutral"><div class="spinner" aria-hidden="true"></div></div>
         <h1>Wird angemeldet…</h1>
-        <p>Sie werden zur Anmeldung bei BAMF-IDM weitergeleitet.</p>
+        <p>Sie werden zur Anmeldung bei Organisations-IDM weitergeleitet.</p>
       </div>
     </div>
     <div class="state">
@@ -62,7 +62,7 @@
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#93000a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
         </div>
         <h1>Kein Zugriff</h1>
-        <p>Ihr BAMF-IDM-Konto ist noch nicht für DeskSharing freigeschaltet. Wenden Sie sich an den Service Desk, um Zugriff zu beantragen.</p>
+        <p>Ihr Organisations-IDM-Konto ist noch nicht für DeskSharing freigeschaltet. Wenden Sie sich an den Service Desk, um Zugriff zu beantragen.</p>
         <button class="btn btn-secondary">Service Desk kontaktieren</button>
       </div>
     </div>

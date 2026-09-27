@@ -304,7 +304,7 @@ function DepartmentsManager() {
               <input
                 value={formCode}
                 onChange={(e) => setFormCode(e.target.value)}
-                placeholder="z.B. ABT-1, REF-11, IZAM..."
+                placeholder="z.B. ABT-1, REF-11, IT-BETRIEB..."
                 className="w-full mt-1 bg-surface-container-low rounded px-3 py-2 text-sm border border-outline-variant/30 font-mono"
               />
             </label>
@@ -324,7 +324,7 @@ function DepartmentsManager() {
               <input
                 value={formCostCenter}
                 onChange={(e) => setFormCostCenter(e.target.value)}
-                placeholder="z.B. KST-1100-PERS, KST-6200-IZAM..."
+                placeholder="z.B. KST-1100-PERS, KST-6200-ITFV..."
                 className="w-full mt-1 bg-surface-container-low rounded px-3 py-2 text-sm border border-outline-variant/30 font-mono"
               />
               <span className="text-[11px] text-on-surface-variant block mt-1">

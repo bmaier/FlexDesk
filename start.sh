@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# DeskSharing BAMF — PoC Startskript.
+# Desk4Me — PoC Startskript.
 # Startet Backend (FastAPI, uv-verwaltetes venv) und Frontend (Vite, neueste Node-LTS via nvm)
 # und beendet beide sauber bei Strg+C.
 set -euo pipefail
@@ -10,7 +10,7 @@ FRONTEND_DIR="$ROOT_DIR/frontend"
 BACKEND_PORT="${BACKEND_PORT:-8010}"
 FRONTEND_PORT="${FRONTEND_PORT:-5183}"
 
-echo "==> DeskSharing BAMF PoC wird gestartet…"
+echo "==> Desk4Me PoC wird gestartet…"
 
 if ! command -v uv >/dev/null 2>&1; then
   echo "Fehler: 'uv' wurde nicht gefunden. Installation: https://docs.astral.sh/uv/getting-started/installation/"
@@ -59,7 +59,7 @@ FRONTEND_PID=$!
 
 echo
 echo "=================================================================="
-echo " DeskSharing BAMF läuft:"
+echo " Desk4Me läuft:"
 echo "   Frontend: http://127.0.0.1:$FRONTEND_PORT"
 echo "   Backend:  http://127.0.0.1:$BACKEND_PORT/docs (OpenAPI)"
 echo

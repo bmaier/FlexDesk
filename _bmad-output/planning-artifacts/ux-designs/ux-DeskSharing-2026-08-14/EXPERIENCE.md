@@ -1,5 +1,5 @@
 ---
-name: DeskSharing BAMF
+name: Desk4Me
 status: final
 created: 2026-08-14
 updated: 2026-08-20
@@ -7,17 +7,17 @@ sources:
   - ../../prds/prd-DeskSharing-2026-08-13/prd.md
 ---
 
-# DeskSharing BAMF — Experience Spine
+# Desk4Me — Experience Spine
 
-> Responsive Web-App, Desktop-First, für eine Bundesbehörde (BAMF). Custom-Tailwind-System (kein benanntes UI-Framework), siehe `DESIGN.md`. Diese Spine beschreibt Verhalten, Zustände und Interaktion — visuelle Werte referenziert sie nur per `{colors.x}`/`{rounded.x}`/`{spacing.x}`-Token aus `DESIGN.md`. Kuratierte Verhaltens-/Copy-Quelle: `mockups/` (Aufschlüsselung siehe DESIGN.md, Do's and Don'ts; Rohmaterial: `imports/`), siehe `.memlog.md` für Kurationsentscheidungen.
+> Responsive Web-App, Desktop-First, für eine Organisation jeder Branche. Custom-Tailwind-System (kein benanntes UI-Framework), siehe `DESIGN.md`. Diese Spine beschreibt Verhalten, Zustände und Interaktion — visuelle Werte referenziert sie nur per `{colors.x}`/`{rounded.x}`/`{spacing.x}`-Token aus `DESIGN.md`. Kuratierte Verhaltens-/Copy-Quelle: `mockups/` (Aufschlüsselung siehe DESIGN.md, Do's and Don'ts; Rohmaterial: `imports/`), siehe `.memlog.md` für Kurationsentscheidungen.
 
 ## Foundation
 
 Responsive Web-App, **Desktop-First** (Discovery-Entscheidung, siehe `.memlog.md`) — primäre Nutzung an Bürorechnern, Layout degradiert nach unten, ist aber keine Mobile-first-Konstruktion. Keine UI-Bibliothek benannt: ein eigenes Tailwind-basiertes Komponentensystem (`DESIGN.md`) trägt die gesamte Oberfläche. Zielästhetik laut Discovery: funktional wie Google Workspace, aber sichtbar modern/ansprechend — explizit keine langweiligen Formulare, auch nicht bei sicherheitskritischen Screens.
 
-Barrierefreiheit ist **rechtlich verbindlich**, nicht optional: BITV 2.0 / WCAG 2.1 AA gilt für alle Oberflächen (PRD §5, §6.1) — inklusive einer noch zu erstellenden Barrierefreiheitserklärung und eines Feedback-Mechanismus (PRD-Open-Question, außerhalb des UX-Spine-Scopes). Nutzerkreis ist ausschließlich intern: BAMF-Mitarbeitende mit BAMF-IDM-Konto (PRD §2.2) — keine Gäste-/Anonym-Pfade, jede Surface setzt eine bestehende Authentifizierung voraus.
+Barrierefreiheit ist **rechtlich verbindlich**, nicht optional: BITV 2.0 / WCAG 2.1 AA gilt für alle Oberflächen (PRD §5, §6.1) — inklusive einer noch zu erstellenden Barrierefreiheitserklärung und eines Feedback-Mechanismus (PRD-Open-Question, außerhalb des UX-Spine-Scopes). Nutzerkreis ist ausschließlich intern: Mitarbeitende mit Organisations-IDM-Konto (PRD §2.2) — keine Gäste-/Anonym-Pfade, jede Surface setzt eine bestehende Authentifizierung voraus.
 
-**Authentifizierung — Geklärt (Open Questions #2):** Auth ist vollständig an BAMF-IDM/Keycloak delegiert (PRD §7, Addendum) — Standard-OIDC-Redirect, kein eigener Login-Screen. Die App zeigt nur einen kurzen Redirect-Ladezustand und einen Zugriffs-verweigert-Fehlerzustand (siehe State Patterns, `mockups/login-redirect/`). Bewusst **kein** Onboarding-/Tour-Screen: PRD fordert keinen, Schnellbuchung als selbsterklärende Landingpage macht ihn überflüssig.
+**Authentifizierung — Geklärt (Open Questions #2):** Auth ist vollständig an Organisations-IDM/Keycloak delegiert (PRD §7, Addendum) — Standard-OIDC-Redirect, kein eigener Login-Screen. Die App zeigt nur einen kurzen Redirect-Ladezustand und einen Zugriffs-verweigert-Fehlerzustand (siehe State Patterns, `mockups/login-redirect/`). Bewusst **kein** Onboarding-/Tour-Screen: PRD fordert keinen, Schnellbuchung als selbsterklärende Landingpage macht ihn überflüssig.
 
 Zentrale Domänen-Rollen (PRD §3 Glossar, verbatim): **Mitarbeiter** (Requester), **Team-Assistenz/Manager** (Vertreter, mit Vertretungsberechtigung), **Facility Management (FM)**, **Raumverantwortlicher** (Approver für genehmigungspflichtige Räume), **Mitarbeiter mit vertraulicher Aufgabe** (z.B. VS-NFD-Kontext). Diese Rollen bestimmen, welche Surfaces sichtbar bzw. aktionsfähig sind (siehe Information Architecture). Rollenname "Facility Management (FM)" ohne Bindestrich ist wörtliches PRD-Glossar; die gleichnamige Sidebar-Seite heißt bewusst "Facility-Management" (mit Bindestrich, Komposita-Regel) — zwei Schreibweisen für Rolle vs. Seite, keine Inkonsistenz.
 
@@ -122,8 +122,8 @@ Behavioral. Visuelle Specs liegen in `DESIGN.md.Components`.
 | Fehler — fehlende Vertretungsberechtigung | Buchen für... | Strukturierte Fehlerantwort laut FR-12-Konsequenz; UI leitet daraus eine für Menschen lesbare Meldung ab (kein stiller Fehlschlag). |
 | Fehler — Backend-Ablehnung nach vollständigem Long-Press | Vertrauliche Raumblockierung | Nach vollständigem Halten lehnt der Server ab (z.B. Raum bereits doppelt blockiert, ungültiges Aktenzeichen) → strukturierte Fehlermeldung im Formular statt "Abgeschlossen", Checkbox/Fortschritt setzen sich zurück, Formularwerte bleiben erhalten, kein Audit-Log-Eintrag (siehe Flow 5). |
 | Fremdstornierung/Sperrung | Meine Buchungen (betroffener Mitarbeiter) | Buchung verschwindet nicht kommentarlos — Benachrichtigung (Postkorb/E-Mail, FR-29) informiert vorab bzw. zeitnah; UI-Zustand für die Benachrichtigung selbst siehe `mockups/benachrichtigungs-panel/` (Open Questions #4, geklärt). |
-| Redirect — Anmeldung | App-weit (Pre-App) | **Geklärt (Open Questions #2).** Zentrierter Ladezustand ("Wird angemeldet…", Spinner statt Icon, Empty-State-Muster) während des OIDC-Redirects zu/von BAMF-IDM (Keycloak). Kein eigener Login-Screen — Auth ist vollständig an Keycloak delegiert, siehe `mockups/login-redirect/`. |
-| Fehler — Zugriff verweigert | App-weit (Pre-App) | **Geklärt (Open Questions #2).** BAMF-IDM-Konto existiert, ist aber nicht für DeskSharing provisioniert → Empty-State-Muster, Titel "Kein Zugriff" + Kontakthinweis (Service Desk). Kein "Erneut versuchen"-Button, da ein Retry dasselbe Ergebnis liefert. Siehe `mockups/login-redirect/`. |
+| Redirect — Anmeldung | App-weit (Pre-App) | **Geklärt (Open Questions #2).** Zentrierter Ladezustand ("Wird angemeldet…", Spinner statt Icon, Empty-State-Muster) während des OIDC-Redirects zu/von Organisations-IDM (Keycloak). Kein eigener Login-Screen — Auth ist vollständig an Keycloak delegiert, siehe `mockups/login-redirect/`. |
+| Fehler — Zugriff verweigert | App-weit (Pre-App) | **Geklärt (Open Questions #2).** Organisations-IDM-Konto existiert, ist aber nicht für DeskSharing provisioniert → Empty-State-Muster, Titel "Kein Zugriff" + Kontakthinweis (Service Desk). Kein "Erneut versuchen"-Button, da ein Retry dasselbe Ergebnis liefert. Siehe `mockups/login-redirect/`. |
 | Fehler — Systemfehler (global) | App-weit | **Geklärt (Open Questions #3).** Nicht-kontextspezifische Fehler (Serverfehler, unerwartete Exceptions, keine spezifische strukturierte Fehlerantwort greifbar) → ganzseitiger Empty-State mit "Erneut versuchen" (primär) + "Problem melden" (sekundär, Kontakthinweis). Kontextspezifische Fehler (Buchungskonflikt, fehlende Vertretung, VS-NFD-Ablehnung) bleiben inline wie oben beschrieben — dieser Zustand ist nur der Fallback ohne spezifischeren Kontext. Siehe `mockups/systemfehler/`. |
 | Sitzung abgelaufen | App-weit (Modal) | **Geklärt (Open Questions #3).** Keycloak-Token verfällt während aktiver Nutzung → stiller Refresh-Versuch im Hintergrund; schlägt der fehl, öffnet ein Modal ("Sitzung abgelaufen") mit einziger Aktion "Erneut anmelden" (→ Keycloak-Redirect). Modal blockiert die Seite dahinter (Scrim), kein Wegklicken ohne erneute Anmeldung. Siehe `mockups/sitzung-abgelaufen/`. |
 | Offline | App-weit | Kein Offline-Verhalten in den Exporten sichtbar oder von der PRD gefordert; als interne Fachanwendung mit Netzabhängigkeit angenommen — kein Offline-First-Anspruch. |
@@ -179,7 +179,7 @@ Wizard-Formulare (Serienbuchung, Vertrauliche Raumblockierung) stapeln ihre Absc
 
 *Sachbearbeiter, bucht 3x/Woche denselben Standort.*
 
-1. Herr Yilmaz öffnet die App, bereits über BAMF-IDM authentifiziert.
+1. Herr Yilmaz öffnet die App, bereits über Organisations-IDM authentifiziert.
 2. Schnellbuchung zeigt einen eigenen Hero-Bereich "Gewohnten Platz buchen" mit seinem Standarddesk, getrennt von den allgemeinen Tagesempfehlungen darunter.
 3. Er klickt direkt auf "Gewohnten Platz buchen" — keine Kartenauswahl, kein Scrollen nötig.
 4. Der Button zeigt kurz einen Spinner ("Buche…").
@@ -318,7 +318,7 @@ Verworfene Alternativen aus den 32 kuratierten Stitch-Exporten (volle Kurationsh
 Alle sieben Punkte, die während Discovery/Finalize offen dokumentiert wurden, sind mittlerweile geklärt — hier als Historie erhalten, damit die zugrundeliegende Unsicherheit und die getroffene Entscheidung nachvollziehbar bleiben, statt stillschweigend zu verschwinden.
 
 1. **Wer sitzt wo? — rechte Kartenansicht — Geklärt am 2026-08-18:** Der Export zeigte ein fast leeres, statisches Grundriss-Panel (4 fest positionierte Marker, keine Verbindung zu Suche/Filtern links, kein "keine Treffer"-Zustand). Aufgelöst über FR-18/FR-20 (Pseudonymisierung als Standard, kein automatischer Klarnamen-Lookup): Panel zeigt alle anwesenden Kolleg:innen als Marker, Suche verbindet sich mit der Karte per Hervorhebungs-Ring. Details siehe State Patterns, `mockups/wer-sitzt-wo/`.
-2. **Onboarding/Login — Geklärt am 2026-08-18:** Kein Stitch-Export deckte den Erstanmelde-/Login-Flow ab. Aufgelöst: Auth ist vollständig an BAMF-IDM/Keycloak delegiert (Standard-OIDC-Redirect), kein eigener Login-Screen nötig, kein Onboarding-Tour-Screen (PRD fordert keinen). Details siehe Foundation, State Patterns, `mockups/login-redirect/`.
+2. **Onboarding/Login — Geklärt am 2026-08-18:** Kein Stitch-Export deckte den Erstanmelde-/Login-Flow ab. Aufgelöst: Auth ist vollständig an Organisations-IDM/Keycloak delegiert (Standard-OIDC-Redirect), kein eigener Login-Screen nötig, kein Onboarding-Tour-Screen (PRD fordert keinen). Details siehe Foundation, State Patterns, `mockups/login-redirect/`.
 3. **Allgemeine Fehlerzustände — Geklärt am 2026-08-18:** Kein Export für generische Fehlerseiten (Serverfehler, Sitzungsablauf). Aufgelöst über ein dreistufiges Muster, das bestehende Komponenten wiederverwendet: kontextuelle Inline-Fehler (unverändert), ganzseitiger Systemfehler-Fallback, Sitzung-abgelaufen-Modal. Details siehe State Patterns, `mockups/systemfehler/`, `mockups/sitzung-abgelaufen/`.
 4. **Benachrichtigungs-Panel — Geklärt am 2026-08-18:** Das Glocken-Icon war im Header aller Screens sichtbar, aber in keinem Export je geöffnet gezeigt. Inhalt und Umfang wurden mit dem Nutzer entschieden (kein Erfinden von Layout): zwei Meldungstypen, Fremdstornierung/Sperrung (FR-29) und Genehmigungsstatus-Änderung — kein drittes, offenes Meldungssystem. Umgesetzt als `mockups/benachrichtigungs-panel/`, referenziert in Information Architecture und Component Patterns (Listen).
 5. **Mobile/Responsive-Breakpoint-Verhalten — Geklärt am 2026-08-18:** Alle Exports waren Desktop-Layouts, PRD erwähnt Mobile an keiner Stelle. Aufgelöst: bewusst kein dediziertes Mobile-Layout (Scope-Erfindung gegen die 10-Sekunden-Priorität), aber WCAG-1.4.10-Reflow bleibt Pflicht — als Zoom-getriebenes, nicht geräteerkanntes Drei-Stufen-Verhalten spezifiziert. Details siehe Responsive & Platform.

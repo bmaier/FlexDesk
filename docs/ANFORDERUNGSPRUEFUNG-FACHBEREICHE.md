@@ -1,6 +1,6 @@
 # Soll-Ist-Abgleich & Management-Zusammenfassung: Fachliche Anforderungen
 
-**Projekt:** DeskSharing BAMF (Proof of Concept)  
+**Projekt:** Desk4Me (Proof of Concept)  
 **Bezug:** E-Mail-Abstimmung vom 20./23. August 2026 (Referate 12D/E/F, 13D, AL1, AL2, VM)  
 **Stand der Prüfung:** 11. September 2026  
 **Zieltermin:** Präsentation des Prototyps in KW 38 (14. September 2026)  
@@ -30,12 +30,12 @@ Die Anforderungen wurden bereits im [`sprint-change-proposal-2026-08-20.md`](fil
 ## 2. Detaillierte Prüfung: Liegenschaftsreferate (12D, 12E, 12F, 13D)
 
 ### 1. Buchung aus referatsbezogenem Kontingent / Zonen + freie Büros
-* **Anforderung:** Mitarbeitende buchen ihren Schreibtisch / Raum direkt aus einem referatsbezogenen Raumkontingent oder Zonen, die nach Arbeitsgebieten eingerichtet werden; daneben gibt es Büros, die unabhängig von der Referatszuordnung von allen MA des BAMF gebucht werden können.
+* **Anforderung:** Mitarbeitende buchen ihren Schreibtisch / Raum direkt aus einem referatsbezogenen Raumkontingent oder Zonen, die nach Arbeitsgebieten eingerichtet werden; daneben gibt es Büros, die unabhängig von der Referatszuordnung von allen MA Ihrer Organisation gebucht werden können.
 * **Status:** **Vollständig umgesetzt** (FR-44, FR-45)
 * **Technische Umsetzung:**
   * **Datenmodell:** Tabellen [`Zone`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/backend/app/models/structure.py#L159), [`ZoneDepartment`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/backend/app/models/structure.py#L169), [`ZoneDesk`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/backend/app/models/structure.py#L177) und [`RoomDepartment`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/backend/app/models/structure.py#L104).
   * **Backend-Prüfung:** In [`create_desk_booking`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/backend/app/routers/bookings.py#L365-L375) wird geprüft, ob ein Desk oder Raum einer Zone zugeordnet ist und ob der Buchende zur berechtigten Organisationseinheit gehört (inkl. konfigurierbarer Kaskade auf Unterreferate). Nichtberechtigte erhalten HTTP 403 `ZONE_RESTRICTED`.
-  * **Frontend:** Zonenverwaltung im Tab *„Zonen & Kontingente“* ([`FacilityManagement.tsx`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/frontend/src/pages/FacilityManagement.tsx#L184)). Im Grundriss ([`TargetedBooking.tsx`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/frontend/src/pages/TargetedBooking.tsx#L820)) werden gesperrte Plätze visuell als *„Zonen-Kontingent“* markiert. Büros ohne Zonenzuordnung bleiben nach Standard (FR-5) für alle BAMF-Mitarbeitenden frei buchbar.
+  * **Frontend:** Zonenverwaltung im Tab *„Zonen & Kontingente“* ([`FacilityManagement.tsx`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/frontend/src/pages/FacilityManagement.tsx#L184)). Im Grundriss ([`TargetedBooking.tsx`](file:///Users/A3694852/temp/MunsiAI/DeskShareClaudePoC/frontend/src/pages/TargetedBooking.tsx#L820)) werden gesperrte Plätze visuell als *„Zonen-Kontingent“* markiert. Büros ohne Zonenzuordnung bleiben nach Standard (FR-5) für alle Mitarbeitenden frei buchbar.
 
 ---
 

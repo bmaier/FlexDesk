@@ -1,4 +1,4 @@
-"""Step definitions for all DeskSharing BAMF Gherkin features."""
+"""Step definitions for all Desk4Me Gherkin features."""
 from __future__ import annotations
 
 from datetime import datetime, timedelta

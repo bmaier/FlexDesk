@@ -145,19 +145,28 @@ def main() -> int:
 
         step('Lege bzw. aktualisiere Gebäude "Haus 1", Etage "1. OG", Raum "Büro Leipzig" und 3 Desks an…')
         leipzig_tree = brandt.get(f"/api/catalog/properties/{prop['id']}/tree").json()
-        building = next((b for b in leipzig_tree["buildings"] if b["name"] == "Haus 1"), None)
+        building = next((b for b in leipzig_tree.get("buildings", []) if b["name"] == "Haus 1"), None)
         if building is None:
-            building = brandt.post(f"/api/fm/properties/{prop['id']}/buildings", json={"name": "Haus 1"}).json()
-        floor = next((f for f in building["floors"] if f["name"] == "1. OG"), None)
+            brandt.post(f"/api/fm/properties/{prop['id']}/buildings", json={"name": "Haus 1"}).raise_for_status()
+            leipzig_tree = brandt.get(f"/api/catalog/properties/{prop['id']}/tree").json()
+            building = next((b for b in leipzig_tree.get("buildings", []) if b["name"] == "Haus 1"), None)
+        floor = next((f for f in building.get("floors", []) if f["name"] == "1. OG"), None)
         if floor is None:
-            floor = brandt.post(f"/api/fm/buildings/{building['id']}/floors", json={"name": "1. OG"}).json()
-        room = next((r for r in floor["rooms"] if r["name"] == "Büro Leipzig"), None)
+            brandt.post(f"/api/fm/buildings/{building['id']}/floors", json={"name": "1. OG"}).raise_for_status()
+            leipzig_tree = brandt.get(f"/api/catalog/properties/{prop['id']}/tree").json()
+            building = next((b for b in leipzig_tree.get("buildings", []) if b["name"] == "Haus 1"), None)
+            floor = next((f for f in building.get("floors", []) if f["name"] == "1. OG"), None)
+        room = next((r for r in floor.get("rooms", []) if r["name"] == "Büro Leipzig"), None)
         if room is None:
-            room = brandt.post(
+            brandt.post(
                 f"/api/fm/floors/{floor['id']}/rooms",
                 json={"room_number": "1.01", "name": "Büro Leipzig", "room_type": "desk_area", "label_names": ["Fensterplatz"]},
-            ).json()
-        desks_by_number = {d["desk_number"]: d for d in room["desks"]}
+            ).raise_for_status()
+            leipzig_tree = brandt.get(f"/api/catalog/properties/{prop['id']}/tree").json()
+            building = next((b for b in leipzig_tree.get("buildings", []) if b["name"] == "Haus 1"), None)
+            floor = next((f for f in building.get("floors", []) if f["name"] == "1. OG"), None)
+            room = next((r for r in floor.get("rooms", []) if r["name"] == "Büro Leipzig"), None)
+        desks_by_number = {d["desk_number"]: d for d in room.get("desks", [])}
         desks = []
         for index in (1, 2, 3):
             desk_number = f"L-{index:02d}"

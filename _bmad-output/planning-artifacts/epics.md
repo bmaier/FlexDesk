@@ -1,4 +1,4 @@
-# Epics and Stories — DeskSharing BAMF
+# Epics and Stories — Desk4Me (BAMF Workspace Management)
 
 ## Epic 1: Liegenschaften und Standort-Exploration
 
@@ -49,6 +49,13 @@ Als Facility Manager und buchender Mitarbeiter möchte ich Meetingräume als ech
   - Automatische Vorbelegung der eigenen Kostenstelle (`User.cost_center` / `Department.cost_center`).
   - Pflicht-Bestätigungswarnung (`cost_center_warning_acknowledged`) bei Angabe einer fremden Kostenstelle.
 
+### Story 4.5: Meetingraum-Tagesmatrix, zielgerichtete Slot-Suche und Raumplan-Navigation
+Als Buchender möchte ich in einer 30-Minuten-Tagesmatrix für Meetingräume sofort freie und belegte Zeitslots erkennen, gezielt freie Slots anklicken und direkt in den Raumplan mit Bestuhlungsansicht navigieren können.
+- **Akzeptanzkriterien:**
+  - Farbige 30-Minuten-Taktung (frei, belegt, gesperrt, Rüstzeit).
+  - Klick auf freien Slot übernimmt Zeit und öffnet das Buchungsmodal.
+  - SVG-Thumbnail und Raumplan-Vorschau direkt aus der Matrix erreichbar.
+
 ## Epic 5: Facility Management und Raumkontingente
 
 ### Story 5.1: Stammdatenpflege und Etagen-Grundriss-Designer
@@ -60,8 +67,29 @@ Als Facility Manager möchte ich Liegenschaften, Gebäude, Etagen, Räume und Sc
   - Etagen-Planer für Raum-Shapes und Infrastruktur (Treppen, Türen, Wände) mit Drag & Drop.
   - Raum-Innenplaner für Desks, Konferenztische und Bestuhlungen.
 
-### Story 5.2: Referatsbezogene Zonen und Raumkontingente
-Als Facility Manager möchte ich Zonen für Abteilungen definieren, um exklusive Kontingente zu steuern.
+### Story 5.2: Referatsbezogene Zonen, Raumkontingente und kaskadierende Organisationshierarchie
+Als Facility Manager möchte ich Zonen und Räume Organisationseinheiten zuordnen können, wobei übergeordnete Abteilungen automatisch Zugriff auf Kontingente erhalten und unbefugte Einheiten zuverlässig ausgeschlossen werden.
+- **Akzeptanzkriterien:**
+  - Zonenverwaltung mit Referatszuordnung im FM.
+  - Kaskadierende Berechtigungsprüfung (`org_hierarchy.py`): Untereinheiten erben Berechtigungen übergeordneter Referate.
+  - HTTP 403 `ZONE_RESTRICTED` bei unberechtigtem Buchungsversuch.
 
 ### Story 5.3: Zentrale Stammdatenverwaltung (Orgeinheiten, Kostenstellen, Benutzer, Liegenschaften, Räume) & Kostenstellen-Zuordnung
 Als Administrator und Facility Manager möchte ich über einen separaten Menüpunkt alle Stammdaten (Organisationseinheiten mit Kostenstellen, Benutzerzuordnungen mit Kostenstellen, Liegenschaften, Gebäude, Etagen, Räume und Ausstattungsmerkmale) an zentraler Stelle einsehen und bearbeiten können.
+
+## Epic 6: Governance, Barrierefreiheit & Systemresilienz
+
+### Story 6.1: Barrierefreiheitserklärung nach BITV 2.0 / WCAG 2.1 AA und Error Boundaries
+Als Nutzer (insbesondere Menschen mit Einschränkungen) möchte ich mich über den Konformitätsstatus der Anwendung barrierefrei informieren können und bei Laufzeitfehlern durch eine robuste Fehlerbehandlung (ErrorBoundary) geschützt sein.
+- **Akzeptanzkriterien:**
+  - Eigene Barrierefreiheitserklärung unter `/barrierefreiheit` mit Stand, Feedback-Mechanismus und Schlichtungsstelle.
+  - React ErrorBoundary um kritische Layout-Bereiche mit Graceful Degradation und Reload-Möglichkeit.
+  - Barrierefreie Links und Kontraste im Footer.
+
+### Story 6.2: Vollständiger Lock- und Unlock-Zyklus für Liegenschaften, Räume und Desks
+Als Facility Manager möchte ich gesperrte Ressourcen nicht nur sperren, sondern über eine eindeutige Lock-ID gezielt und transaktionssicher wieder entsperren können.
+- **Akzeptanzkriterien:**
+  - `DELETE /api/fm/locks/{lock_id}` hebt Sperrungen sofort auf.
+  - Nach Entsperrung stehen die Ressourcen im Buchungskatalog und Grundriss sofort wieder zur Verfügung.
+  - Unit-Tests sichern den vollständigen Sperr- und Entsperr-Zyklus ab.
+

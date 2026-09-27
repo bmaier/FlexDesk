@@ -29,36 +29,43 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-05-2026 17:00
-last_updated: 09-05-2026 17:00
-project: DeskSharing
-project_key: NOKEY
+last_updated: 09-17-2026 19:40
+project: Desk4Me
+project_key: D4M
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 development_status:
-  epic-1: backlog
-  1-1-standort-exploration-mit-deutschlandkarte: backlog
-  1-2-gebäude-und-etagen-navigator: backlog
+  epic-1: done
+  1-1-standort-exploration-mit-deutschlandkarte: done
+  1-2-gebäude-und-etagen-navigator: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-schnellbuchung-am-standardstandort: backlog
-  2-2-gezielte-buchung-mit-interaktivem-etagen-grundriss: backlog
+  epic-2: done
+  2-1-schnellbuchung-am-standardstandort: done
+  2-2-gezielte-buchung-mit-interaktivem-etagen-grundriss: done
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-buchen-für-kolleginnen-und-kollegen: backlog
-  3-2-serienbuchung-mit-automatischer-konfliktüberbrückung: backlog
+  epic-3: done
+  3-1-buchen-für-kolleginnen-und-kollegen: done
+  3-2-serienbuchung-mit-automatischer-konfliktüberbrückung: done
   epic-3-retrospective: optional
 
-  epic-4: in-progress
-  4-1-meetingraum-katalog-und-buchung-mit-genehmigungspflicht: backlog
-  4-2-vertrauliche-raumblockierung: backlog
+  epic-4: done
+  4-1-meetingraum-katalog-und-buchung-mit-genehmigungspflicht: done
+  4-2-vertrauliche-raumblockierung: done
   4-3-meetingraum-grundriss-im-fm-designer-und-interaktive-grundri: done
   4-4-meetingraum-grundriss-bestuhlung-catering: done
+  4-5-meetingraum-tagesmatrix-slot-suche-und-raumplan-navigation: done
   epic-4-retrospective: optional
 
-  epic-5: in-progress
+  epic-5: done
   5-1-stammdatenpflege-und-etagen-grundriss-designer: done
-  5-2-referatsbezogene-zonen-und-raumkontingente: backlog
+  5-2-referatsbezogene-zonen-und-raumkontingente: done
   5-3-zentrale-stammdatenverwaltung-kostenstellen: done
   epic-5-retrospective: optional
+
+  epic-6: done
+  6-1-barrierefreiheitserklärung-und-error-boundaries: done
+  6-2-lock-und-unlock-zyklen: done
+  epic-6-retrospective: optional
+

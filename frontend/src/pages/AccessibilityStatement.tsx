@@ -27,7 +27,7 @@ export default function AccessibilityStatement() {
             Erklärung zur Barrierefreiheit
           </h1>
           <p className="text-sm text-on-surface-variant mt-1">
-            DeskSharing BAMF — Bundesamt für Migration und Flüchtlinge
+            Desk4Me — Ihre Organisation
           </p>
         </div>
 
@@ -72,10 +72,10 @@ export default function AccessibilityStatement() {
           <Card className="space-y-3">
             <h2 className="text-lg font-bold text-on-surface">Stand der Vereinbarkeit mit den Anforderungen</h2>
             <p>
-              Das Bundesamt für Migration und Flüchtlinge (BAMF) ist bemüht, seine Webanwendung <strong>DeskSharing BAMF</strong> im Einklang mit den nationalen Rechtsvorschriften zur Umsetzung der Richtlinie (EU) 2016/2102 des Europäischen Parlaments und des Rates barrierefrei zugänglich zu machen.
+              Ihre Organisation ist bemüht, ihre Webanwendung <strong>Desk4Me</strong> im Einklang mit den nationalen Rechtsvorschriften zur Umsetzung der Richtlinie (EU) 2016/2102 des Europäischen Parlaments und des Rates barrierefrei zugänglich zu machen.
             </p>
             <p>
-              Diese Erklärung zur Barrierefreiheit gilt für die Webanwendung <em>DeskSharing BAMF</em>.
+              Diese Erklärung zur Barrierefreiheit gilt für die Webanwendung <em>Desk4Me</em>.
             </p>
             <div className="p-3 rounded bg-surface-container border border-outline-variant/30 font-medium">
               Konformitätsstatus: <strong>Weitgehend vereinbar</strong> mit den Anforderungen der <strong>BITV 2.0 (Barrierefreie-Informationstechnik-Verordnung)</strong> und der europäischen Norm <strong>EN 301 549 (WCAG 2.1 Konformitätsstufe AA)</strong>.
@@ -115,7 +115,7 @@ export default function AccessibilityStatement() {
           <Card className="space-y-3">
             <h2 className="text-lg font-bold text-on-surface">Feedback-Mechanismus und Barrieren melden</h2>
             <p>
-              Sind Ihnen Barrieren beim Zugang zu Inhalten von DeskSharing BAMF aufgefallen? Oder haben Sie Fragen zur Umsetzung der Barrierefreiheit?
+              Sind Ihnen Barrieren beim Zugang zu Inhalten von Desk4Me aufgefallen? Oder haben Sie Fragen zur Umsetzung der Barrierefreiheit?
             </p>
             <p>
               Sie können uns Mängel bezüglich der Einhaltung der Barrierefreiheitsanforderungen mitteilen:
@@ -137,7 +137,7 @@ export default function AccessibilityStatement() {
                     type="email"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="name@bamf.bund.de"
+                    placeholder="name@organisation.example"
                     className="w-full max-w-md bg-surface-container-low rounded px-3 py-2 text-sm border border-outline-variant/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   />
                 </div>
@@ -190,7 +190,7 @@ export default function AccessibilityStatement() {
             <h2 className="text-xl font-bold">Erklärung in Leichter Sprache</h2>
           </div>
           <p className="font-semibold text-lg">
-            Herzlich willkommen bei DeskSharing BAMF!
+            Herzlich willkommen bei Desk4Me!
           </p>
           <p>
             DeskSharing ist ein englisches Wort. Es bedeutet: Man teilt sich Schreibtische bei der Arbeit.
@@ -226,7 +226,7 @@ export default function AccessibilityStatement() {
             <h2 className="text-xl font-bold">Deutsche Gebärdensprache (DGS)</h2>
           </div>
           <p>
-            In diesem Bereich stellen wir Ihnen Informationen zur Nutzung der Webanwendung <em>DeskSharing BAMF</em> und zur Barrierefreiheit in Deutscher Gebärdensprache zur Verfügung.
+            In diesem Bereich stellen wir Ihnen Informationen zur Nutzung der Webanwendung <em>Desk4Me</em> und zur Barrierefreiheit in Deutscher Gebärdensprache zur Verfügung.
           </p>
           <div className="p-8 rounded-xl bg-surface-container flex flex-col items-center justify-center text-center space-y-3 border border-outline-variant/30">
             <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center text-3xl" aria-hidden="true">

@@ -1,16 +1,16 @@
-# Addendum — Desk Sharing BAMF
+# Addendum — Desk4Me
 
 Technisches Detailwissen und Optionen-Rationale, die zur Architektur bzw. zum Solution-Design gehören, aber nicht in die PRD selbst.
 
-## Integrationslandschaft (bestehende BAMF-Systeme)
+## Integrationslandschaft (bestehende Systeme Ihrer Organisation)
 
 Details noch zu klären, aber folgende Systeme sind als Integrationspunkte benannt:
 
-- **IDM/IAM des BAMF** (Keycloak-basiert) — Identität, Pseudonymisierung/Auflösung (siehe PRD-Sichtbarkeitsmodell).
-- **Stammdaten & Codelisten des BAMF** — bestehende Referenzdaten-Quelle, Integrationsart noch offen.
+- **IDM/IAM Ihrer Organisation** (Keycloak-basiert) — Identität, Pseudonymisierung/Auflösung (siehe PRD-Sichtbarkeitsmodell).
+- **Stammdaten & Codelisten Ihrer Organisation** — bestehende Referenzdaten-Quelle, Integrationsart noch offen.
 - **HR-System** — Anbindung über "DataGrid Services" (Bezeichnung/Produkt vom Nutzer genannt, technische Details noch zu klären) — liefert vermutlich Organisationsstruktur/Linienbeziehung für das Vertretungsmodell (Org-Sync).
 - **EventGrid-System** — publiziert Domain-Events im **CloudEvents-Standard**; zentrale Integrationsarchitektur für dieses Projekt (Details siehe Abschnitt "Architekturmuster: Event-driven Notifications/Tasks" unten).
-- **OTEL (OpenTelemetry)** — Observability-Daten sollen im BAMF-Standard emittiert werden.
+- **OTEL (OpenTelemetry)** — Observability-Daten sollen im Standard Ihrer Organisation emittiert werden.
 - **TaskManagement-System** — Aufgaben/Postkorb-Einträge für Mitarbeitende (z.B. bei Stornierung), angesprochen über Event-Subscriber-Muster.
 - **Bestehendes Raumbelegungstool** — Quelle für Bestandsbuchungen (FR-52). Konkretes System/Format vom Nutzer noch nicht benannt, zu klären.
 - **Referat 12E** — hält aktuelle Raumstammdaten als Excel (Raumnummer, Beschreibung) sowie Grundrisspläne als PDF/JPG (FR-51). Einmaliger Import, kein laufender Sync.
@@ -56,7 +56,7 @@ Die folgenden drei Punkte wurden während der PoC-Implementierung anhand konkret
 
 ### Ergänzung zu FR-46: Organisationseinheiten-Zuordnung ist hierarchie-kaskadierend, konfigurierbar pro Zuordnung
 
-FR-46 sah eine Beschränkung auf "eine bestimmte Rolle oder Organisationseinheit" vor, ohne die BAMF-Organisationshierarchie (Abteilung → Referat → Unterreferat) zu berücksichtigen. In der Umsetzung zeigte sich: Wird ein Raum einer übergeordneten Abteilung zugeordnet (z.B. Abteilung 6), müssen automatisch auch alle untergeordneten Referate (6.1, 6.2, 6.2.1, …) buchungsberechtigt sein — nicht nur exakt die benannte Einheit. Wird umgekehrt ein Raum einem Unter-Referat zugeordnet (z.B. nur 6.2), soll die übergeordnete Abteilung (6) und Geschwister-Referate (6.1) **nicht** automatisch mitberechtigt sein.
+FR-46 sah eine Beschränkung auf "eine bestimmte Rolle oder Organisationseinheit" vor, ohne die Organisationshierarchie (Abteilung → Referat → Unterreferat) zu berücksichtigen. In der Umsetzung zeigte sich: Wird ein Raum einer übergeordneten Abteilung zugeordnet (z.B. Abteilung 6), müssen automatisch auch alle untergeordneten Referate (6.1, 6.2, 6.2.1, …) buchungsberechtigt sein — nicht nur exakt die benannte Einheit. Wird umgekehrt ein Raum einem Unter-Referat zugeordnet (z.B. nur 6.2), soll die übergeordnete Abteilung (6) und Geschwister-Referate (6.1) **nicht** automatisch mitberechtigt sein.
 
 **Konkretisierung von FR-46 (ersetzt die bisherige flache Einheiten-Zuordnung):**
 - Jede Raum-Organisationseinheit-Zuordnung hat ein Flag `include_descendants` (Default: `true`), das FM bei der Zuordnung setzt.

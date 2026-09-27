@@ -1,4 +1,4 @@
-Please update the existing DeskSharing BAMF design with the following changes. These are refinements and additions to what's already built — integrate them into the current screens and flows rather than starting over or replacing existing layouts.
+Please update the existing Desk4Me design with the following changes. These are refinements and additions to what's already built — integrate them into the current screens and flows rather than starting over or replacing existing layouts.
 
 Terminology used below: Liegenschaft (site), Gebäude (building), Raum (room), Desk (a single bookable workspace), Meetingraum (meeting room), Präferenz (a saved preference used to rank desks).
 

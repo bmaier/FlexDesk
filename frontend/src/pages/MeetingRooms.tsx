@@ -900,7 +900,7 @@ export default function MeetingRooms() {
                                 key={slot.startMinute}
                                 className="p-1 text-center border-l border-outline-variant/30 bg-slate-100/90"
                                 title={`Belegt von: ${status.slot?.booked_for_name || "Unbekannt"} (${
-                                  status.slot?.booked_for_department || "BAMF"
+                                  status.slot?.booked_for_department || "Ihre Organisation"
                                 })`}
                               >
                                 <div className="h-12 flex flex-col items-center justify-center rounded border border-slate-300/70 bg-white/60 text-slate-700 px-0.5">

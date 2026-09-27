@@ -15,7 +15,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary">DeskSharing BAMF</h1>
+          <h1 className="text-3xl font-bold text-primary">Desk4Me</h1>
           <p className="text-on-surface-variant mt-2">
             Demo-Anmeldung — kein echtes IDM. Wählen Sie ein Konto, um sich anzumelden.
           </p>

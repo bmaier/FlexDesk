@@ -1,4 +1,4 @@
-"""Populates the SQLite DB with BAMF demo master data (Stammdaten).
+"""Populates the SQLite DB with Ihre Organisation demo master data (Stammdaten).
 
 Run via `uv run python -m app.seed_data` (also auto-invoked by main.py on first boot
 when the DB file does not yet exist).
@@ -39,13 +39,12 @@ ROLES = [
     ("vm", "Veranstaltungsmanagement"),
 ]
 
-# BAMF-Orgstruktur (reale Abteilungsgliederung lt. bamf.de/Wikipedia, Referate darunter sind
-# plausibel nach üblicher Bundesbehörden-Konvention ergänzt, da nicht öffentlich im Detail
-# dokumentiert). Format: (code, name, parent_code | None). Dot-Notation bildet die Hierarchie ab,
-# z.B. "6.2" ist Kind von "6", "6.2.1" ist Kind von "6.2".
+# Generische, fiktive Organisationsstruktur (keine reale Organisation) — dient nur als plausibles
+# Demo-Beispiel für eine mehrstufige Abteilungsgliederung. Format: (code, name, parent_code | None).
+# Dot-Notation bildet die Hierarchie ab, z.B. "6.2" ist Kind von "6", "6.2.1" ist Kind von "6.2".
 ORG_UNITS: list[tuple[str, str, str | None]] = [
-    ("P", "Präsidium / Leitungsstab", None),
-    ("P.GZ", "Geschäftszimmer Abteilungsleitung", "P"),
+    ("P", "Geschäftsleitung / Vorstand", None),
+    ("P.GZ", "Geschäftszimmer der Geschäftsleitung", "P"),
     ("P.PR", "Presse- und Öffentlichkeitsarbeit", "P"),
     ("1", "Abteilung 1 — Zentrale Dienstleistungen, Personal, Organisation, Infrastruktur", None),
     ("1.1", "Referat 11 — Personal", "1"),
@@ -56,29 +55,29 @@ ORG_UNITS: list[tuple[str, str, str | None]] = [
     ("2", "Abteilung 2 — Digitale Technologien, CIO, Innovationsmanagement", None),
     ("2.1", "Referat 21 — IT-Betrieb & Infrastruktur", "2"),
     ("2.2", "Referat 22 — Innovationsmanagement", "2"),
-    ("3", "Abteilung 3 — Geschäftsprozesse Asylbereich, Dublinverfahren", None),
-    ("3.1", "Referat 31 — Asylverfahren Grundsatz", "3"),
-    ("3.2", "Referat 32 — Dublinverfahren", "3"),
+    ("3", "Abteilung 3 — Geschäftsprozesse & Fachverfahren", None),
+    ("3.1", "Referat 31 — Fachverfahren Grundsatz", "3"),
+    ("3.2", "Referat 32 — Verfahrenskoordination", "3"),
     ("4", "Abteilung 4 — Region Nord, West", None),
     ("4.1", "Referat 41 — Region Nord", "4"),
     ("4.2", "Referat 42 — Region West", "4"),
     ("5", "Abteilung 5 — Region Ost, Südwest, Süd", None),
     ("5.1", "Referat 51 — Region Ost", "5"),
     ("5.2", "Referat 52 — Region Süd", "5"),
-    ("6", "Abteilung 6 — Grundlagen des Asylverfahrens, Qualitätssicherung, IZAM, Prozessführung", None),
-    ("6.1", "Referat 61 — Grundsatzfragen Asylverfahren & Migration", "6"),
-    ("6.2", "Referat 62 — Qualitätssicherung & IZAM", "6"),
+    ("6", "Abteilung 6 — Grundsatzfragen, Qualitätssicherung, Prozessführung", None),
+    ("6.1", "Referat 61 — Grundsatzfragen & Fachthemen", "6"),
+    ("6.2", "Referat 62 — Qualitätssicherung & IT-Fachverfahren", "6"),
     ("6.2.1", "Referat 62.1 — Prozessführung", "6.2"),
-    ("7", "Abteilung 7 — Sicherheit, Aufenthaltsrecht, Rückkehr", None),
+    ("7", "Abteilung 7 — Sicherheit, Recht, Compliance", None),
     ("7.1", "Referat 71 — Sicherheit", "7"),
-    ("7.2", "Referat 72 — Aufenthaltsrecht, Rückkehr", "7"),
-    ("8", "Abteilung 8 — Integration und gesellschaftlicher Zusammenhalt", None),
-    ("8.1", "Referat 81 — Integrationsprogramme", "8"),
-    ("8.2", "Referat 82 — Gesellschaftlicher Zusammenhalt", "8"),
-    ("9", "Abteilung 9 — Internationale Aufgaben, Grundsatzfragen der Migration, EU-Fondsverwaltung", None),
-    ("9.1", "Referat 91 — Internationale Aufgaben", "9"),
-    ("9.2", "Referat 92 — EU-Fondsverwaltung", "9"),
-    ("FZ", "Forschungszentrum Migration, Integration und Asyl", None),
+    ("7.2", "Referat 72 — Recht & Compliance", "7"),
+    ("8", "Abteilung 8 — Weiterbildung & gesellschaftliches Engagement", None),
+    ("8.1", "Referat 81 — Weiterbildungsprogramme", "8"),
+    ("8.2", "Referat 82 — Gesellschaftliches Engagement", "8"),
+    ("9", "Abteilung 9 — Internationale Beziehungen, Grundsatzfragen, Förderprogramme", None),
+    ("9.1", "Referat 91 — Internationale Beziehungen", "9"),
+    ("9.2", "Referat 92 — Förderprogramm-Verwaltung", "9"),
+    ("FZ", "Forschungsabteilung", None),
 ]
 
 LABELS = [
@@ -274,18 +273,18 @@ def seed(db: Session, force: bool = False) -> None:
     db.add_all(labels.values())
     db.flush()
 
-    # ---- BAMF-Orgstruktur (Abteilungen/Referate, hierarchisch) -------------
+    # ---- Organisationsstruktur (Abteilungen/Referate, hierarchisch) -------------
     COST_CENTERS: dict[str, str] = {
         "P": "KST-100-LEITUNG", "P.GZ": "KST-110-GZ", "P.PR": "KST-120-PRESSE",
         "1": "KST-1000-ZD", "1.1": "KST-1100-PERS", "1.2": "KST-1200-LIEG", "1.2.1": "KST-1210-FM", "1.2.2": "KST-1220-BAU", "1.3": "KST-1300-HH",
         "2": "KST-2000-IT", "2.1": "KST-2100-OPS", "2.2": "KST-2200-INNO",
-        "3": "KST-3000-ASY", "3.1": "KST-3100-GRUND", "3.2": "KST-3200-DUB",
+        "3": "KST-3000-FACH", "3.1": "KST-3100-GRUND", "3.2": "KST-3200-KOORD",
         "4": "KST-4000-NW", "4.1": "KST-4100-NORD", "4.2": "KST-4200-WEST",
         "5": "KST-5000-OSS", "5.1": "KST-5100-OST", "5.2": "KST-5200-SUED",
-        "6": "KST-6000-QS", "6.1": "KST-6100-GRUND", "6.2": "KST-6200-IZAM", "6.2.1": "KST-6210-PROZ",
-        "7": "KST-7000-SI", "7.1": "KST-7100-SI", "7.2": "KST-7200-RUECK",
-        "8": "KST-8000-INT", "8.1": "KST-8100-PROG", "8.2": "KST-8200-ZUS",
-        "9": "KST-9000-EU", "9.1": "KST-9100-INT", "9.2": "KST-9200-FONDS",
+        "6": "KST-6000-QS", "6.1": "KST-6100-GRUND", "6.2": "KST-6200-ITFV", "6.2.1": "KST-6210-PROZ",
+        "7": "KST-7000-SI", "7.1": "KST-7100-SI", "7.2": "KST-7200-RECHT",
+        "8": "KST-8000-WB", "8.1": "KST-8100-PROG", "8.2": "KST-8200-ZUS",
+        "9": "KST-9000-INTL", "9.1": "KST-9100-INTL", "9.2": "KST-9200-FOERDER",
         "FZ": "KST-9900-FZ",
     }
 
@@ -622,57 +621,57 @@ def seed(db: Session, force: bool = False) -> None:
     db.flush()
 
     # ---- Nutzer -------------------------------------------------------------
-    maria = User(idm_code="U-1001", display_name="Dr. Maria Schmidt", email="maria.schmidt@bamf.bund.de",
+    maria = User(idm_code="U-1001", display_name="Dr. Maria Schmidt", email="maria.schmidt@organisation.example",
                  department_id=departments["P.GZ"].id, home_property_id=nuernberg.id, klarname_opt_in=True,
                  cost_center="KST-110-GZ")
-    ali = User(idm_code="U-1002", display_name="Ali Yilmaz", email="ali.yilmaz@bamf.bund.de",
+    ali = User(idm_code="U-1002", display_name="Ali Yilmaz", email="ali.yilmaz@organisation.example",
                department_id=departments["2.1"].id, home_property_id=nuernberg.id, home_desk_id=desks_nord[0].id,
                cost_center="KST-2100-OPS")
-    johannes = User(idm_code="U-1003", display_name="Johannes Schneider", email="johannes.schneider@bamf.bund.de",
+    johannes = User(idm_code="U-1003", display_name="Johannes Schneider", email="johannes.schneider@organisation.example",
                     department_id=departments["6.1"].id, home_property_id=nuernberg.id,
                     cost_center="KST-6100-GRUND")
-    elena = User(idm_code="U-1004", display_name="Elena Petrova", email="elena.petrova@bamf.bund.de",
+    elena = User(idm_code="U-1004", display_name="Elena Petrova", email="elena.petrova@organisation.example",
                  department_id=departments["9.2"].id, home_property_id=berlin.id,
-                 cost_center="KST-9200-FONDS")
-    kessler = User(idm_code="U-1005", display_name="Frau Kessler", email="kessler@bamf.bund.de",
+                 cost_center="KST-9200-FOERDER")
+    kessler = User(idm_code="U-1005", display_name="Frau Kessler", email="kessler@organisation.example",
                    department_id=departments["P.PR"].id, home_property_id=berlin.id,
                    cost_center="KST-120-PRESSE")
-    kaya = User(idm_code="U-1006", display_name="Frau Kaya", email="kaya@bamf.bund.de",
+    kaya = User(idm_code="U-1006", display_name="Frau Kaya", email="kaya@organisation.example",
                 department_id=departments["P.GZ"].id, home_property_id=nuernberg.id,
                 cost_center="KST-110-GZ")
-    mueller = User(idm_code="U-1007", display_name="Hans Müller", email="hans.mueller@bamf.bund.de",
+    mueller = User(idm_code="U-1007", display_name="Hans Müller", email="hans.mueller@organisation.example",
                    department_id=departments["2.1"].id, home_property_id=nuernberg.id,
                    cost_center="KST-2100-OPS")
-    demir = User(idm_code="U-1008", display_name="Herr Demir", email="demir@bamf.bund.de",
+    demir = User(idm_code="U-1008", display_name="Herr Demir", email="demir@organisation.example",
                  department_id=departments["P.PR"].id, home_property_id=nuernberg.id,
                  cost_center="KST-120-PRESSE")
-    ostermann = User(idm_code="U-1009", display_name="Frau Ostermann", email="ostermann@bamf.bund.de",
+    ostermann = User(idm_code="U-1009", display_name="Frau Ostermann", email="ostermann@organisation.example",
                      department_id=departments["1.2.1"].id, home_property_id=nuernberg.id,
                      cost_center="KST-1210-FM")
-    brandt = User(idm_code="U-1010", display_name="Herr Brandt", email="brandt@bamf.bund.de",
+    brandt = User(idm_code="U-1010", display_name="Herr Brandt", email="brandt@organisation.example",
                   department_id=departments["1.2.1"].id, home_property_id=nuernberg.id, security_clearance="Ue2",
                   cost_center="KST-1210-FM")
-    weber = User(idm_code="U-1011", display_name="Thomas Weber", email="weber@bamf.bund.de",
+    weber = User(idm_code="U-1011", display_name="Thomas Weber", email="weber@organisation.example",
                  department_id=departments["2.1"].id, home_property_id=nuernberg.id,
                  cost_center="KST-2100-OPS")
-    kraus = User(idm_code="U-1012", display_name="Sabine Kraus", email="kraus@bamf.bund.de",
+    kraus = User(idm_code="U-1012", display_name="Sabine Kraus", email="kraus@organisation.example",
                  department_id=departments["2.1"].id, home_property_id=nuernberg.id,
                  cost_center="KST-2100-OPS")
-    fischer = User(idm_code="U-1013", display_name="Julia Fischer", email="fischer@bamf.bund.de",
+    fischer = User(idm_code="U-1013", display_name="Julia Fischer", email="fischer@organisation.example",
                    department_id=departments["P.PR"].id, home_property_id=nuernberg.id,
                    cost_center="KST-120-PRESSE")
     # Zusätzliche FM-Rolle mit klarem Planungs-Fokus (München West), unabhängig von 12E Nürnberg
-    facility_manager_muc = User(idm_code="U-1014", display_name="Herr Wagner", email="wagner@bamf.bund.de",
+    facility_manager_muc = User(idm_code="U-1014", display_name="Herr Wagner", email="wagner@organisation.example",
                                 department_id=departments["1.2.2"].id, home_property_id=muenchen.id,
                                 cost_center="KST-1220-BAU")
     # Org-Hierarchie-Demo (Nutzeranforderung): 6 / 6.1 / 6.2 / 6.2.1
-    lehmann = User(idm_code="U-1015", display_name="Frau Lehmann", email="lehmann@bamf.bund.de",
+    lehmann = User(idm_code="U-1015", display_name="Frau Lehmann", email="lehmann@organisation.example",
                    department_id=departments["6"].id, home_property_id=nuernberg.id,
                    cost_center="KST-6000-QS")
-    kaiser = User(idm_code="U-1016", display_name="Herr Kaiser", email="kaiser@bamf.bund.de",
+    kaiser = User(idm_code="U-1016", display_name="Herr Kaiser", email="kaiser@organisation.example",
                   department_id=departments["6.2"].id, home_property_id=nuernberg.id,
-                  cost_center="KST-6200-IZAM")
-    nowak = User(idm_code="U-1017", display_name="Frau Nowak", email="nowak@bamf.bund.de",
+                  cost_center="KST-6200-ITFV")
+    nowak = User(idm_code="U-1017", display_name="Frau Nowak", email="nowak@organisation.example",
                  department_id=departments["6.2.1"].id, home_property_id=nuernberg.id,
                  cost_center="KST-6210-PROZ")
 

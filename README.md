@@ -1,6 +1,6 @@
 # Desk4Me — Workspace & Meeting Room Booking Management
 
-Proof of Concept für eine Desk- und Meetingraum-Buchungsanwendung für das BAMF, basierend auf
+Proof of Concept für eine Desk- und Meetingraum-Buchungsanwendung für Ihre Organisation, basierend auf
 der PRD (`_bmad-output/planning-artifacts/prds/prd-DeskSharing-2026-08-13/prd.md`) und dem
 UX-Design (`_bmad-output/planning-artifacts/ux-designs/ux-DeskSharing-2026-08-14/`).
 
@@ -68,7 +68,7 @@ Liegenschaft (Property)
 | Tests | pytest (Unit/Integration: 33 Tests), behave (Gherkin/BDD), Playwright (GUI/E2E), bmad-loop |
 
 Das Backend legt bei erstem Start automatisch die SQLite-Datei `backend/deskshare.db` an und
-befüllt sie mit BAMF-Stammdaten (Liegenschaften, Gebäude, Etagen, Räume, Desks, Bestuhlungen, Nutzer, Rollen — siehe
+befüllt sie mit Stammdaten Ihrer Organisation (Liegenschaften, Gebäude, Etagen, Räume, Desks, Bestuhlungen, Nutzer, Rollen — siehe
 `backend/app/seed_data.py`). Grundriss-SVGs und interaktive JSON-Layouts für Etagen und Räume
 werden automatisch generiert.
 
@@ -142,7 +142,7 @@ Rollenwechsel jederzeit über den "Wechseln"-Link unten links in der Seitenleist
 | Julia Fischer | `mitarbeiter` | P.PR (`KST-120-PRESSE`) | Buchungsszenarien Nürnberg |
 | Herr Wagner | `fm` | 1.2.2 (`KST-1220-BAU`) | FM München West (Grundriss-Planung) |
 | Frau Lehmann | `mitarbeiter` | 6 (`KST-6000-QS`) | Org-Hierarchie-Kaskade (Berechtigung Räume A-12/A-13) |
-| Herr Kaiser | `mitarbeiter` | 6.2 (`KST-6200-IZAM`) | Org-Hierarchie-Kaskade (A-12/A-13 + QS-Büro 1.20) |
+| Herr Kaiser | `mitarbeiter` | 6.2 (`KST-6200-ITFV`) | Org-Hierarchie-Kaskade (A-12/A-13 + QS-Büro 1.20) |
 | Frau Nowak | `mitarbeiter` | 6.2.1 (`KST-6210-PROZ`) | Org-Hierarchie-Kaskade (QS-Büro 1.20) |
 
 ## Demo-Ablauf-Skript
@@ -201,7 +201,7 @@ backend/
     models/         SQLAlchemy-Modelle (4NF-Schema: reference/structure/bookings/locks)
     routers/         FastAPI-Router je Fachbereich (auth, catalog, bookings, approvals, fm, ...)
     services/        Verfügbarkeits-/Terminlogik, Benachrichtigungen
-    seed_data.py     BAMF-Stammdaten + generierte Grundriss-SVGs
+    seed_data.py     Stammdaten Ihrer Organisation + generierte Grundriss-SVGs
     main.py          App-Setup, Check-in-/Erinnerungs-Hintergrundtask
     static/floorplans/  generierte + hochgeladene Grundrisspläne
   tests/

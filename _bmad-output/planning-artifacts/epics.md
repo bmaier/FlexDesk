@@ -1,4 +1,4 @@
-# Epics and Stories — Desk4Me (BAMF Workspace Management)
+# Epics and Stories — Desk4Me (Ihre Organisation Workspace Management)
 
 ## Epic 1: Liegenschaften und Standort-Exploration
 

@@ -1,5 +1,5 @@
 ---
-title: Architectural Consistency Review — DeskSharing BAMF PRD
+title: Architectural Consistency Review — Desk4Me PRD
 reviewed: prd.md, addendum.md
 date: 2026-08-13
 ---
@@ -64,7 +64,7 @@ This gap is corroborated by §5's own NFR: "System muss gleichzeitige Buchungsvo
 
 **Location:** FR-16, FR-17 (§4.6); FR-30, FR-32 (§4.10).
 
-**Issue:** §4.6's design intent is explicit: "Bewusst kein Kontrollmechanismus — die Reibung liegt allein darin, dass es ein separater, unübersehbarer Schritt ist" (FR-17: no approval/permission check at all — friction *is* the control). FR-30 (R2a) is scoped to §4.1–§4.3 and FR-32 (R2b) is scoped to FM label/Sperrung/Defekt management — neither mentions §4.6, so confidential blocking is excluded from chat only by omission, not by explicit statement. Since chat is designed as a fluid, "gleichwertig" conversational channel, and this feature's entire compliance control depends on the friction of a deliberately separate, unmissable step rather than any permission gate, a future chat extension that casually picked up "block this room for VS-NFD" as a conversational intent would silently remove BAMF's only control on that pathway — with no PRD language currently forbidding it.
+**Issue:** §4.6's design intent is explicit: "Bewusst kein Kontrollmechanismus — die Reibung liegt allein darin, dass es ein separater, unübersehbarer Schritt ist" (FR-17: no approval/permission check at all — friction *is* the control). FR-30 (R2a) is scoped to §4.1–§4.3 and FR-32 (R2b) is scoped to FM label/Sperrung/Defekt management — neither mentions §4.6, so confidential blocking is excluded from chat only by omission, not by explicit statement. Since chat is designed as a fluid, "gleichwertig" conversational channel, and this feature's entire compliance control depends on the friction of a deliberately separate, unmissable step rather than any permission gate, a future chat extension that casually picked up "block this room for VS-NFD" as a conversational intent would silently remove Ihre Organisation's only control on that pathway — with no PRD language currently forbidding it.
 
 **Suggested fix:** Add an explicit Non-Goal (§9) or an Out-of-Scope note under FR-30/FR-32 stating that confidential room blocking is deliberately and permanently excluded from any conversational/chat path, not merely unaddressed in R2a/R2b's current scope.
 

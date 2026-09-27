@@ -1,4 +1,4 @@
-"""BAMF-Orgstruktur: Hierarchie-Prüfung für Raum-/Zonen-Zuordnungen zu Organisationseinheiten.
+"""Organisationsstruktur: Hierarchie-Prüfung für Raum-/Zonen-Zuordnungen zu Organisationseinheiten.
 
 Eine Zuordnung eines Raums/einer Zone zu einer Org-Einheit X gewährt per Default Zugriff für
 X und alle untergeordneten Einheiten (Subtree). FM kann dies pro Zuordnung auf "nur X selbst"

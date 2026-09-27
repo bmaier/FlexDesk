@@ -23,7 +23,7 @@ class Role(Base):
 
 
 class Department(Base):
-    """Referat / Organisationseinheit (Org-Einheit). Self-referential für die BAMF-Hierarchie
+    """Referat / Organisationseinheit (Org-Einheit). Self-referential für die Organisationshierarchie
     (Abteilung -> Referat -> Unterreferat, z.B. "6" -> "6.2" -> "6.2.1")."""
 
     __tablename__ = "departments"

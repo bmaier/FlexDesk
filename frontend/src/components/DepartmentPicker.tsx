@@ -9,7 +9,7 @@ interface DepartmentPickerProps {
 }
 
 /** Suchbarer, hierarchisch eingerückter Referats-/Abteilungs-Picker — Ersatz für ein natives
- * <select> mit 30+ flachen Einträgen, das die BAMF-Orgstruktur nicht erkennbar macht. */
+ * <select> mit 30+ flachen Einträgen, das die Organisationsstruktur nicht erkennbar macht. */
 export function DepartmentPicker({ departments, value, onChange, placeholder }: DepartmentPickerProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);

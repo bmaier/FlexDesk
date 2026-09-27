@@ -92,7 +92,7 @@ Consequences (testable):
 FM kann pro Liegenschaft eine oder mehrere Zonen einrichten, die einem oder
 mehreren Referaten/Arbeitsgebieten zugeordnete Raumkontingente abbilden.
 Ist eine Zone aktiv, können nur Mitarbeitende der zugeordneten Referate dort
-Desks buchen; Büros außerhalb einer Zone bleiben für alle BAMF-Mitarbeitenden
+Desks buchen; Büros außerhalb einer Zone bleiben für alle Mitarbeitenden
 uneingeschränkt buchbar (FR-5).
 
 Consequences (testable):

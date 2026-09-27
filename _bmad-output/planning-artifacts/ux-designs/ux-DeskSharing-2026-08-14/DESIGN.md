@@ -1,6 +1,6 @@
 ---
-name: DeskSharing BAMF — Federal Administrative Design System
-description: Institutionell-vertrauenswürdiges, aber modernes Design-System für die BAMF Desk-Sharing-Web-App — MD3-abgeleitete Navy/Teal/Slate-Palette, Inter-Typografie, hohe Datendichte für Buchungs-, Genehmigungs- und Facility-Management-Workflows.
+name: Desk4Me — Federal Administrative Design System
+description: Institutionell-vertrauenswürdiges, aber modernes Design-System für die Desk4Me Web-App — MD3-abgeleitete Navy/Teal/Slate-Palette, Inter-Typografie, hohe Datendichte für Buchungs-, Genehmigungs- und Facility-Management-Workflows.
 status: final
 sources:
   - mockups/ (kuratierte Screens + Bild-Assets, siehe Do's and Don'ts für die genaue Aufschlüsselung)
@@ -215,7 +215,7 @@ components:
 
 ## Brand & Style
 
-DeskSharing BAMF ist eine interne Fachanwendung für eine Bundesbehörde — die Ästhetik muss **institutionell vertrauenswürdig** wirken (Aktenzeichen, Sicherheitsfreigaben, VS-NFD-Prozesse gehören zum Alltag), darf dabei aber ausdrücklich **nicht** wie ein langweiliges Formular-Tool aussehen. Discovery-Vorgabe war explizit: funktional wie Google Workspace, aber sehr modern und ansprechend. Das System löst diesen Spagat über drei Mittel: (1) ein zurückhaltendes, dunkles Navy als Autoritätsfarbe statt buntem Corporate-Blau, (2) ein einzelnes kräftiges Teal als "es funktioniert"-Akzent für Verfügbarkeit und erfolgreiche Buchungen, und (3) große, mit Bento-Grids, Ambient-Glow-Verläufen, Hover-Lift und weichen Schatten inszenierte Flächen statt dichter Tabellenformulare. Sicherheitskritische Screens (vertrauliche Raumblockierung, Zwangsstorno) brechen bewusst mit der sonst freundlichen Teal-Sprache und wechseln auf Error-Rot und Warnhinweise, um im richtigen Moment ernst zu wirken.
+Desk4Me ist eine interne Fachanwendung für eine Bundesbehörde — die Ästhetik muss **institutionell vertrauenswürdig** wirken (Aktenzeichen, Sicherheitsfreigaben, VS-NFD-Prozesse gehören zum Alltag), darf dabei aber ausdrücklich **nicht** wie ein langweiliges Formular-Tool aussehen. Discovery-Vorgabe war explizit: funktional wie Google Workspace, aber sehr modern und ansprechend. Das System löst diesen Spagat über drei Mittel: (1) ein zurückhaltendes, dunkles Navy als Autoritätsfarbe statt buntem Corporate-Blau, (2) ein einzelnes kräftiges Teal als "es funktioniert"-Akzent für Verfügbarkeit und erfolgreiche Buchungen, und (3) große, mit Bento-Grids, Ambient-Glow-Verläufen, Hover-Lift und weichen Schatten inszenierte Flächen statt dichter Tabellenformulare. Sicherheitskritische Screens (vertrauliche Raumblockierung, Zwangsstorno) brechen bewusst mit der sonst freundlichen Teal-Sprache und wechseln auf Error-Rot und Warnhinweise, um im richtigen Moment ernst zu wirken.
 
 Die visuelle Sprache ist ein M3-artiges (Material Design 3) Tonal-System: Navy/Teal/Slate als Farbfamilien, Inter als alleinige Schriftart, eine durchgängige 4-Punkt-Spacing-Skala und eine Radius-Leiter von scharf (Chips) bis weich (Modals). Datendichte variiert bewusst nach Kontext — hoch in Grundriss-/Zeitleisten-Ansichten (wo Überblick zählt), großzügig in Formularen und Wizard-Schritten (wo Fehler vermieden werden sollen).
 

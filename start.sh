@@ -42,7 +42,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo "==> Starte Backend auf Port $BACKEND_PORT (Log: /tmp/deskshare-backend.log)…"
-(cd "$BACKEND_DIR" && uv run uvicorn app.main:app --port "$BACKEND_PORT" --reload) > /tmp/deskshare-backend.log 2>&1 &
+(cd "$BACKEND_DIR" && uv run uvicorn app.main:app --host 0.0.0.0 --port "$BACKEND_PORT" --reload) > /tmp/deskshare-backend.log 2>&1 &
 BACKEND_PID=$!
 
 echo "==> Warte auf Backend-Health-Check…"
@@ -54,7 +54,7 @@ for _ in $(seq 1 30); do
 done
 
 echo "==> Starte Frontend auf Port $FRONTEND_PORT (Log: /tmp/deskshare-frontend.log)…"
-(cd "$FRONTEND_DIR" && npm run dev -- --port "$FRONTEND_PORT" --strictPort) > /tmp/deskshare-frontend.log 2>&1 &
+(cd "$FRONTEND_DIR" && npm run dev -- --host 0.0.0.0 --port "$FRONTEND_PORT" --strictPort) > /tmp/deskshare-frontend.log 2>&1 &
 FRONTEND_PID=$!
 
 echo
